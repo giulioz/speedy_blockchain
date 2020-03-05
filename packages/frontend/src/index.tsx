@@ -21,7 +21,17 @@ import { mainListItems, secondaryListItems } from "./menuItems";
 
 import Index from "./pages/Index";
 
-const theme = createMuiTheme({ palette: { type: "dark" } });
+const theme = createMuiTheme({
+  palette: {
+    type: "dark",
+    primary: {
+      main: "#2979ff"
+    },
+    secondary: {
+      main: "#ff5252"
+    }
+  }
+});
 
 const drawerWidth = 240;
 
