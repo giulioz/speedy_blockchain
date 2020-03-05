@@ -84,10 +84,11 @@ class Blockchain {
     block.nonce = 0;
 
     let computedHash = block.computeHash();
+    console.log(computedHash);
     while (!computedHash.startsWith(genZeroes(difficulty))) {
       block.nonce += 1;
+      computedHash = block.computeHash();
     }
-    computedHash = block.computeHash();
 
     return computedHash;
   }
