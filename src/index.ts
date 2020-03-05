@@ -14,12 +14,18 @@ function genZeroes(count: number) {
   return new Array(count).fill("0").join("");
 }
 
+interface Transaction {
+  time: number;
+  author: string;
+  content: string;
+}
+
 class Block {
   hash: string;
 
   constructor(
     public index: number,
-    public transactions: any[],
+    public transactions: Transaction[],
     public timestamp: number,
     public previousHash: string,
     public nonce = 0
@@ -35,7 +41,7 @@ class Block {
 const difficulty = 2;
 
 class Blockchain {
-  unconfirmedTransactions = [];
+  unconfirmedTransactions: Transaction[] = [];
   chain: Block[] = [];
 
   // A function to generate genesis block and pushs it to
@@ -86,7 +92,7 @@ class Blockchain {
     return computedHash;
   }
 
-  addNewTransaction(transaction) {
+  addNewTransaction(transaction: Transaction) {
     this.unconfirmedTransactions.push(transaction);
   }
 
@@ -185,7 +191,7 @@ app.post("/new_transaction", (req, res) => {
 // Our application will be using this endpoint to query
 // all the posts to display.
 function getChain() {
-  const chainData = [];
+  const chainData: Block[] = [];
   blockchain.chain.forEach(block => chainData.push(block));
 
   return {
