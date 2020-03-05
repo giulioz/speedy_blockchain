@@ -226,7 +226,7 @@ app.get("/mine", async (req, res) => {
 
 // endpoint to add new peers to the network.
 app.post("/register_node", (req, res) => {
-  const nodeAddress = req.body().nodeAddress;
+  const nodeAddress = req.body.node_address;
   if (!nodeAddress) {
     res.status(400).send("Invalid data");
     return;
@@ -244,7 +244,7 @@ app.post("/register_with", async (req, res) => {
   // Internally calls the `register_node` endpoint to
   // register current node with the node specified in the
   // request, and sync the blockchain as well as peer data.
-  const nodeAddress = req.body.nodeAddress;
+  const nodeAddress = req.body.node_address;
   if (!nodeAddress) {
     res.status(400).send("Invalid data");
     return;
@@ -302,17 +302,17 @@ function createChainFromDump(chainDump) {
 // endpoint to add a block mined by someone else to
 // the node's chain. The block is first verified by the node
 // and then added to the chain.
-app.post("/addBlock", (req, res) => {
+app.post("/add_block", (req, res) => {
   const blockData = req.body;
   const block = new Block(
     blockData.index,
     blockData.transactions,
     blockData.timestamp,
-    blockData.previousHash,
+    blockData.previous_hash,
     blockData.nonce
   );
 
-  const proof = blockData["hash"];
+  const proof = blockData.hash;
   const added = blockchain.addBlock(block, proof);
 
   if (!added) {
