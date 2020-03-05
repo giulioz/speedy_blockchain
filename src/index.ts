@@ -260,7 +260,7 @@ app.post("/register_with", async (req, res) => {
     // update chain and the peers
     const chainDump = json.chain;
     blockchain = createChainFromDump(chainDump);
-    // peers.update(json.peers);
+    json.peers.forEach(p => peers.add(p));
     res.status(200).send("Registration successful");
   }
   // if something goes wrong, pass it on to the API response
