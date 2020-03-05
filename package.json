@@ -5,22 +5,17 @@
   "repository": "https://github.com/giulioz/speedy_blockchain.git",
   "author": "Giulio Zausa <giulio.zausa@smc.it>",
   "license": "MIT",
-  "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
-    "node-fetch": "^2.6.0",
-    "typescript": "^3.8.3"
-  },
+  "private": true,
   "devDependencies": {
-    "@types/express": "^4.17.3",
-    "@types/node-fetch": "^2.5.5",
-    "concurrently": "^5.1.0",
-    "nodemon": "^2.0.2",
-    "ts-node": "^8.6.2"
+    "lerna": "^3.20.2",
+    "concurrently": "^5.1.0"
   },
   "scripts": {
-    "start": "node dist/index.js",
-    "build": "tsc",
-    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/index.js\""
-  }
+    "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\"",
+    "dev-frontend": "lerna run start --scope frontend",
+    "dev-backend": "lerna run dev --scope backend"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
