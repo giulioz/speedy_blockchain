@@ -1,8 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
 import fetch from "node-fetch";
+import dotenv from "dotenv";
 
 import Blockchain, { Block } from "./Blockchain";
+
+dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
@@ -225,4 +228,7 @@ async function announceNewBlock(block: Block) {
   );
 }
 
-app.listen(8080, "0.0.0.0", () => console.log("App ready"));
+const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT) : 8080;
+app.listen(port, process.env.NODE_HOST || "0.0.0.0", () =>
+  console.log("Node listening on " + port)
+);
