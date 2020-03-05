@@ -244,7 +244,8 @@ app.post("/register_with", async (req, res) => {
     return;
   }
 
-  const data = { nodeAddress: req.host_url };
+  // const data = { nodeAddress: req.host_url };
+  const data = { nodeAddress: req.hostname };
   const headers = { "Content-Type": "application/json" };
 
   // Make a request to register with remote node and obtain information
@@ -259,7 +260,7 @@ app.post("/register_with", async (req, res) => {
     // update chain and the peers
     const chainDump = json.chain;
     blockchain = createChainFromDump(chainDump);
-    peers.update(json.peers);
+    // peers.update(json.peers);
     res.status(200).send("Registration successful");
   }
   // if something goes wrong, pass it on to the API response
@@ -326,19 +327,23 @@ async function consensus() {
   let longestChain = null;
   let currentLen = blockchain.chain.length;
 
-  await Promise.all(
+  const datas = await Promise.all(
     [...peers].map(async node => {
       const response = await fetch(`${node}chain`);
       const json = await response.json();
       const length = json.length;
       const chain = json.chain;
-      if (length > currentLen && blockchain.checkChainValidity(chain)) {
-        // BIG RACE CONDITION HERE! FIX
-        currentLen = length;
-        longestChain = chain;
-      }
+
+      return { length, chain };
     })
   );
+
+  datas.forEach(({ length, chain }) => {
+    if (length > currentLen && blockchain.checkChainValidity(chain)) {
+      currentLen = length;
+      longestChain = chain;
+    }
+  });
 
   if (longestChain) {
     blockchain = longestChain;
