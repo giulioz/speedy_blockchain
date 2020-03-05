@@ -84,3 +84,12 @@ The web application must allow the following operations:
 #### Running application
 
 Populate your blockchain with the data whose CSV  can be found [here](https://www.dropbox.com/s/v3azu6xigk63bfu/656211699_T_ONTIME_REPORTING.csv?dl=0). Data is retrieved from the [Bureau of Transportation Statistics](https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time). Set a low difficulty for the hash so that you can populate your blockchain quickly. 
+## Docker
+
+- `yarn docker-build`: builds the docker image
+
+To run an instace of the application use:
+
+`docker run -d -p DESIRED_PORT:8080 speedy_blockchain`
+
+- `DESIRED_PORT` is the choosen destination port of the deamon

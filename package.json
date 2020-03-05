@@ -13,7 +13,9 @@
   "scripts": {
     "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\"",
     "dev-frontend": "lerna run start --scope frontend",
-    "dev-backend": "lerna run dev --scope backend"
+    "dev-backend": "lerna run dev --scope backend",
+    "build-backend": "lerna run build --scope backend",
+    "docker-build": "docker build -t speedy_blockchain ."
   },
   "workspaces": [
     "packages/*"
