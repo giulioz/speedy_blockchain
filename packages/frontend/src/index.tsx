@@ -1,9 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import clsx from "clsx";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
-
-import clsx from "clsx";
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Drawer from "@material-ui/core/Drawer";
@@ -17,9 +16,10 @@ import Badge from "@material-ui/core/Badge";
 import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import NotificationsIcon from "@material-ui/icons/Notifications";
-import { mainListItems, secondaryListItems } from "./menuItems";
 
+import { mainListItems, secondaryListItems } from "./menuItems";
 import Index from "./pages/Index";
+import Chain from "./pages/Chain";
 
 const theme = createMuiTheme({
   palette: {
@@ -95,7 +95,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Layout({ children }) {
+function Layout({
+  children,
+  title
+}: React.PropsWithChildren<{ title: string }>) {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -132,7 +135,7 @@ function Layout({ children }) {
             noWrap
             className={classes.title}
           >
-            Dashboard
+            {title}
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="secondary">
@@ -167,13 +170,18 @@ function App() {
   return (
     <MuiThemeProvider theme={theme}>
       <Router>
-        <Layout>
-          <Switch>
-            <Route path="/">
+        <Switch>
+          <Route path="/chain">
+            <Layout title="Chain">
+              <Chain />
+            </Layout>
+          </Route>
+          <Route path="/">
+            <Layout title="Dashboard">
               <Index />
-            </Route>
-          </Switch>
-        </Layout>
+            </Layout>
+          </Route>
+        </Switch>
       </Router>
     </MuiThemeProvider>
   );

@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
@@ -9,6 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors())
 
 // the node's copy of blockchain
 let blockchain = new Blockchain();
@@ -37,17 +39,23 @@ app.post("/new_transaction", (req, res) => {
   res.status(201).send("Success");
 });
 
+export interface ChainState {
+  length: number;
+  chain: Block[];
+  peers: string[];
+}
+
 // endpoint to return the node's copy of the chain.
 // Our application will be using this endpoint to query
 // all the posts to display.
-function getChain() {
-  const chainData: Block[] = [];
-  blockchain.chain.forEach(block => chainData.push(block));
+function getChain(): ChainState {
+  const chain: Block[] = [];
+  blockchain.chain.forEach(block => chain.push(block));
 
   return {
-    length: chainData.length,
-    chain: chainData,
-    peers: peers
+    length: chain.length,
+    chain,
+    peers: [...peers]
   };
 }
 app.get("/chain", (req, res) => {
