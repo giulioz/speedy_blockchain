@@ -7,7 +7,7 @@ This project uses Lerna. There are two packages:
 
 ## Scripts
 
-Please use `yarn` to manage packages and dependencies.
+Please use [`yarn`](https://classic.yarnpkg.com/en/docs/getting-started) to manage packages and dependencies.
 
 - `yarn dev`: runs the backend and the frontend concurrently, in development live-reload mode,
 - `yarn dev-frontend`: runs the frontend, in development live-reload mode,
