@@ -1,27 +1,6 @@
-import { sha256, genZeroes } from "./utilities";
-
-export interface Transaction {
-  time: number;
-  author: string;
-  content: string;
-}
-
-export class Block {
-  hash: string;
-
-  constructor(
-    public index: number,
-    public transactions: Transaction[],
-    public timestamp: number,
-    public previousHash: string,
-    public nonce = 0
-  ) {}
-
-  computeHash() {
-    const blockString = JSON.stringify(this);
-    return sha256(blockString);
-  }
-}
+import Transaction from "./Transaction";
+import Block, { computeBlockHash } from "./Block";
+import { genZeroes, getTimestamp } from "./utils";
 
 // difficulty of our PoW algorithm
 const difficulty = 2;
@@ -34,8 +13,15 @@ export default class Blockchain {
   // the chain. The block has index 0, previousHash as 0, and
   // a valid hash.
   createGenesisBlock() {
-    const genesisBlock = new Block(0, [], 0, "0");
-    genesisBlock.hash = genesisBlock.computeHash();
+    const genesisBlock: Block = {
+      hash: "",
+      index: 0,
+      transactions: [],
+      timestamp: getTimestamp(),
+      previousHash: "0",
+      nonce: 0
+    };
+    genesisBlock.hash = computeBlockHash(genesisBlock);
     this.chain.push(genesisBlock);
   }
 
@@ -51,7 +37,7 @@ export default class Blockchain {
   addBlock(block: Block, proof: string) {
     const previousHash = this.lastBlock.hash;
 
-    if (previousHash != block.previousHash) {
+    if (previousHash !== block.previousHash) {
       return false;
     }
 
@@ -69,10 +55,10 @@ export default class Blockchain {
   static proofOfWork(block: Block) {
     block.nonce = 0;
 
-    let computedHash = block.computeHash();
+    let computedHash = computeBlockHash(block);
     while (!computedHash.startsWith(genZeroes(difficulty))) {
       block.nonce += 1;
-      computedHash = block.computeHash();
+      computedHash = computeBlockHash(block);
     }
 
     return computedHash;
@@ -87,7 +73,7 @@ export default class Blockchain {
   static isValidProof(block: Block, blockHash: string) {
     return (
       blockHash.startsWith(genZeroes(difficulty)) &&
-      blockHash == block.computeHash()
+      blockHash === computeBlockHash(block)
     );
   }
 
@@ -104,7 +90,7 @@ export default class Blockchain {
 
       if (
         !Blockchain.isValidProof(block, blockHash) ||
-        previousHash != block.previousHash
+        previousHash !== block.previousHash
       ) {
         result = false;
         return result;
@@ -127,12 +113,14 @@ export default class Blockchain {
 
     const lastBlock = this.lastBlock;
 
-    const newBlock = new Block(
-      lastBlock.index + 1,
-      this.unconfirmedTransactions,
-      new Date().getTime(),
-      lastBlock.hash
-    );
+    const newBlock: Block = {
+      index: lastBlock.index + 1,
+      transactions: this.unconfirmedTransactions,
+      timestamp: getTimestamp(),
+      previousHash: lastBlock.hash,
+      nonce: 0,
+      hash: ""
+    };
 
     const proof = Blockchain.proofOfWork(newBlock);
     this.addBlock(newBlock, proof);

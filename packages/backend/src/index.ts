@@ -4,13 +4,18 @@ import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
-import Blockchain, { Block } from "./Blockchain";
+import {
+  Blockchain,
+  ChainState,
+  Block,
+  Transaction
+} from "@speedy_blockchain/common";
 
 dotenv.config();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors())
+app.use(cors());
 
 // the node's copy of blockchain
 let blockchain = new Blockchain();
@@ -38,12 +43,6 @@ app.post("/new_transaction", (req, res) => {
 
   res.status(201).send("Success");
 });
-
-export interface ChainState {
-  length: number;
-  chain: Block[];
-  peers: string[];
-}
 
 // endpoint to return the node's copy of the chain.
 // Our application will be using this endpoint to query
@@ -140,15 +139,8 @@ function createChainFromDump(chainDump: Block[]) {
     if (idx === 0) {
       // skip genesis block
     } else {
-      const block = new Block(
-        blockData.index,
-        blockData.transactions,
-        blockData.timestamp,
-        blockData.previousHash,
-        blockData.nonce
-      );
       const proof = blockData.hash;
-      const added = generatedBlockchain.addBlock(block, proof);
+      const added = generatedBlockchain.addBlock(blockData, proof);
       if (!added) {
         throw new Error("The chain dump is tampered!!");
       }
@@ -161,17 +153,10 @@ function createChainFromDump(chainDump: Block[]) {
 // the node's chain. The block is first verified by the node
 // and then added to the chain.
 app.post("/add_block", (req, res) => {
-  const blockData = req.body;
-  const block = new Block(
-    blockData.index,
-    blockData.transactions,
-    blockData.timestamp,
-    blockData.previous_hash,
-    blockData.nonce
-  );
+  const blockData = req.body as Block;
 
   const proof = blockData.hash;
-  const added = blockchain.addBlock(block, proof);
+  const added = blockchain.addBlock(blockData, proof);
 
   if (!added) {
     res.status(400).send("The block was discarded by the node");

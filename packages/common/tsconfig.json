@@ -6,13 +6,14 @@
     "target": "es6",
     "strict": false,
     "moduleResolution": "node",
+    "declaration": true,
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "downlevelIteration": true,
+    "noLib": false,
     "paths": {
-      "*": ["node_modules/*", "src/types/*"],
-      "@speedy_blockchain/*": ["../*"]
+      "*": ["node_modules/*", "src/types/*"]
     }
   },
   "include": ["src/**/*"]

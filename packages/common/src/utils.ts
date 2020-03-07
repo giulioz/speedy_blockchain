@@ -10,3 +10,7 @@ export function sha256(str: string) {
 export function genZeroes(count: number) {
   return new Array(count).fill("0").join("");
 }
+
+export function getTimestamp() {
+  return new Date().getTime();
+}

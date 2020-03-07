@@ -1,5 +1,4 @@
-import { ChainState } from "backend/src";
-import { Transaction } from "backend/src/Blockchain";
+import { Transaction, ChainState } from "@speedy_blockchain/common";
 
 import config from "../config";
 

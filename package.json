@@ -11,9 +11,10 @@
     "concurrently": "^5.1.0"
   },
   "scripts": {
-    "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\"",
-    "dev-frontend": "lerna run start --scope frontend",
-    "dev-backend": "lerna run dev --scope backend"
+    "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\" \"npm run dev-common\"",
+    "dev-frontend": "lerna run start --scope @speedy_blockchain/frontend",
+    "dev-backend": "lerna run dev --scope @speedy_blockchain/backend",
+    "dev-common": "lerna run dev --scope @speedy_blockchain/common"
   },
   "workspaces": [
     "packages/*"
