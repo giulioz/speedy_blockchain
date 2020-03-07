@@ -8,7 +8,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { ChainState } from "backend/src";
+import { ChainState } from "@speedy_blockchain/common";
 import { getChain } from "../api/blockchainREST";
 import Title from "../components/Title";
 

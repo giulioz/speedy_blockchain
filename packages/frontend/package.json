@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@speedy_blockchain/frontend",
   "version": "1.0.0",
   "author": "Giulio Zausa <giulio.zausa@smc.it>",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.9.1",
-    "backend": "^1.0.0",
+    "@speedy_blockchain/common": "^1.0.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",

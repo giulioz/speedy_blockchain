@@ -1,0 +1,21 @@
+{
+  "name": "@speedy_blockchain/common",
+  "version": "1.0.0",
+  "author": "Giulio Zausa <giulio.zausa@smc.it>",
+  "homepage": "https://github.com/giulioz/speedy_blockchain#readme",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/giulioz/speedy_blockchain.git"
+  },
+  "devDependencies": {
+    "typescript": "^3.8.3",
+    "ts-node": "^8.6.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  }
+}
