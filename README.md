@@ -15,6 +15,29 @@ Please use [`yarn`](https://classic.yarnpkg.com/en/docs/getting-started) to mana
 
 You can find package specific scripts in the packages readme.
 
+## Docker
+
+Use `docker-compose up` to run 3 istances of nodes that can comunicate to each other.
+
+They will create a local folder in the project called: _blockchain_data/_, and inside that folder every node will store it's data.
+
+### Running single istances
+
+- `yarn docker-build`: builds the docker image
+
+To run an instace of the application use:
+
+```docker
+docker run -d
+    -p DESIRED_BACKEND_PORT:8080
+    -p DESIRED_FRONTEND_PORT:3000
+    -v ./blockchain_data/NODE_FOLDER_NAME:/data 
+    speedy_blockchain
+```
+
+- `DESIRED_PORT` is the choosen destination port of the deamon
+- `NODE_FOLDER_NAME` is the name of the subfolder that the node will create to store it's data
+
 ## Assignment
 ### Blockchain Application
 
