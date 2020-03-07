@@ -1,0 +1,36 @@
+version: "3.7"
+services:
+  node_1:
+    build: .
+    ports:
+      - "8001:8080"
+      - "4001:3000"
+    networks:
+      - blockchain_network
+    volumes:
+      - ./blockchain_data/node_1:/data
+
+  node_2:
+    build: .
+    ports:
+      - "8002:8080"
+      - "4002:3000"
+    networks:
+      - blockchain_network
+    volumes:
+      - ./blockchain_data/node_2:/data
+
+  node_3:
+    build: .
+    ports:
+      - "8003:8080"
+      - "4003:3000"
+    networks:
+      - blockchain_network
+    volumes:
+      - ./blockchain_data/node_3:/data
+
+networks:
+  blockchain_network:
+# volumes:
+#   blockchain_data
