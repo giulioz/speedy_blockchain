@@ -6,7 +6,7 @@ export default class Node {
 
   constructor() {
     this.currentBlockchain = new Blockchain();
-    this.currentBlockchain.createGenesisBlock();
+    this.currentBlockchain.pushGenesisBlock();
 
     this.peers = new Set([]);
   }
@@ -24,7 +24,7 @@ export default class Node {
 
   setFromDump(chainDump: Block[]) {
     const generatedBlockchain = new Blockchain();
-    generatedBlockchain.createGenesisBlock();
+    generatedBlockchain.pushGenesisBlock();
     chainDump.forEach((blockData, idx) => {
       if (idx === 0) {
         // skip genesis block
@@ -81,12 +81,10 @@ export default class Node {
   async announceNewBlock(block: Block) {
     return Promise.all(
       [...this.peers].map(async peer => {
-        const url = `${peer}addBlock`;
-        const headers = { "Content-Type": "application/json" };
-        const response = await fetch(url, {
+        const response = await fetch(`${peer}addBlock`, {
           method: "POST",
           body: JSON.stringify(block),
-          headers
+          headers: { "Content-Type": "application/json" }
         });
 
         await response.text();

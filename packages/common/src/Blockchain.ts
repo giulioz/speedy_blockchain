@@ -1,5 +1,5 @@
 import Transaction from "./Transaction";
-import Block, { computeBlockHash } from "./Block";
+import Block, { computeBlockHash, createBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
 
 // difficulty of our PoW algorithm
@@ -12,16 +12,14 @@ export default class Blockchain {
   // A function to generate genesis block and pushs it to
   // the chain. The block has index 0, previousHash as 0, and
   // a valid hash.
-  createGenesisBlock() {
-    const genesisBlock: Block = {
-      hash: "",
+  pushGenesisBlock() {
+    const genesisBlock = createBlock({
       index: 0,
       transactions: [],
       timestamp: getTimestamp(),
       previousHash: "0",
       nonce: 0
-    };
-    genesisBlock.hash = computeBlockHash(genesisBlock);
+    });
     this.chain.push(genesisBlock);
   }
 
@@ -113,14 +111,13 @@ export default class Blockchain {
 
     const lastBlock = this.lastBlock;
 
-    const newBlock: Block = {
+    const newBlock = createBlock({
       index: lastBlock.index + 1,
       transactions: this.unconfirmedTransactions,
       timestamp: getTimestamp(),
       previousHash: lastBlock.hash,
-      nonce: 0,
-      hash: ""
-    };
+      nonce: 0
+    });
 
     const proof = Blockchain.proofOfWork(newBlock);
     this.addBlock(newBlock, proof);

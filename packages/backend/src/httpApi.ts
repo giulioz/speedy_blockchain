@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import fetch from "node-fetch";
 
-import { Block } from "@speedy_blockchain/common";
+import { Block, utils } from "@speedy_blockchain/common";
 import Node from "./Node";
 
 export function createHttpApi(node: Node) {
@@ -13,7 +13,7 @@ export function createHttpApi(node: Node) {
 
   // endpoint to submit a new transaction. This will be used by
   // our application to add new data (posts) to the blockchain
-  app.post("/new_transaction", (req, res) => {
+  app.post("/transaction", (req, res) => {
     const txData = req.body;
     const requiredFields = ["author", "content"];
 
@@ -24,7 +24,7 @@ export function createHttpApi(node: Node) {
       }
     });
 
-    txData.timestamp = new Date().getTime();
+    txData.timestamp = utils.getTimestamp();
 
     node.currentBlockchain.addNewTransaction(txData);
 
@@ -34,6 +34,8 @@ export function createHttpApi(node: Node) {
   // endpoint to return the node's copy of the chain.
   // Our application will be using this endpoint to query
   // all the posts to display.
+
+  // TROPPA ROBA
   app.get("/chain", (req, res) => {
     res.send(node.getChain());
   });
@@ -41,6 +43,8 @@ export function createHttpApi(node: Node) {
   // endpoint to request the node to mine the unconfirmed
   // transactions (if any). We'll be using it to initiate
   // a command to mine from our application itself.
+
+  // TOGLIERE -> AUTOMATICO
   app.get("/mine", async (req, res) => {
     const result = node.currentBlockchain.mine();
     if (!result) {
@@ -59,6 +63,8 @@ export function createHttpApi(node: Node) {
   });
 
   // endpoint to add new peers to the network.
+
+  // TOGLIERE -> AUTOMATICO
   app.post("/register_node", (req, res) => {
     const nodeAddress = req.body.node_address;
     if (!nodeAddress) {
@@ -74,6 +80,7 @@ export function createHttpApi(node: Node) {
     res.send(node.getChain());
   });
 
+  // TOGLIERE -> AUTOMATICO
   app.post("/register_with", async (req, res) => {
     // Internally calls the `register_node` endpoint to
     // register current node with the node specified in the
@@ -84,15 +91,13 @@ export function createHttpApi(node: Node) {
       return;
     }
 
-    // const data = { nodeAddress: req.host_url };
-    const data = { nodeAddress: req.hostname };
-    const headers = { "Content-Type": "application/json" };
+    const data = { nodeAddress: req.originalUrl };
 
     // Make a request to register with remote node and obtain information
     const response = await fetch(nodeAddress + "/register_node", {
       method: "POST",
       body: JSON.stringify(data),
-      headers
+      headers:{ "Content-Type": "application/json" }
     });
 
     if (response.status === 200) {
@@ -112,7 +117,7 @@ export function createHttpApi(node: Node) {
   // endpoint to add a block mined by someone else to
   // the node's chain. The block is first verified by the node
   // and then added to the chain.
-  app.post("/add_block", (req, res) => {
+  app.post("/block", (req, res) => {
     const blockData = req.body as Block;
 
     const proof = blockData.hash;
