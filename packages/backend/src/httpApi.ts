@@ -5,8 +5,9 @@ import fetch from "node-fetch";
 
 import { Block, utils } from "@speedy_blockchain/common";
 import Node from "./Node";
+import Miner from "./Miner";
 
-export function createHttpApi(node: Node) {
+export function createHttpApi(node: Node, miner: Miner) {
   const app = express();
   app.use(bodyParser.json());
   app.use(cors());
