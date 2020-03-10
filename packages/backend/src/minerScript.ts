@@ -24,7 +24,6 @@ function mine(rawBlock: Block) {
     while (!computedHash.startsWith(genZeroes(DIFFICULTY))) {
       rawBlock.nonce += 1;
       computedHash = computeBlockHash(rawBlock);
-      log(`TRIED ${rawBlock.nonce}`);
     }
 
     resolve(computedHash);
