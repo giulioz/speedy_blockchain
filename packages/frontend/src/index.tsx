@@ -6,6 +6,7 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Blockchain from "./pages/Blockchain";
+import Flights from "./pages/Flights";
 
 const theme = createMuiTheme({
   palette: {
@@ -28,7 +29,7 @@ function App() {
             <Blockchain />
           </Route>
           <Route path="/flights">
-            <Layout title="Flights"></Layout>
+            <Flights />
           </Route>
           <Route path="/peers">
             <Layout title="Peers"></Layout>
