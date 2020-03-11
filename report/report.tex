@@ -1,0 +1,158 @@
+\documentclass[12pt]{article}
+\renewcommand{\baselinestretch}{1.5}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{qtree}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{centernot}
+\usepackage{comment}
+\usepackage{hyperref}
+\usepackage{mdframed}
+\usepackage{verbatim}
+\usepackage{fancyvrb}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{pxfonts}
+\usepackage{pifont}
+\usepackage{enumitem}
+\usepackage{adforn}
+\usepackage{amsmath}
+\usepackage{calligra}
+\usepackage[T1]{fontenc}
+\usepackage{bbding}
+\usepackage{textcomp}
+\usepackage{tikz}
+\usepackage[export]{adjustbox}
+\tikzstyle{mybox} = [draw=black, very thick, rectangle, rounded corners, inner ysep=5pt, inner xsep=5pt]
+\setlength{\footnotesep}{1.\baselineskip}%
+
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % images
+\usepackage{fancyhdr}
+\usepackage{lastpage} % last page ref
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{fancyvrb} % for centered verbatim
+\usepackage{hyperref} % for links in refs
+\usepackage{amssymb} % for R as real set of numbers
+\usepackage{amsmath} % for text in math mode
+\usepackage{amsthm} % for theorems
+
+\newcommand{\parnosep}[1]{\vspace*{-\baselineskip}\paragraph{#1}}
+\newcommand{\subparnosep}[1]{\vspace*{-\baselineskip}\subparagraph{#1}}
+%\newcommand\measurepage{\dimexpr\pagegoal-\pagetotal-\baselineskip\relax}
+\renewcommand{\labelenumii}{\theenumi\theenumii.}
+\renewcommand{\theenumii}{.\arabic{enumii}}
+\renewcommand{\labelenumiii}{\theenumi\theenumii\theenumiii.}
+\renewcommand{\theenumiii}{.\arabic{enumiii}}
+%\captionsetup[figure]{labelformat=parens}
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+
+
+%\usepackage{ntheorem}
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows}
+\usetikzlibrary{calc}
+\usepackage[
+type={CC},
+modifier={by-nc-sa},
+version={4.0},
+lang={english},
+]{doclicense}
+\lstset{
+	basicstyle=\ttfamily,
+	mathescape,
+	tabsize=4
+}
+
+\lstset{
+	basicstyle=\ttfamily,
+	columns=fullflexible,
+	breaklines=true,
+	escapeinside={@|}{|@}
+}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{lemma}{Lemma}
+\newcommand{\splitcell}[2][c]{%
+  \begin{tabular}[c]{@{}c@{}}\strut#2\strut\end{tabular}%
+}
+\begin{document}
+\pagenumbering{gobble}
+
+\date{A.A. 2019/2020}
+\author{Sandro Baccega, Diletta Olliaro, Giacomo Zanatta, Giulio Zausa\\\ \\ Dipartimento di Scienze Ambientali, Informatica e Statistica\\ Università Ca'Foscari Venezia}
+\title{Report of the\\ \textit{Software Performance and Scalability}\\ project}
+\maketitle
+%\doclicenseImage
+%\par\medskip\noindent
+%\doclicenseText
+\newpage
+\tableofcontents
+\newpage
+\fancyfoot[RO,LE]{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+\pagenumbering{arabic}
+\lstset{escapeinside={(*@}{@*)}}
+\lstset{ keywordstyle=\bfseries,
+	morekeywords={begin, true, become, end, send, to, for, sender, false, then, if, else, endif, other, right, return, while, do, end}
+}
+\section{Introduction}
+This project needs to be contextualized in a performance evaluation setting, the problem addressed is to create a blockchain application that stores data on some US flights.\\
+The main activity of the first part of this project is the implementation of the application itself, we can divide this task in a series of sub-tasks: 
+\begin{itemize}
+\item defining transactions,
+\item definition of some operations such as:
+\begin{itemize}
+\item adding a new transaction
+\item retrieving a transaction given its ID
+\item retrieving all the transactions in a specified block
+\end{itemize}
+\item mining 
+\item implementing the web application that must be able to:
+\begin{itemize}
+\item adding a new record to the chain
+\item query the status of a flight given its ID and the date
+\item query the average delay of a flight carrier in a certain interval of time
+\item given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B
+\end{itemize}
+\end{itemize}
+This report will start with a first section explaining in detail the logic behind blockchains and then we will move on exploring all the sub-tasks presented above from a logical and implementation point of view.
+\section{Blockchains}
+A blockchain is a data structure that can store literally any kind of data, these data are stored in "blocks" that are linked together using cryptographic hashes.\\
+The appealing properties of this data structure resides in the way this data is stored and added to the blockchain. In practice blockchain are nothing more than a linked list but with some constrains:firstly, once a block is added it is no longer modifiable, meaning that the only operation allowed on this "list" are appending and searching; secondly, there are specific rules for appending a new block that we will analyse in detail below; finally the architecture defined is distributed.\\
+
+Each line of a dataset represents a so called \textit{transaction}, a block contains one or more transactions.  Each block, in order to be searchable and to guarantee some other nice properties, should have a unique ID. Since we also desire to avoid any kind of alteration in the data stored inside the block,we use cryptographic hash functions in order to "protect" the block.\\
+
+At this point we need a way to be sure that our blocks are unmodifiable, this means we need a method such that a change in any block will invalidate the entire chain. In order to do this we create dependency among consecutive blocks by chaining them with the hash of the block immediately previous to them. Using this logic if we change the content of a block we also need to change its hash and consequently the previous hash field of the previous block, meaning we also need to change the hash of that previous block and so on for all the blocks before the one we wanted to modify.\\
+
+This would not require an enormous amount of computational power if it was not the case that we also require a \textit{proof of work} for any new block. What does it mean that we want a proof of work? This means that instead of accepting any hash for the block we add some constraint to it, in our case this constraint consists in the fact that we want a certain number of zero at the beginning of every hashes.\\
+Main problem with this strategy is that unless we change the transactions in a blocks its hash will not change and of course we do not want to change transactions, so what we do is to add a new field to each block called \textit{nonce}, this nonce is just a random number that will be used to compute the hash of the block together with the block itself. If the computed hash does not meet the imposed constraint we just need to increment it and so on until the produced hash is not as we want it. The nonce satisfying the constraint serves as proof that some computation has been performed.\\ 
+
+The number of zeroes specified in the constraint determines the difficulty of our proof of work algorithm as a matter of fact the greater the number of zeroes, the harder it is to figure out the nonce. Consequently the proof of work is very difficult to compute but very easy to verify: once the nonce is figured out the only thing that needs to be done is to run again the hash function. 
+
+
+%process of adding a block
+%mining 
+%consensus and decentralization?
+\end{document}
