@@ -45,7 +45,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function Index() {
+export default function Blockchain() {
   const classes = useStyles();
 
   const chainState = useChain();
