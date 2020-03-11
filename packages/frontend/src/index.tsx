@@ -36,11 +36,8 @@ function App() {
           <Route path="/stats">
             <Layout title="Stats"></Layout>
           </Route>
-          <Route path="/addFlight">
-            <Layout title="Add Flight"></Layout>
-          </Route>
-          <Route path="/flightStatus">
-            <Layout title="Flight Status"></Layout>
+          <Route path="/findFlight">
+            <Layout title="Find Flight"></Layout>
           </Route>
           <Route path="/carrierInfo">
             <Layout title="Carrier Info"></Layout>
