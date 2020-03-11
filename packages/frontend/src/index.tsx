@@ -25,9 +25,7 @@ function App() {
       <Router>
         <Switch>
           <Route path="/blockchain">
-            <Layout title="Blockchain">
-              <Blockchain />
-            </Layout>
+            <Blockchain />
           </Route>
           <Route path="/flights">
             <Layout title="Flights"></Layout>
@@ -51,9 +49,7 @@ function App() {
             <Layout title="Route Finder"></Layout>
           </Route>
           <Route path="/" exact>
-            <Layout title="Dashboard">
-              <Dashboard />
-            </Layout>
+            <Dashboard />
           </Route>
         </Switch>
       </Router>

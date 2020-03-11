@@ -11,6 +11,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { ChainState } from "@speedy_blockchain/common";
 import { getChain } from "../api/blockchainREST";
 import Title from "../components/Title";
+import Layout from "../components/Layout";
 
 function useChain() {
   const [chain, setChain] = useState<ChainState | null>(null);
@@ -51,39 +52,41 @@ export default function Blockchain() {
   const chainState = useChain();
 
   return (
-    <main className={classes.content}>
-      <div className={classes.appBarSpacer} />
-      <Container maxWidth="lg" className={classes.container}>
-        <Paper className={classes.paper}>
-          <Title>Recent Transactions</Title>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Hash</TableCell>
-                <TableCell>Index</TableCell>
-                <TableCell>Nonce</TableCell>
-                <TableCell>Previous Hash</TableCell>
-                <TableCell>Timestamp</TableCell>
-                <TableCell>Transactions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {chainState
-                ? chainState.chain.map(row => (
-                    <TableRow key={row.hash}>
-                      <TableCell>{row.hash}</TableCell>
-                      <TableCell>{row.index}</TableCell>
-                      <TableCell>{row.nonce}</TableCell>
-                      <TableCell>{row.previousHash}</TableCell>
-                      <TableCell>{row.timestamp}</TableCell>
-                      <TableCell>{row.transactions.length}</TableCell>
-                    </TableRow>
-                  ))
-                : null}
-            </TableBody>
-          </Table>
-        </Paper>
-      </Container>
-    </main>
+    <Layout title="Blockchain">
+      <main className={classes.content}>
+        <div className={classes.appBarSpacer} />
+        <Container maxWidth="lg" className={classes.container}>
+          <Paper className={classes.paper}>
+            <Title>Recent Transactions</Title>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Hash</TableCell>
+                  <TableCell>Index</TableCell>
+                  <TableCell>Nonce</TableCell>
+                  <TableCell>Previous Hash</TableCell>
+                  <TableCell>Timestamp</TableCell>
+                  <TableCell>Transactions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {chainState
+                  ? chainState.chain.map(row => (
+                      <TableRow key={row.hash}>
+                        <TableCell>{row.hash}</TableCell>
+                        <TableCell>{row.index}</TableCell>
+                        <TableCell>{row.nonce}</TableCell>
+                        <TableCell>{row.previousHash}</TableCell>
+                        <TableCell>{row.timestamp}</TableCell>
+                        <TableCell>{row.transactions.length}</TableCell>
+                      </TableRow>
+                    ))
+                  : null}
+              </TableBody>
+            </Table>
+          </Paper>
+        </Container>
+      </main>
+    </Layout>
   );
 }
