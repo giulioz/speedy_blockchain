@@ -6,7 +6,6 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import ShareIcon from "@material-ui/icons/Share";
 import FlightIcon from "@material-ui/icons/Flight";
-import BarChartIcon from "@material-ui/icons/BarChart";
 import LinkIcon from "@material-ui/icons/Link";
 import BusinessIcon from "@material-ui/icons/Business";
 import MapIcon from "@material-ui/icons/Map";
@@ -15,7 +14,7 @@ import { Link } from "react-router-dom";
 
 export const mainListItems = (
   <div>
-    <ListSubheader inset>Administration</ListSubheader>
+    <ListSubheader inset>Blockchain</ListSubheader>
 
     <ListItem button component={Link} to="/">
       <ListItemIcon>
@@ -28,7 +27,7 @@ export const mainListItems = (
       <ListItemIcon>
         <LinkIcon />
       </ListItemIcon>
-      <ListItemText primary="Blockchain" />
+      <ListItemText primary="Explore Blocks" />
     </ListItem>
 
     <ListItem button component={Link} to="/peers">
@@ -37,19 +36,12 @@ export const mainListItems = (
       </ListItemIcon>
       <ListItemText primary="Peers" />
     </ListItem>
-
-    <ListItem button component={Link} to="/stats">
-      <ListItemIcon>
-        <BarChartIcon />
-      </ListItemIcon>
-      <ListItemText primary="Stats" />
-    </ListItem>
   </div>
 );
 
 export const secondaryListItems = (
   <div>
-    <ListSubheader inset>User</ListSubheader>
+    <ListSubheader inset>Transactions</ListSubheader>
 
     <ListItem button component={Link} to="/flights">
       <ListItemIcon>

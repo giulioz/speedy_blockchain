@@ -52,7 +52,7 @@ export default function Blockchain() {
   const chainState = useChain();
 
   return (
-    <Layout title="Blockchain">
+    <Layout title="Explore Blocks">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>

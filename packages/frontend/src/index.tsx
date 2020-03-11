@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Blockchain from "./pages/Blockchain";
 import Flights from "./pages/Flights";
 
-const theme = createMuiTheme({
+const theme = (createMuiTheme as any)({
   palette: {
     type: "dark",
     primary: {
@@ -16,6 +16,13 @@ const theme = createMuiTheme({
     },
     secondary: {
       main: "#ff5252"
+    }
+  },
+  overrides: {
+    MUIDataTable: {
+      responsiveScrollFullHeight: {
+        overflow: "scroll"
+      }
     }
   }
 });
@@ -33,9 +40,6 @@ function App() {
           </Route>
           <Route path="/peers">
             <Layout title="Peers"></Layout>
-          </Route>
-          <Route path="/stats">
-            <Layout title="Stats"></Layout>
           </Route>
           <Route path="/findFlight">
             <Layout title="Find Flight"></Layout>
