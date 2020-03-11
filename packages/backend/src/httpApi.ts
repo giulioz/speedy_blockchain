@@ -5,8 +5,9 @@ import fetch from "node-fetch";
 
 import { Block, utils } from "@speedy_blockchain/common";
 import Node from "./Node";
+import AsyncMiner from "./AsyncMiner";
 
-export function createHttpApi(node: Node) {
+export function createHttpApi(node: Node, miner: AsyncMiner) {
   const app = express();
   app.use(bodyParser.json());
   app.use(cors());
@@ -97,7 +98,7 @@ export function createHttpApi(node: Node) {
     const response = await fetch(nodeAddress + "/register_node", {
       method: "POST",
       body: JSON.stringify(data),
-      headers:{ "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" }
     });
 
     if (response.status === 200) {
