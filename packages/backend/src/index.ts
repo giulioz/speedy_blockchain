@@ -3,10 +3,13 @@ import dotenv from "dotenv";
 import Node from "./Node";
 import { createHttpApi } from "./httpApi";
 import AsyncMiner from "./AsyncMiner";
+import LevelDB from "./level/LevelDB";
 
 dotenv.config();
 
 const node = new Node();
+
+LevelDB.getInstance();
 
 const miner = new AsyncMiner();
 

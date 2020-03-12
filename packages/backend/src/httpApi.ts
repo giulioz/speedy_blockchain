@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import fetch from "node-fetch";
-
+import LevelDB from "./level/LevelDB";
 import { Block, utils } from "@speedy_blockchain/common";
 import Node from "./Node";
 import AsyncMiner from "./AsyncMiner";
@@ -53,13 +53,14 @@ export function createHttpApi(node: Node, miner: AsyncMiner) {
     } else {
       // Making sure we have the longest chain before announcing to the network
       const chainLength = node.currentBlockchain.chain.length;
+      await LevelDB.getInstance().insert(node.currentBlockchain.lastBlock);
       await node.consensus();
+      var blocks = await LevelDB.getInstance().fetchAll();
       if (chainLength === node.currentBlockchain.chain.length) {
         // announce the recently mined block to the network
         node.announceNewBlock(node.currentBlockchain.lastBlock);
       }
-
-      res.send(`Block #${node.currentBlockchain.lastBlock.index} is mined.`);
+        res.send(`${blocks} Block #${node.currentBlockchain.lastBlock.index} is mined.`);
     }
   });
 
