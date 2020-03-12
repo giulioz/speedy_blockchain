@@ -1,6 +1,7 @@
 import { Transaction, ChainState } from "@speedy_blockchain/common";
 
 import config from "../config";
+import apiCall from "./api";
 
 export async function submitTransaction(tr: Transaction) {
   const body = JSON.stringify(tr);
@@ -8,11 +9,11 @@ export async function submitTransaction(tr: Transaction) {
     method: "POST",
     body
   });
+  // TODO: Aggiungiamo il metodo text in api.ts?
   return req.text();
 }
 
-export async function getChain() {
-  const req = await fetch(config.apiURL + "/chain");
-  const chain: ChainState = await req.json();
-  return chain;
+export async function fetchChain() {
+  const req = await apiCall<ChainState>("/chain");
+  return req;
 }
