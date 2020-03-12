@@ -9,7 +9,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
 import { ChainState } from "@speedy_blockchain/common";
-import { getChain } from "../api/blockchainREST";
+import { fetchChain } from "../api/blockchain";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
 
@@ -17,7 +17,7 @@ function useChain() {
   const [chain, setChain] = useState<ChainState | null>(null);
   useEffect(() => {
     async function loadData() {
-      const data = await getChain();
+      const data = await fetchChain();
       setChain(data);
     }
 
