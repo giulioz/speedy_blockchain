@@ -115,7 +115,6 @@ export default function Peers() {
   const classes = useStyles();
 
   const peersState = usePeers();
-  console.log(peersState);
   return (
     <Layout title="Explore Blocks">
       <main className={classes.content}>
@@ -124,7 +123,9 @@ export default function Peers() {
           <Paper className={classes.paper}>
             <Title>Peers list</Title>
             {peersState
-              ? peersState.peers.map(peer => <PeerBlock peer={peer} />)
+              ? peersState.peers.map(peer => (
+                  <PeerBlock key={peer.ip} peer={peer} />
+                ))
               : null}
           </Paper>
         </Container>

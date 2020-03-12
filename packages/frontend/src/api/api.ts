@@ -1,21 +1,18 @@
 import config from "../config";
 
 export interface APIOptions {
-  method: "GET" | "POST" | "PUT" | "DELETE";
-  body: Object;
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  body?: Object;
 }
 
 export default async function apiCall<T>(
   endpoint: string,
-  options?: APIOptions
+  options: APIOptions = {}
 ): Promise<T> {
-  const res = await fetch(
-    config.apiURL + endpoint,
-    options && {
-      method: options.method,
-      body: JSON.stringify(options.body)
-    }
-  );
+  const res = await fetch(config.apiURL + endpoint, {
+    method: options.method,
+    body: JSON.stringify(options.body)
+  });
   const data: T = await res.json();
   return data;
 }
