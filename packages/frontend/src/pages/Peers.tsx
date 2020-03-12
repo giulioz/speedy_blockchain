@@ -2,17 +2,12 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
 
 import { PeersState, Peer } from "@speedy_blockchain/common";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
 import fetchPeers from "../api/peers";
-import { Card, CardContent, Typography, Grid } from "@material-ui/core";
+import { Card, CardContent, Typography } from "@material-ui/core";
 
 function usePeers() {
   const [peers, setPeers] = useState<PeersState | null>(null);
@@ -23,7 +18,7 @@ function usePeers() {
         peers: [
           { ip: "1.1.1.1", name: "Miner1", active: true },
           { ip: "1.1.1.2", name: "Miner2", active: false },
-          { ip: "1.1.1.3", name: "Miner3" }
+          { ip: "1.1.1.3", name: "Miner3", active: true }
         ]
       };
       setPeers(data);
@@ -88,8 +83,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function PeerBlock(props) {
-  const { peer } = props;
+function PeerBlock({ peer }: { peer: Peer }) {
   const classes = useStyles();
 
   return (

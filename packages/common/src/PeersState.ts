@@ -1,5 +1,4 @@
-import Block from "./Block";
-import { Peer } from "src";
+import Peer from "./Peer";
 
 export default interface PeersState {
   peers: Peer[];
