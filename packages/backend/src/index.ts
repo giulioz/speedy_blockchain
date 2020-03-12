@@ -8,6 +8,8 @@ import LevelDB from "./level/LevelDB";
 dotenv.config();
 
 const node = new Node();
+// initialize levelDB
+LevelDB.getInstance();
 
 LevelDB.getInstance();
 
