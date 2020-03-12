@@ -4,6 +4,7 @@ import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
 import { genZeroes } from "@speedy_blockchain/common/dist/utils";
 
 // TODO: Should be imported
+const DIFFICULTY = 2;
 const DEBUG = false;
 
 const log = msg => DEBUG && console.log("MINER > " + msg);
