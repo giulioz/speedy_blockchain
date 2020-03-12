@@ -18,7 +18,7 @@ parentPort.on("message", async rawBlock => {
 
 function mine(rawBlock: Block) {
   return new Promise((resolve, reject) => {
-    rawBlock.nonce = 0;
+    rawBlock.nonce = Math.round(Math.random() * 10000);
 
     let computedHash = computeBlockHash(rawBlock);
     while (!computedHash.startsWith(genZeroes(DIFFICULTY))) {
