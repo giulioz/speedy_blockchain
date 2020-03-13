@@ -1,6 +1,7 @@
 import Transaction from "./Transaction";
 import Block, { computeBlockHash, createBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
+import AsyncMiner from "./AsyncMiner";
 
 // difficulty of our PoW algorithm
 const difficulty = 2;
@@ -48,20 +49,6 @@ export default class Blockchain {
     return true;
   }
 
-  // Function that tries different values of nonce to get a hash
-  // that satisfies our difficulty criteria.
-  static proofOfWork(block: Block) {
-    block.nonce = 0;
-
-    let computedHash = computeBlockHash(block);
-    while (!computedHash.startsWith(genZeroes(difficulty))) {
-      block.nonce += 1;
-      computedHash = computeBlockHash(block);
-    }
-
-    return computedHash;
-  }
-
   addNewTransaction(transaction: Transaction) {
     this.unconfirmedTransactions.push(transaction);
   }
@@ -104,7 +91,7 @@ export default class Blockchain {
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
-  mine() {
+  async mineNextBlock(asyncMiner: AsyncMiner) {
     if (!this.unconfirmedTransactions) {
       return false;
     }
@@ -119,7 +106,8 @@ export default class Blockchain {
       nonce: 0
     });
 
-    const proof = Blockchain.proofOfWork(newBlock);
+    const proof = await asyncMiner.mine(newBlock);
+
     this.addBlock(newBlock, proof);
 
     this.unconfirmedTransactions = [];

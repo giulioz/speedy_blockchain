@@ -1,4 +1,9 @@
 import { Blockchain, ChainState, Block } from "@speedy_blockchain/common";
+import WorkerAsyncMiner from "./WorkerAsyncMiner";
+
+const updateTimeout = 1000;
+
+const miner = new WorkerAsyncMiner();
 
 export default class Node {
   currentBlockchain: Blockchain;
@@ -9,6 +14,11 @@ export default class Node {
     this.currentBlockchain.pushGenesisBlock();
 
     this.peers = new Set([]);
+  }
+
+  periodicUpdate() {
+    this.currentBlockchain.mineNextBlock(miner);
+    setTimeout(() => this.periodicUpdate(), updateTimeout);
   }
 
   getChain(): ChainState {
