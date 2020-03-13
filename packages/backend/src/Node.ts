@@ -1,4 +1,10 @@
-import { Blockchain, ChainState, Block } from "@speedy_blockchain/common";
+import {
+  Blockchain,
+  ChainState,
+  Block,
+  Transaction
+} from "@speedy_blockchain/common";
+import { getTimestamp } from "@speedy_blockchain/common/dist/utils";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 
 const updateTimeout = 1000;
@@ -6,8 +12,9 @@ const updateTimeout = 1000;
 const miner = new WorkerAsyncMiner();
 
 export default class Node {
-  currentBlockchain: Blockchain;
-  peers: Set<string>;
+  private currentBlockchain: Blockchain;
+  private peers: Set<string>;
+  private updateTimeout: NodeJS.Timeout;
 
   constructor() {
     this.currentBlockchain = new Blockchain();
@@ -16,12 +23,44 @@ export default class Node {
     this.peers = new Set([]);
   }
 
-  periodicUpdate() {
-    this.currentBlockchain.mineNextBlock(miner);
-    setTimeout(() => this.periodicUpdate(), updateTimeout);
+  public startMiningLoop() {
+    this.periodicUpdate();
   }
 
-  getChain(): ChainState {
+  public stopMiningLoop() {
+    clearTimeout(this.updateTimeout);
+  }
+
+  // Ran every timeout
+  private periodicUpdate() {
+    this.currentBlockchain.mineNextBlock(miner);
+
+    // TODO: Announce new block
+    // TODO: Save the block to DB
+
+    this.updateTimeout = setTimeout(() => this.periodicUpdate(), updateTimeout);
+  }
+
+  // Builds and add a new transaction to the blockchain, inserting the transaction metadata
+  public pushTransaction(data: Transaction["content"]) {
+    const transaction: Transaction = {
+      timestamp: getTimestamp(),
+      content: data
+    };
+
+    this.currentBlockchain.addNewTransaction(transaction);
+  }
+
+  // Push a new block to the chain
+  public pushNewBlock(block: Block) {
+    // TODO: Consensus
+
+    this.currentBlockchain.addBlock(block);
+
+    // TODO: Save to DB
+  }
+
+  public getChain(): ChainState {
     const chain: Block[] = [];
     this.currentBlockchain.chain.forEach(block => chain.push(block));
 
@@ -32,7 +71,7 @@ export default class Node {
     };
   }
 
-  setFromDump(chainDump: Block[]) {
+  private setFromDump(chainDump: Block[]) {
     const generatedBlockchain = new Blockchain();
     generatedBlockchain.pushGenesisBlock();
     chainDump.forEach((blockData, idx) => {
@@ -52,7 +91,7 @@ export default class Node {
 
   // Our naive consnsus algorithm. If a longer valid chain is
   // found, our chain is replaced with it.
-  async consensus() {
+  private async consensus() {
     let longestChain = null;
     let currentLen = this.currentBlockchain.chain.length;
 
@@ -88,7 +127,7 @@ export default class Node {
   // A function to announce to the network once a block has been mined.
   // Other blocks can simply verify the proof of work and add it to their
   // respective chains.
-  async announceNewBlock(block: Block) {
+  private async announceNewBlock(block: Block) {
     return Promise.all(
       [...this.peers].map(async peer => {
         const response = await fetch(`${peer}addBlock`, {

@@ -8,7 +8,9 @@ const minerName = process.env.MINER_NAME || "Miner";
 
 async function main() {
   await initDB(minerName);
+
   const node = new Node();
+  node.startMiningLoop();
 
   const httpApi = createHttpApi(node);
   const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT) : 8080;

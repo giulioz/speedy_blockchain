@@ -13,18 +13,18 @@ export function createHttpApi(node: Node) {
   // our application to add new data (posts) to the blockchain
   app.post("/transaction", (req, res) => {
     const txData = req.body;
-    const requiredFields = ["author", "content"];
+    // const requiredFields = ["author", "content"];
 
-    requiredFields.forEach(field => {
-      if (!txData[field]) {
-        res.status(404).send("Invalid transaction data");
-        return;
-      }
-    });
+    // requiredFields.forEach(field => {
+    //   if (!txData[field]) {
+    //     res.status(404).send("Invalid transaction data");
+    //     return;
+    //   }
+    // });
 
     txData.timestamp = utils.getTimestamp();
 
-    node.currentBlockchain.addNewTransaction(txData);
+    node.pushTransaction(txData);
 
     res.status(201).send("Success");
   });

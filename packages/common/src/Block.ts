@@ -13,7 +13,8 @@ export default interface Block {
 }
 
 export function computeBlockHash(b: UnhashedBlock) {
-  const blockString = JSON.stringify(b);
+  const unhashed = { ...b, hash: undefined };
+  const blockString = JSON.stringify(unhashed);
   return sha256(blockString);
 }
 
