@@ -40,7 +40,10 @@ export default async function apiCall<K extends keyof Endpoints>(
       Accept: "application/json",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(options.body)
+    body:
+      method !== "HEAD" && method !== "GET"
+        ? JSON.stringify(options.body)
+        : undefined
   });
 
   const data: ResType<K> = await res.json();
