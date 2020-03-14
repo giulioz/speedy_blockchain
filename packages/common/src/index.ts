@@ -5,6 +5,7 @@ import Flight from "./Flight";
 import ChainState from "./ChainState";
 import Peer from "./Peer";
 import PeersState from "./PeersState";
+import AsyncMiner from "./AsyncMiner";
 import * as utils from "./utils";
 
 export {
@@ -15,5 +16,6 @@ export {
   ChainState,
   Peer,
   PeersState,
+  AsyncMiner,
   utils
 };

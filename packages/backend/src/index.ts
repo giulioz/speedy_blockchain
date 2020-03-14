@@ -1,17 +1,22 @@
-import dotenv from "dotenv";
+require("dotenv").config();
 
 import Node from "./Node";
 import { createHttpApi } from "./httpApi";
-import AsyncMiner from "./AsyncMiner";
+import { initDB } from "./db";
 
-dotenv.config();
+const minerName = process.env.MINER_NAME || "Miner";
 
-const node = new Node();
+async function main() {
+  await initDB(minerName);
 
-const miner = new AsyncMiner();
+  const node = new Node();
+  node.startMiningLoop();
 
-const httpApi = createHttpApi(node, miner);
-const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT) : 8080;
-httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", () =>
-  console.log("Node listening on " + port)
-);
+  const httpApi = createHttpApi(node);
+  const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT) : 8080;
+  httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", () =>
+    console.log("Node listening on " + port)
+  );
+}
+
+main();
