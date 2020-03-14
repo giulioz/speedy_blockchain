@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import Transaction from "./Transaction";
 import Block, { computeBlockHash, createBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
@@ -57,8 +59,9 @@ export default class Blockchain {
     return true;
   }
 
-  addNewTransaction(transaction: Transaction) {
-    this.unconfirmedTransactions.push(transaction);
+  findBlockById(blockId: Block["index"]) {
+    // TODO: Maybe it can be optimized with an ordering?
+    return this.chain.find(b => b.index === blockId);
   }
 
   checkChainValidity(chain: Block[]) {
@@ -79,7 +82,7 @@ export default class Blockchain {
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
-  async mineNextBlock(asyncMiner: AsyncMiner) {
+  async tryMineNextBlock(asyncMiner: AsyncMiner) {
     if (
       !this.unconfirmedTransactions ||
       this.unconfirmedTransactions.length === 0
@@ -102,6 +105,35 @@ export default class Blockchain {
 
     this.unconfirmedTransactions = [];
 
-    return true;
+    return newBlock;
+  }
+
+  pushTransaction(content: Transaction["content"]) {
+    const transaction: Transaction = {
+      id: uuidv4(),
+      timestamp: getTimestamp(),
+      content
+    };
+
+    this.unconfirmedTransactions.push(transaction);
+  }
+
+  findTransactionById(
+    transactionId: Transaction["id"],
+    blockId: Block["index"] | null = null
+  ): Transaction | null {
+    const block =
+      blockId !== null
+        ? this.findBlockById(blockId)
+        : this.chain.find(b =>
+            b.transactions.find(t => t.id === transactionId)
+          );
+
+    if (block) {
+      const transaction = block.transactions.find(t => t.id === transactionId);
+      return transaction || null;
+    } else {
+      return null;
+    }
   }
 }
