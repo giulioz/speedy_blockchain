@@ -6,17 +6,17 @@ export default interface Endpoints {
   "GET /block/:blockId": {
     params: { blockId: string };
     res: Block | string;
-    req: never;
+    req: null;
   };
   "GET /block/:blockId/:transactionId": {
     params: { blockId: string; transactionId: string };
     res: Transaction | string;
-    req: never;
+    req: null;
   };
   "GET /transaction/:id": {
     params: { id: string };
     res: Transaction | string;
-    req: never;
+    req: null;
   };
   "POST /transaction": {
     params: {};
@@ -26,6 +26,6 @@ export default interface Endpoints {
   "GET /peers": {
     params: {};
     res: PeersState;
-    req: never;
+    req: null;
   };
 }
