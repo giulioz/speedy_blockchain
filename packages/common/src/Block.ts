@@ -1,4 +1,4 @@
-import Transaction from "./Transaction";
+import Transaction, { sortAsExpected } from "./Transaction";
 import { sha256 } from "./utils";
 
 export type UnhashedBlock = Omit<Block, "hash">;
@@ -13,8 +13,15 @@ export default interface Block {
 }
 
 export function computeBlockHash(b: UnhashedBlock) {
-  const unhashed = { ...b, hash: undefined };
-  const blockString = JSON.stringify(unhashed);
+  const sorted = {
+    index: b.index,
+    transactions: b.transactions.map(t => sortAsExpected(t)),
+    timestamp: b.timestamp,
+    previousHash: b.previousHash,
+    nonce: b.nonce
+  };
+
+  const blockString = JSON.stringify(sorted);
   return sha256(blockString);
 }
 
