@@ -31,25 +31,25 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const EMPTY_FLIGHT: Flight = {
-  YEAR: 0,
+  AIR_TIME: 0,
+  ARR_DELAY: 0,
+  ARR_TIME: "",
+  CANCELLED: 0,
   DAY_OF_WEEK: 0,
-  FL_DATE: new Date(),
+  DEP_DELAY: 0,
+  DEP_TIME: "",
+  DEST_AIRPORT_ID: 0,
+  DEST_CITY_NAME: "",
+  DEST_STATE_NM: "",
+  DEST: "",
+  FLIGHT_DATE: new Date(),
   OP_CARRIER_AIRLINE_ID: 0,
   OP_CARRIER_FL_NUM: "",
   ORIGIN_AIRPORT_ID: 0,
-  ORIGIN: "",
   ORIGIN_CITY_NAME: "",
   ORIGIN_STATE_NM: "",
-  DEST_AIRPORT_ID: 0,
-  DEST: "",
-  DEST_CITY_NAME: "",
-  DEST_STATE_NM: "",
-  DEP_TIME: "",
-  DEP_DELAY: 0,
-  ARR_TIME: "",
-  ARR_DELAY: 0,
-  CANCELLED: 0,
-  AIR_TIM: 0
+  ORIGIN: "",
+  YEAR: 0
 };
 
 export default function AddFlightDialog({

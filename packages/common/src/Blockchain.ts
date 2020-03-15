@@ -1,9 +1,21 @@
+import { v4 as uuidv4 } from "uuid";
+
 import Transaction from "./Transaction";
 import Block, { computeBlockHash, createBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
+import AsyncMiner from "./AsyncMiner";
 
 // difficulty of our PoW algorithm
 const difficulty = 2;
+
+// Check if blockHash is valid hash of block and satisfies
+// the difficulty criteria.
+function isValidBlock(block: Block) {
+  return (
+    block.hash.startsWith(genZeroes(difficulty)) &&
+    block.hash === computeBlockHash(block)
+  );
+}
 
 export default class Blockchain {
   unconfirmedTransactions: Transaction[] = [];
@@ -32,47 +44,24 @@ export default class Blockchain {
   // * Checking if the proof is valid.
   // * The previousHash referred in the block and the hash of latest block
   //   in the chain match.
-  addBlock(block: Block, proof: string) {
+  addBlock(block: Block) {
     const previousHash = this.lastBlock.hash;
 
     if (previousHash !== block.previousHash) {
       return false;
     }
 
-    if (!Blockchain.isValidProof(block, proof)) {
+    if (!isValidBlock(block)) {
       return false;
     }
 
-    block.hash = proof;
     this.chain.push(block);
     return true;
   }
 
-  // Function that tries different values of nonce to get a hash
-  // that satisfies our difficulty criteria.
-  static proofOfWork(block: Block) {
-    block.nonce = 0;
-
-    let computedHash = computeBlockHash(block);
-    while (!computedHash.startsWith(genZeroes(difficulty))) {
-      block.nonce += 1;
-      computedHash = computeBlockHash(block);
-    }
-
-    return computedHash;
-  }
-
-  addNewTransaction(transaction: Transaction) {
-    this.unconfirmedTransactions.push(transaction);
-  }
-
-  // Check if blockHash is valid hash of block and satisfies
-  // the difficulty criteria.
-  static isValidProof(block: Block, blockHash: string) {
-    return (
-      blockHash.startsWith(genZeroes(difficulty)) &&
-      blockHash === computeBlockHash(block)
-    );
+  findBlockById(blockId: Block["index"]) {
+    // TODO: Maybe it can be optimized with an ordering?
+    return this.chain.find(b => b.index === blockId);
   }
 
   checkChainValidity(chain: Block[]) {
@@ -80,22 +69,11 @@ export default class Blockchain {
     let previousHash = "0";
 
     chain.forEach(block => {
-      const blockHash = block.hash;
-      // remove the hash field to recompute the hash again
-      // using `computeHash` method.
-      // delattr(block, "hash"); // WTF
-      block.hash = undefined;
-
-      if (
-        !Blockchain.isValidProof(block, blockHash) ||
-        previousHash !== block.previousHash
-      ) {
+      if (!isValidBlock(block) || previousHash !== block.previousHash) {
         result = false;
-        return result;
       }
 
-      block.hash = blockHash;
-      previousHash = blockHash;
+      previousHash = block.hash;
     });
 
     return result;
@@ -104,8 +82,11 @@ export default class Blockchain {
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
-  mine() {
-    if (!this.unconfirmedTransactions) {
+  async tryMineNextBlock(asyncMiner: AsyncMiner) {
+    if (
+      !this.unconfirmedTransactions ||
+      this.unconfirmedTransactions.length === 0
+    ) {
       return false;
     }
 
@@ -119,11 +100,40 @@ export default class Blockchain {
       nonce: 0
     });
 
-    const proof = Blockchain.proofOfWork(newBlock);
-    this.addBlock(newBlock, proof);
+    newBlock.hash = await asyncMiner.mine(newBlock);
+    this.addBlock(newBlock);
 
     this.unconfirmedTransactions = [];
 
-    return true;
+    return newBlock;
+  }
+
+  pushTransaction(content: Transaction["content"]) {
+    const transaction: Transaction = {
+      id: uuidv4(),
+      timestamp: getTimestamp(),
+      content
+    };
+
+    this.unconfirmedTransactions.push(transaction);
+  }
+
+  findTransactionById(
+    transactionId: Transaction["id"],
+    blockId: Block["index"] | null = null
+  ): Transaction | null {
+    const block =
+      blockId !== null
+        ? this.findBlockById(blockId)
+        : this.chain.find(b =>
+            b.transactions.find(t => t.id === transactionId)
+          );
+
+    if (block) {
+      const transaction = block.transactions.find(t => t.id === transactionId);
+      return transaction || null;
+    } else {
+      return null;
+    }
   }
 }

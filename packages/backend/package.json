@@ -19,6 +19,7 @@
     "typescript": "^3.8.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.6",
     "@types/express": "^4.17.3",
     "@types/node-fetch": "^2.5.5",
     "concurrently": "^5.1.0",
@@ -26,8 +27,8 @@
     "ts-node": "^8.6.2"
   },
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/backend/src/index.js",
     "build": "tsc",
-    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/index.js\""
+    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\""
   }
 }

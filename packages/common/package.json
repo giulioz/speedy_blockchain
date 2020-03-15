@@ -11,11 +11,15 @@
     "url": "git+https://github.com/giulioz/speedy_blockchain.git"
   },
   "devDependencies": {
-    "typescript": "^3.8.3",
-    "ts-node": "^8.6.2"
+    "@types/uuid": "^7.0.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w"
+  },
+  "dependencies": {
+    "uuid": "^7.0.2"
   }
 }

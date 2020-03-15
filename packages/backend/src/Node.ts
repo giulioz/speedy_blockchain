@@ -1,94 +1,37 @@
-import { Blockchain, ChainState, Block } from "@speedy_blockchain/common";
+import { Blockchain, Peer } from "@speedy_blockchain/common";
+import WorkerAsyncMiner from "./WorkerAsyncMiner";
 
+const updateTimeout = 1000;
+
+const miner = new WorkerAsyncMiner();
+
+// Manages the blockchain, mining and communication with peers
 export default class Node {
-  currentBlockchain: Blockchain;
-  peers: Set<string>;
+  public currentBlockchain: Blockchain;
+  public peers: Peer[] = [];
+
+  private updateTimeout: NodeJS.Timeout;
 
   constructor() {
     this.currentBlockchain = new Blockchain();
     this.currentBlockchain.pushGenesisBlock();
-
-    this.peers = new Set([]);
   }
 
-  getChain(): ChainState {
-    const chain: Block[] = [];
-    this.currentBlockchain.chain.forEach(block => chain.push(block));
-
-    return {
-      length: chain.length,
-      chain,
-      peers: [...this.peers]
-    };
+  public startMiningLoop() {
+    this.periodicUpdate();
   }
 
-  setFromDump(chainDump: Block[]) {
-    const generatedBlockchain = new Blockchain();
-    generatedBlockchain.pushGenesisBlock();
-    chainDump.forEach((blockData, idx) => {
-      if (idx === 0) {
-        // skip genesis block
-      } else {
-        const proof = blockData.hash;
-        const added = generatedBlockchain.addBlock(blockData, proof);
-        if (!added) {
-          throw new Error("The chain dump is tampered!!");
-        }
-      }
-    });
-
-    this.currentBlockchain = generatedBlockchain;
+  public stopMiningLoop() {
+    clearTimeout(this.updateTimeout);
   }
 
-  // Our naive consnsus algorithm. If a longer valid chain is
-  // found, our chain is replaced with it.
-  async consensus() {
-    let longestChain = null;
-    let currentLen = this.currentBlockchain.chain.length;
+  // Ran every timeout
+  private periodicUpdate() {
+    this.currentBlockchain.tryMineNextBlock(miner);
 
-    const datas = await Promise.all(
-      [...this.peers].map(async node => {
-        const response = await fetch(`${node}chain`);
-        const json = await response.json();
-        const length = json.length;
-        const chain = json.chain;
+    // TODO: Announce new block
+    // TODO: Save the block to DB
 
-        return { length, chain };
-      })
-    );
-
-    datas.forEach(({ length, chain }) => {
-      if (
-        length > currentLen &&
-        this.currentBlockchain.checkChainValidity(chain)
-      ) {
-        currentLen = length;
-        longestChain = chain;
-      }
-    });
-
-    if (longestChain) {
-      this.currentBlockchain = longestChain;
-      return true;
-    }
-
-    return false;
-  }
-
-  // A function to announce to the network once a block has been mined.
-  // Other blocks can simply verify the proof of work and add it to their
-  // respective chains.
-  async announceNewBlock(block: Block) {
-    return Promise.all(
-      [...this.peers].map(async peer => {
-        const response = await fetch(`${peer}addBlock`, {
-          method: "POST",
-          body: JSON.stringify(block),
-          headers: { "Content-Type": "application/json" }
-        });
-
-        await response.text();
-      })
-    );
+    this.updateTimeout = setTimeout(() => this.periodicUpdate(), updateTimeout);
   }
 }

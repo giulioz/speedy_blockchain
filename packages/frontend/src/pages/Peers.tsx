@@ -6,21 +6,23 @@ import Paper from "@material-ui/core/Paper";
 import { PeersState, Peer } from "@speedy_blockchain/common";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
-import fetchPeers from "../api/peers";
 import { Card, CardContent, Typography } from "@material-ui/core";
+import { fetchPeers } from "../api/endpoints";
 
 function usePeers() {
   const [peers, setPeers] = useState<PeersState | null>(null);
   useEffect(() => {
     async function loadData() {
-      // const data: PeersState = await fetchPeers();
-      const data: PeersState = {
-        peers: [
-          { ip: "1.1.1.1", name: "Miner1", active: true },
-          { ip: "1.1.1.2", name: "Miner2", active: false },
-          { ip: "1.1.1.3", name: "Miner3", active: true }
-        ]
-      };
+      const data = await fetchPeers();
+
+      // const data: PeersState = {
+      //   peers: [
+      //     { ip: "1.1.1.1", name: "Miner1", active: true },
+      //     { ip: "1.1.1.2", name: "Miner2", active: false },
+      //     { ip: "1.1.1.3", name: "Miner3", active: true }
+      //   ]
+      // };
+      
       setPeers(data);
     }
 

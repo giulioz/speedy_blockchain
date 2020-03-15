@@ -8,23 +8,20 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { ChainState } from "@speedy_blockchain/common";
-import { fetchChain } from "../api/blockchain";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
 
+// TODO
 function useChain() {
-  const [chain, setChain] = useState<ChainState | null>(null);
-  useEffect(() => {
-    async function loadData() {
-      const data = await fetchChain();
-      setChain(data);
-    }
-
-    loadData();
-  }, []);
-
-  return chain;
+  // const [chain, setChain] = useState<ChainState | null>(null);
+  // useEffect(() => {
+  //   async function loadData() {
+  //     const data = await fetchChain();
+  //     setChain(data);
+  //   }
+  //   loadData();
+  // }, []);
+  // return chain;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -70,7 +67,7 @@ export default function Blockchain() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {chainState
+                {/* {chainState
                   ? chainState.chain.map(row => (
                       <TableRow key={row.hash}>
                         <TableCell>{row.hash}</TableCell>
@@ -81,7 +78,7 @@ export default function Blockchain() {
                         <TableCell>{row.transactions.length}</TableCell>
                       </TableRow>
                     ))
-                  : null}
+                  : null} */}
               </TableBody>
             </Table>
           </Paper>

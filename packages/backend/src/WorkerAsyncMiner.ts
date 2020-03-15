@@ -1,21 +1,21 @@
 import { Worker } from "worker_threads";
-import { Block } from "@speedy_blockchain/common/dist";
+import { Block, AsyncMiner } from "@speedy_blockchain/common";
 import path from "path";
 
 interface Job {
   block: Block;
-  fail(error: Error);
-  done(data: Block);
+  fail(error: Error): void;
+  done(data: Block): void;
 }
 
 const EMPTY_JOB = { block: null, done: null, fail: null };
 
-export default class AsyncMiner {
+export default class WorkerAsyncMiner implements AsyncMiner {
   worker: Worker = this.createNewWorker();
   currentJob: Job = EMPTY_JOB;
   queuedJobs: Job[] = [];
 
-  createNewWorker(): Worker {
+  private createNewWorker(): Worker {
     const newWorker = new Worker(this.minerScriptPath());
     newWorker.on("error", error => {
       this.currentJob.fail(error);
@@ -27,7 +27,12 @@ export default class AsyncMiner {
     return newWorker;
   }
 
-  mine(rawBlock: Block): Promise<Block> {
+  public async mine(rawBlock: Block): Promise<string> {
+    const block = await this.addJob(rawBlock);
+    return block.hash;
+  }
+
+  private addJob(rawBlock: Block): Promise<Block> {
     return new Promise((resolve, reject) => {
       const newJob = { block: rawBlock, done: resolve, fail: reject };
       if (this.currentJob.block) {
@@ -40,19 +45,19 @@ export default class AsyncMiner {
   }
 
   // Easiest way...
-  async stop() {
+  public async stop() {
     this.currentJob.fail(new Error("Miner stopped"));
     const newWorker = this.createNewWorker();
     await this.worker.terminate();
     this.worker = newWorker;
   }
 
-  nextjob() {
+  private nextjob() {
     const nextJob = this.queuedJobs.shift();
     this.currentJob = nextJob ? nextJob : EMPTY_JOB;
   }
 
-  minerScriptPath(): string {
+  private minerScriptPath(): string {
     return path.resolve(__dirname, "./minerScript.js");
   }
 }
