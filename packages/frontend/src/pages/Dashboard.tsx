@@ -6,7 +6,7 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Chart from "../components/Chart";
 import Deposits from "../components/Deposits";
-import Orders from "../components/Orders";
+import RecentBlocks from "../components/RecentBlocks";
 import Layout from "../components/Layout";
 
 const useStyles = makeStyles(theme => ({
@@ -53,7 +53,7 @@ export default function Dashboard() {
             </Grid>
             <Grid item xs={12}>
               <Paper className={classes.paper}>
-                <Orders />
+                <RecentBlocks />
               </Paper>
             </Grid>
           </Grid>
