@@ -1,28 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import Paper from "@material-ui/core/Paper";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
 
-import Title from "../components/Title";
+import { Block } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
-
-// TODO
-function useChain() {
-  // const [chain, setChain] = useState<ChainState | null>(null);
-  // useEffect(() => {
-  //   async function loadData() {
-  //     const data = await fetchChain();
-  //     setChain(data);
-  //   }
-  //   loadData();
-  // }, []);
-  // return chain;
-}
+import BlockCard from "../components/BlockCard";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -36,52 +18,94 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(4)
   },
   paper: {
+    marginBottom: theme.spacing(4),
     padding: theme.spacing(2),
     display: "flex",
     overflow: "auto",
     flexDirection: "column"
+  },
+  upper: {
+    textTransform: "uppercase"
+  },
+  transactionsTitle: {
+    marginTop: theme.spacing(1)
+  },
+  infoBox: {
+    marginTop: theme.spacing(2),
+    margin: theme.spacing(1)
+  },
+  baseline: {
+    alignSelf: "baseline",
+    [theme.breakpoints.down("sm")]: {
+      display: "flex",
+      flexDirection: "column",
+      textAlign: "center",
+      alignItems: "center",
+      width: "100%",
+      marginTop: theme.spacing(2),
+      marginBottom: theme.spacing(2),
+      marginLeft: 0
+    }
+  },
+  inline: {
+    display: "inline-block",
+    marginRight: theme.spacing(4),
+    [theme.breakpoints.down("sm")]: {
+      marginLeft: 0
+    }
   }
 }));
 
 export default function Blockchain() {
   const classes = useStyles();
 
-  const chainState = useChain();
+  const blocks: Block[] = new Array(5)
+    .fill(0)
+    .map((_, i) => ({
+      hash: "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
+      index: i,
+      transactions: [
+        {
+          id: "test",
+          timestamp: 0,
+          content: {
+            AIR_TIME: 0,
+            ARR_DELAY: 0,
+            ARR_TIME: "",
+            CANCELLED: 0,
+            DAY_OF_WEEK: 0,
+            DEP_DELAY: 0,
+            DEP_TIME: "",
+            DEST_AIRPORT_ID: 0,
+            DEST_CITY_NAME: "",
+            DEST_STATE_NM: "",
+            DEST: "",
+            FLIGHT_DATE: new Date(),
+            OP_CARRIER_AIRLINE_ID: 0,
+            OP_CARRIER_FL_NUM: "000",
+            ORIGIN_AIRPORT_ID: 0,
+            ORIGIN_CITY_NAME: "",
+            ORIGIN_STATE_NM: "",
+            ORIGIN: "",
+            YEAR: 0
+          }
+        }
+      ],
+      timestamp: new Date().getTime(),
+      previousHash:
+        "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
+      nonce: 42
+    }))
+    .reverse();
 
   return (
     <Layout title="Explore Blocks">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Paper className={classes.paper}>
-            <Title>Recent Transactions</Title>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Hash</TableCell>
-                  <TableCell>Index</TableCell>
-                  <TableCell>Nonce</TableCell>
-                  <TableCell>Previous Hash</TableCell>
-                  <TableCell>Timestamp</TableCell>
-                  <TableCell>Transactions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* {chainState
-                  ? chainState.chain.map(row => (
-                      <TableRow key={row.hash}>
-                        <TableCell>{row.hash}</TableCell>
-                        <TableCell>{row.index}</TableCell>
-                        <TableCell>{row.nonce}</TableCell>
-                        <TableCell>{row.previousHash}</TableCell>
-                        <TableCell>{row.timestamp}</TableCell>
-                        <TableCell>{row.transactions.length}</TableCell>
-                      </TableRow>
-                    ))
-                  : null} */}
-              </TableBody>
-            </Table>
-          </Paper>
+          {blocks.map(block => (
+            <BlockCard block={block} />
+          ))}
         </Container>
       </main>
     </Layout>
