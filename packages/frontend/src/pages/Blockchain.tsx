@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import Paper from "@material-ui/core/Paper";
+import TextField from "@material-ui/core/TextField";
+import Typography from "@material-ui/core/Typography";
 
 import { Block, Transaction } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
@@ -18,44 +22,85 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4)
   },
-  paper: {
-    marginBottom: theme.spacing(4),
-    padding: theme.spacing(2),
-    display: "flex",
-    overflow: "auto",
-    flexDirection: "column"
+  filterBar: {
+    padding: theme.spacing(3),
+    marginBottom: theme.spacing(4)
   },
-  upper: {
-    textTransform: "uppercase"
-  },
-  transactionsTitle: {
-    marginTop: theme.spacing(1)
-  },
-  infoBox: {
-    marginTop: theme.spacing(2),
-    margin: theme.spacing(1)
-  },
-  baseline: {
-    alignSelf: "baseline",
-    [theme.breakpoints.down("sm")]: {
-      display: "flex",
-      flexDirection: "column",
-      textAlign: "center",
-      alignItems: "center",
-      width: "100%",
-      marginTop: theme.spacing(2),
-      marginBottom: theme.spacing(2),
-      marginLeft: 0
-    }
-  },
-  inline: {
-    display: "inline-block",
-    marginRight: theme.spacing(4),
-    [theme.breakpoints.down("sm")]: {
-      marginLeft: 0
-    }
+  filterField: {
+    marginRight: theme.spacing(2)
   }
 }));
+
+function MultipleBlocks({ blocks }: { blocks: Block[] }) {
+  const classes = useStyles();
+
+  const [filters, setFilters] = useState<{
+    id: string;
+    timestamp: string;
+    hash: string;
+    nonce: string;
+  }>({ id: "", timestamp: "", hash: "", nonce: "" });
+
+  const filteredBlocks = blocks.filter(
+    b =>
+      (filters.id.length == 0 || b.index === parseInt(filters.id, 10)) &&
+      (filters.timestamp.length == 0 ||
+        formatISO(b.timestamp).includes(filters.timestamp)) &&
+      (filters.hash.length == 0 || b.hash.includes(filters.hash)) &&
+      (filters.nonce.length == 0 || b.nonce.toString().includes(filters.nonce))
+  );
+
+  const handleFilterChange = (field: string) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.persist();
+    setFilters(f => ({ ...f, [field]: e.target.value }));
+  };
+
+  return (
+    <>
+      <Paper className={classes.filterBar} elevation={8}>
+        <div>
+          <Typography variant="h6" gutterBottom>
+            Filters
+          </Typography>
+        </div>
+        <TextField
+          className={classes.filterField}
+          variant="outlined"
+          label="Block ID"
+          value={filters.id}
+          onChange={handleFilterChange("id")}
+        ></TextField>
+        <TextField
+          className={classes.filterField}
+          variant="outlined"
+          label="Timestamp"
+          value={filters.timestamp}
+          onChange={handleFilterChange("timestamp")}
+        ></TextField>
+        <TextField
+          className={classes.filterField}
+          variant="outlined"
+          label="Hash"
+          value={filters.hash}
+          onChange={handleFilterChange("hash")}
+        ></TextField>
+        <TextField
+          className={classes.filterField}
+          variant="outlined"
+          label="Nonce"
+          value={filters.nonce}
+          onChange={handleFilterChange("nonce")}
+        ></TextField>
+      </Paper>
+
+      {filteredBlocks.map(block => (
+        <BlockCard key={block.index + block.hash} block={block} />
+      ))}
+    </>
+  );
+}
 
 export default function Blockchain() {
   const classes = useStyles();
@@ -111,9 +156,7 @@ export default function Blockchain() {
           {selectedBlock ? (
             <BlockCard block={selectedBlock} seeAll />
           ) : (
-            blocks.map(block => (
-              <BlockCard key={block.index + block.hash} block={block} />
-            ))
+            <MultipleBlocks blocks={blocks} />
           )}
         </Container>
       </main>

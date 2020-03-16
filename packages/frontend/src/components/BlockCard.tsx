@@ -139,10 +139,10 @@ export default function BlockCard({
           </TableBody>
         </Table>
 
-        {!seeAll && (
+        {!seeAll && block.transactions.length > 4 && (
           <div className={classes.seeMore}>
             <Button component={RouterLink} to={`/blockchain/${block.index}`}>
-              See more
+              See {block.transactions.length - 4} more
             </Button>
           </div>
         )}
