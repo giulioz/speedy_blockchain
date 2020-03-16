@@ -9,6 +9,7 @@ import Blockchain from "./pages/Blockchain";
 import Flights from "./pages/Flights";
 import Peers from "./pages/Peers";
 import CarrierInfo from "./pages/CarrierInfo";
+import FindFlight from "./pages/FindFlight";
 
 const theme = (createMuiTheme as any)({
   palette: {
@@ -18,6 +19,14 @@ const theme = (createMuiTheme as any)({
     },
     secondary: {
       main: "#71bf18",
+    },
+  },
+  typography: {
+    subtitle1: {
+      fontSize: 12,
+    },
+    body1: {
+      fontWeight: 500,
     },
   },
   overrides: {
@@ -47,7 +56,7 @@ function App() {
             <Peers />
           </Route>
           <Route path="/findFlight">
-            <Layout title="Find Flight"></Layout>
+            <FindFlight />
           </Route>
           <Route path="/carrierInfo">
             <CarrierInfo />
