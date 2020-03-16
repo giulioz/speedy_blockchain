@@ -33,7 +33,10 @@ function App() {
     <MuiThemeProvider theme={theme}>
       <Router>
         <Switch>
-          <Route path="/blockchain">
+          <Route path="/blockchain/:id">
+            <Blockchain />
+          </Route>
+          <Route exact path="/blockchain">
             <Blockchain />
           </Route>
           <Route path="/flights">
