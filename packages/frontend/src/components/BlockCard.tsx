@@ -88,25 +88,25 @@ export default function BlockCard({
       <div className={classes.infoBox}>
         <div className={classes.baseline}>
           <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="primary" gutterBottom>
+            <Typography color="secondary" gutterBottom>
               Trans. Count
             </Typography>
             <Typography gutterBottom>{block.transactions.length}</Typography>
           </div>
           <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="primary" gutterBottom>
+            <Typography color="secondary" gutterBottom>
               Timestamp
             </Typography>
             <Typography gutterBottom>{formatISO(block.timestamp)}</Typography>
           </div>
           <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="primary" gutterBottom>
+            <Typography color="secondary" gutterBottom>
               Hash
             </Typography>
             <Typography gutterBottom>{block.hash}</Typography>
           </div>
           <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="primary" gutterBottom>
+            <Typography color="secondary" gutterBottom>
               Nonce
             </Typography>
             <Typography gutterBottom>{block.nonce}</Typography>
@@ -114,7 +114,7 @@ export default function BlockCard({
         </div>
 
         <Typography
-          color="primary"
+          color="secondary"
           gutterBottom
           className={clsx(classes.upper, classes.transactionsTitle)}
         >
@@ -141,11 +141,7 @@ export default function BlockCard({
 
         {!seeAll && (
           <div className={classes.seeMore}>
-            <Button
-              color="primary"
-              component={RouterLink}
-              to={`/blockchain/${block.index}`}
-            >
+            <Button component={RouterLink} to={`/blockchain/${block.index}`}>
               See more
             </Button>
           </div>
