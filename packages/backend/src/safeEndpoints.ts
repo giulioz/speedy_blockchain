@@ -17,7 +17,7 @@ export function safeEndpoint<K extends keyof Endpoints>(
       handler
     );
   } else if (endpoint.startsWith("POST ")) {
-    app.get<ParamsType<K>, ResType<K>, ReqType<K>>(
+    app.post<ParamsType<K>, ResType<K>, ReqType<K>>(
       endpoint.substr("POST ".length),
       handler
     );
