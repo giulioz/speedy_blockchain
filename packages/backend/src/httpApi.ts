@@ -19,6 +19,17 @@ export function createHttpApi(node: Node) {
     res.send(blocks);
   });
 
+  // get last block
+  ep(app, "GET /block/last", (req, res) => {
+    const last = node.currentBlockchain.lastBlock;
+
+    if (last) {
+      res.send(last);
+    } else {
+      res.status(404).send("Block not found.");
+    }
+  });
+
   // get a block by id
   ep(app, "GET /block/:blockId", (req, res) => {
     const id = parseInt(req.params.blockId, 10);

@@ -8,6 +8,11 @@ export default interface Endpoints {
     res: Block[];
     req: null;
   };
+  "GET /block/last": {
+    params: {};
+    res: Block | string;
+    req: null;
+  };
   "GET /block/:blockId": {
     params: { blockId: string };
     res: Block | string;
