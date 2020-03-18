@@ -69,12 +69,19 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
   );
 }
 
+// HACK
+const maxBlocks = 50;
+
 export default function Blockchain() {
   const classes = useStyles();
 
+  const lastBlock = useRemoteData("GET /block/last", {});
+  const from = (typeof lastBlock !== "string" && lastBlock.index) || 0;
+  const to = from + maxBlocks;
+
   const blocks = useRemoteData("GET /blocks/from/:from/to/:to", {
-    from: "0",
-    to: "9999999"
+    from: from.toString(),
+    to: to.toString()
   });
 
   const { id } = useParams();
@@ -93,7 +100,7 @@ export default function Blockchain() {
               <MultipleBlocks blocks={blocks} />
             )
           ) : (
-            <FullProgress/>
+            <FullProgress />
           )}
         </Container>
       </main>
