@@ -1,7 +1,7 @@
 import { parentPort } from "worker_threads";
-import { Block } from "@speedy_blockchain/common/dist";
 import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
 import { genZeroes } from "@speedy_blockchain/common/dist/utils";
+import { UnhashedBlock } from "@speedy_blockchain/common/src/Block";
 
 // TODO: Should be imported
 const DIFFICULTY = 2;
@@ -16,7 +16,7 @@ parentPort.on("message", async rawBlock => {
   parentPort.postMessage(minedBlock);
 });
 
-function mine(rawBlock: Block) {
+function mine(rawBlock: UnhashedBlock) {
   return new Promise((resolve, reject) => {
     rawBlock.nonce = Math.round(Math.random() * 10000);
 

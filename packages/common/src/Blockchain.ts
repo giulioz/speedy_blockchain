@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 import Transaction from "./Transaction";
-import Block, { computeBlockHash, createBlock } from "./Block";
+import Block, { computeBlockHash, createBlock, UnhashedBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
 import AsyncMiner from "./AsyncMiner";
 
@@ -11,9 +11,16 @@ const difficulty = 2;
 // Check if blockHash is valid hash of block and satisfies
 // the difficulty criteria.
 function isValidBlock(block: Block) {
+  const unhashedBlock: UnhashedBlock = {
+    index: block.index,
+    transactions: block.transactions,
+    timestamp: block.timestamp,
+    previousHash: block.previousHash,
+    nonce: block.nonce
+  };
   return (
     block.hash.startsWith(genZeroes(difficulty)) &&
-    block.hash === computeBlockHash(block)
+    block.hash === computeBlockHash(unhashedBlock)
   );
 }
 
@@ -98,20 +105,20 @@ export default class Blockchain {
 
     const lastBlock = this.lastBlock;
 
-    const newBlock = createBlock({
+    const unhashedBlock: UnhashedBlock = {
       index: lastBlock.index + 1,
       transactions: this.unconfirmedTransactions,
       timestamp: getTimestamp(),
       previousHash: lastBlock.hash,
       nonce: 0
-    });
+    };
+    const block = await asyncMiner.mine(unhashedBlock);
 
-    newBlock.hash = await asyncMiner.mine(newBlock);
-    this.addBlock(newBlock);
+    this.addBlock(block);
 
     this.unconfirmedTransactions = [];
 
-    return newBlock;
+    return block;
   }
 
   pushTransaction(content: Transaction["content"]) {

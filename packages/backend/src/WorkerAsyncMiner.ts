@@ -1,9 +1,10 @@
 import { Worker } from "worker_threads";
 import { Block, AsyncMiner } from "@speedy_blockchain/common";
 import path from "path";
+import { UnhashedBlock } from "@speedy_blockchain/common/src/Block";
 
 interface Job {
-  block: Block;
+  block: UnhashedBlock;
   fail(error: Error): void;
   done(data: Block): void;
 }
@@ -27,12 +28,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     return newWorker;
   }
 
-  public async mine(rawBlock: Block): Promise<string> {
-    const block = await this.addJob(rawBlock);
-    return block.hash;
-  }
-
-  private addJob(rawBlock: Block): Promise<Block> {
+  public mine(rawBlock: UnhashedBlock): Promise<Block> {
     return new Promise((resolve, reject) => {
       const newJob = { block: rawBlock, done: resolve, fail: reject };
       if (this.currentJob.block) {
