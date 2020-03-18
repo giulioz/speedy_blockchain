@@ -77,7 +77,8 @@ export default function Blockchain() {
   const classes = useStyles();
 
   const lastBlock = useRemoteData("GET /block/last", {});
-  const from = (typeof lastBlock !== "string" && lastBlock.index) || 0;
+  const from =
+    (lastBlock && typeof lastBlock !== "string" && lastBlock.index) || 0;
   const to = from + maxBlocks;
 
   const blocks = useRemoteData("GET /blocks/from/:from/to/:to", {
