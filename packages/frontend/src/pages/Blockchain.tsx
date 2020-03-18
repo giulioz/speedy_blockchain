@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import Paper from "@material-ui/core/Paper";
-import TextField from "@material-ui/core/TextField";
-import Typography from "@material-ui/core/Typography";
 
 import { Block, Transaction } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
+import FilterBar, { FilterFieldType } from "../components/FilterBar";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -21,79 +19,46 @@ const useStyles = makeStyles(theme => ({
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4)
-  },
-  filterBar: {
-    padding: theme.spacing(3),
-    marginBottom: theme.spacing(4)
-  },
-  filterField: {
-    marginRight: theme.spacing(2)
   }
 }));
 
 function MultipleBlocks({ blocks }: { blocks: Block[] }) {
-  const classes = useStyles();
-
   const [filters, setFilters] = useState<{
-    id: string;
-    timestamp: string;
-    hash: string;
-    nonce: string;
-  }>({ id: "", timestamp: "", hash: "", nonce: "" });
+    id: FilterFieldType;
+    timestamp: FilterFieldType;
+    hash: FilterFieldType;
+    nonce: FilterFieldType;
+  }>({
+    id: { label: "Block ID", value: "" },
+    timestamp: { label: "Timestamp", value: "" },
+    hash: { label: "Hash", value: "", grow: true },
+    nonce: { label: "Nonce", value: "" }
+  });
 
   const filteredBlocks = blocks.filter(
     b =>
-      (filters.id.length == 0 || b.index === parseInt(filters.id, 10)) &&
-      (filters.timestamp.length == 0 ||
-        formatISO(b.timestamp).includes(filters.timestamp)) &&
-      (filters.hash.length == 0 || b.hash.includes(filters.hash)) &&
-      (filters.nonce.length == 0 || b.nonce.toString().includes(filters.nonce))
+      (filters.id.value.length == 0 ||
+        b.index === parseInt(filters.id.value, 10)) &&
+      (filters.timestamp.value.length == 0 ||
+        formatISO(b.timestamp).includes(filters.timestamp.value)) &&
+      (filters.hash.value.length == 0 || b.hash.includes(filters.hash.value)) &&
+      (filters.nonce.value.length == 0 ||
+        b.nonce.toString().includes(filters.nonce.value))
   );
 
   const handleFilterChange = (field: string) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     e.persist();
-    setFilters(f => ({ ...f, [field]: e.target.value }));
+    setFilters(f => ({
+      ...f,
+      [field]: { ...f[field], value: e.target.value }
+    }));
   };
 
   return (
     <>
-      <Paper className={classes.filterBar} elevation={8}>
-        <div>
-          <Typography variant="h6" gutterBottom>
-            Filters
-          </Typography>
-        </div>
-        <TextField
-          className={classes.filterField}
-          variant="outlined"
-          label="Block ID"
-          value={filters.id}
-          onChange={handleFilterChange("id")}
-        ></TextField>
-        <TextField
-          className={classes.filterField}
-          variant="outlined"
-          label="Timestamp"
-          value={filters.timestamp}
-          onChange={handleFilterChange("timestamp")}
-        ></TextField>
-        <TextField
-          className={classes.filterField}
-          variant="outlined"
-          label="Hash"
-          value={filters.hash}
-          onChange={handleFilterChange("hash")}
-        ></TextField>
-        <TextField
-          className={classes.filterField}
-          variant="outlined"
-          label="Nonce"
-          value={filters.nonce}
-          onChange={handleFilterChange("nonce")}
-        ></TextField>
-      </Paper>
+      <FilterBar onChange={handleFilterChange} filters={filters} />
 
       {filteredBlocks.map(block => (
         <BlockCard key={block.index + block.hash} block={block} />
