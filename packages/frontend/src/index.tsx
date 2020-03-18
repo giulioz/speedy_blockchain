@@ -16,7 +16,7 @@ const theme = (createMuiTheme as any)({
       main: "#2979ff"
     },
     secondary: {
-      main: "#ff5252"
+      main: "#81c784"
     }
   },
   overrides: {
@@ -33,7 +33,10 @@ function App() {
     <MuiThemeProvider theme={theme}>
       <Router>
         <Switch>
-          <Route path="/blockchain">
+          <Route path="/blockchain/:id">
+            <Blockchain />
+          </Route>
+          <Route exact path="/blockchain">
             <Blockchain />
           </Route>
           <Route path="/flights">

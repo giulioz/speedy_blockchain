@@ -10,11 +10,19 @@ export function createHttpApi(node: Node) {
   app.use(bodyParser.json());
   app.use(cors());
 
+  // get block by id range
+  ep(app, "GET /blocks/from/:from/to/:to", (req, res) => {
+    const from = parseInt(req.params.from, 10);
+    const to = parseInt(req.params.to, 10);
+    const blocks = node.currentBlockchain.getBlocksRange(from, to);
+
+    res.send(blocks);
+  });
+
   // get a block by id
   ep(app, "GET /block/:blockId", (req, res) => {
-    const found = node.currentBlockchain.findBlockById(
-      parseInt(req.params.blockId, 10)
-    );
+    const id = parseInt(req.params.blockId, 10);
+    const found = node.currentBlockchain.findBlockById(id);
 
     if (found) {
       res.send(found);
@@ -25,9 +33,10 @@ export function createHttpApi(node: Node) {
 
   // get a transaction by id and block id
   ep(app, "GET /block/:blockId/:transactionId", (req, res) => {
+    const id = parseInt(req.params.blockId, 10);
     const found = node.currentBlockchain.findTransactionById(
       req.params.transactionId,
-      parseInt(req.params.blockId, 10)
+      id
     );
 
     if (found) {

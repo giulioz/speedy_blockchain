@@ -1,28 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { formatISO } from "date-fns";
+import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import Paper from "@material-ui/core/Paper";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
 
-import Title from "../components/Title";
+import { Block } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
-
-// TODO
-function useChain() {
-  // const [chain, setChain] = useState<ChainState | null>(null);
-  // useEffect(() => {
-  //   async function loadData() {
-  //     const data = await fetchChain();
-  //     setChain(data);
-  //   }
-  //   loadData();
-  // }, []);
-  // return chain;
-}
+import BlockCard from "../components/BlockCard";
+import FullProgress from "../components/FullProgress";
+import FilterBar, { FilterFieldType } from "../components/FilterBar";
+import { useRemoteData } from "../api/hooks";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -34,54 +21,80 @@ const useStyles = makeStyles(theme => ({
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4)
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: "flex",
-    overflow: "auto",
-    flexDirection: "column"
   }
 }));
+
+function MultipleBlocks({ blocks }: { blocks: Block[] }) {
+  const [filters, setFilters] = useState<{
+    id: FilterFieldType;
+    timestamp: FilterFieldType;
+    hash: FilterFieldType;
+    nonce: FilterFieldType;
+  }>({
+    id: { label: "Block ID", value: "" },
+    timestamp: { label: "Timestamp", value: "" },
+    hash: { label: "Hash", value: "", grow: true },
+    nonce: { label: "Nonce", value: "" }
+  });
+
+  const filteredBlocks = blocks.filter(
+    b =>
+      (filters.id.value.length == 0 ||
+        b.index === parseInt(filters.id.value, 10)) &&
+      (filters.timestamp.value.length == 0 ||
+        formatISO(b.timestamp).includes(filters.timestamp.value)) &&
+      (filters.hash.value.length == 0 || b.hash.includes(filters.hash.value)) &&
+      (filters.nonce.value.length == 0 ||
+        b.nonce.toString().includes(filters.nonce.value))
+  );
+
+  const handleFilterChange = (field: string) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.persist();
+    setFilters(f => ({
+      ...f,
+      [field]: { ...f[field], value: e.target.value }
+    }));
+  };
+
+  return (
+    <>
+      <FilterBar onChange={handleFilterChange} filters={filters} />
+
+      {filteredBlocks.map(block => (
+        <BlockCard key={block.index + block.hash} block={block} />
+      ))}
+    </>
+  );
+}
 
 export default function Blockchain() {
   const classes = useStyles();
 
-  const chainState = useChain();
+  const blocks = useRemoteData("GET /blocks/from/:from/to/:to", {
+    from: "0",
+    to: "9999999"
+  });
+
+  const { id } = useParams();
+  const nId = parseInt(id);
+  const selectedBlock = blocks && blocks.find(b => b.index === nId);
 
   return (
     <Layout title="Explore Blocks">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Paper className={classes.paper}>
-            <Title>Recent Transactions</Title>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Hash</TableCell>
-                  <TableCell>Index</TableCell>
-                  <TableCell>Nonce</TableCell>
-                  <TableCell>Previous Hash</TableCell>
-                  <TableCell>Timestamp</TableCell>
-                  <TableCell>Transactions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* {chainState
-                  ? chainState.chain.map(row => (
-                      <TableRow key={row.hash}>
-                        <TableCell>{row.hash}</TableCell>
-                        <TableCell>{row.index}</TableCell>
-                        <TableCell>{row.nonce}</TableCell>
-                        <TableCell>{row.previousHash}</TableCell>
-                        <TableCell>{row.timestamp}</TableCell>
-                        <TableCell>{row.transactions.length}</TableCell>
-                      </TableRow>
-                    ))
-                  : null} */}
-              </TableBody>
-            </Table>
-          </Paper>
+          {blocks ? (
+            selectedBlock ? (
+              <BlockCard block={selectedBlock} seeAll />
+            ) : (
+              <MultipleBlocks blocks={blocks} />
+            )
+          ) : (
+            <FullProgress/>
+          )}
         </Container>
       </main>
     </Layout>

@@ -15,6 +15,8 @@
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.9.1",
     "@speedy_blockchain/common": "^1.0.0",
+    "clsx": "^1.1.0",
+    "date-fns": "^2.11.0",
     "mui-datatables": "^2.14.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
