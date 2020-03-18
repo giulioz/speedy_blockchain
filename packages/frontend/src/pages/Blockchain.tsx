@@ -39,12 +39,13 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
 
   const filteredBlocks = blocks.filter(
     b =>
-      (filters.id.value.length == 0 ||
+      (filters.id.value.length === 0 ||
         b.index === parseInt(filters.id.value, 10)) &&
-      (filters.timestamp.value.length == 0 ||
+      (filters.timestamp.value.length === 0 ||
         formatISO(b.timestamp).includes(filters.timestamp.value)) &&
-      (filters.hash.value.length == 0 || b.hash.includes(filters.hash.value)) &&
-      (filters.nonce.value.length == 0 ||
+      (filters.hash.value.length === 0 ||
+        b.hash.includes(filters.hash.value)) &&
+      (filters.nonce.value.length === 0 ||
         b.nonce.toString().includes(filters.nonce.value))
   );
 

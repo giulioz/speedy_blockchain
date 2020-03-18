@@ -11,7 +11,7 @@ export function useTimeout(timeout: number) {
 
     timeoutRef.current = setTimeout(jump, timeout);
     return () => clearTimeout(timeoutRef.current);
-  }, []);
+  }, [timeout]);
 
   return value;
 }
