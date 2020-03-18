@@ -3,6 +3,11 @@ import PeersState from "./PeersState";
 import Block from "./Block";
 
 export default interface Endpoints {
+  "GET /blocks/from/:from/to/:to": {
+    params: { from: string; to: string };
+    res: Block[];
+    req: null;
+  };
   "GET /block/:blockId": {
     params: { blockId: string };
     res: Block | string;

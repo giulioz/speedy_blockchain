@@ -1,9 +1,9 @@
 import { Endpoints } from "@speedy_blockchain/common/dist";
 import config from "../config";
 
-type ParamsType<K extends keyof Endpoints> = Endpoints[K]["params"];
-type ResType<K extends keyof Endpoints> = Endpoints[K]["res"];
-type ReqType<K extends keyof Endpoints> = Endpoints[K]["req"];
+export type ParamsType<K extends keyof Endpoints> = Endpoints[K]["params"];
+export type ResType<K extends keyof Endpoints> = Endpoints[K]["res"];
+export type ReqType<K extends keyof Endpoints> = Endpoints[K]["req"];
 
 // TODO: This needs some testing...
 function withParameters<K extends keyof Endpoints>(

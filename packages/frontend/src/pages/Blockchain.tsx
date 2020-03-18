@@ -3,11 +3,13 @@ import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
+import Typography from "@material-ui/core/Typography";
 
-import { Block, Transaction } from "@speedy_blockchain/common";
+import { Block } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
 import FilterBar, { FilterFieldType } from "../components/FilterBar";
+import { useRemoteData } from "../api/hooks";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -70,48 +72,53 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
 export default function Blockchain() {
   const classes = useStyles();
 
-  const blocks: Block[] = new Array(5)
-    .fill(0)
-    .map((_, i) => ({
-      hash: "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
-      index: i,
-      transactions: new Array(20).fill(0).map(
-        (_, i): Transaction => ({
-          id: "test" + i,
-          timestamp: 0,
-          content: {
-            AIR_TIME: 0,
-            ARR_DELAY: 0,
-            ARR_TIME: "",
-            CANCELLED: 0,
-            DAY_OF_WEEK: 0,
-            DEP_DELAY: 0,
-            DEP_TIME: "",
-            DEST_AIRPORT_ID: 0,
-            DEST_CITY_NAME: "",
-            DEST_STATE_NM: "",
-            DEST: "",
-            FLIGHT_DATE: new Date(),
-            OP_CARRIER_AIRLINE_ID: 0,
-            OP_CARRIER_FL_NUM: "00" + i,
-            ORIGIN_AIRPORT_ID: 0,
-            ORIGIN_CITY_NAME: "",
-            ORIGIN_STATE_NM: "",
-            ORIGIN: "",
-            YEAR: 0
-          }
-        })
-      ),
-      timestamp: new Date().getTime(),
-      previousHash:
-        "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
-      nonce: 42
-    }))
-    .reverse();
+  const blocks = useRemoteData("GET /blocks/from/:from/to/:to", {
+    from: "0",
+    to: "9999999"
+  });
+
+  // const blocks: Block[] = new Array(5)
+  //   .fill(0)
+  //   .map((_, i) => ({
+  //     hash: "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
+  //     index: i,
+  //     transactions: new Array(20).fill(0).map(
+  //       (_, i): Transaction => ({
+  //         id: "test" + i,
+  //         timestamp: 0,
+  //         content: {
+  //           AIR_TIME: 0,
+  //           ARR_DELAY: 0,
+  //           ARR_TIME: "",
+  //           CANCELLED: 0,
+  //           DAY_OF_WEEK: 0,
+  //           DEP_DELAY: 0,
+  //           DEP_TIME: "",
+  //           DEST_AIRPORT_ID: 0,
+  //           DEST_CITY_NAME: "",
+  //           DEST_STATE_NM: "",
+  //           DEST: "",
+  //           FLIGHT_DATE: new Date(),
+  //           OP_CARRIER_AIRLINE_ID: 0,
+  //           OP_CARRIER_FL_NUM: "00" + i,
+  //           ORIGIN_AIRPORT_ID: 0,
+  //           ORIGIN_CITY_NAME: "",
+  //           ORIGIN_STATE_NM: "",
+  //           ORIGIN: "",
+  //           YEAR: 0
+  //         }
+  //       })
+  //     ),
+  //     timestamp: new Date().getTime(),
+  //     previousHash:
+  //       "f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2",
+  //     nonce: 42
+  //   }))
+  //   .reverse();
 
   const { id } = useParams();
   const nId = parseInt(id);
-  const selectedBlock = blocks.find(b => b.index === nId);
+  const selectedBlock = blocks && blocks.find(b => b.index === nId);
 
   return (
     <Layout title="Explore Blocks">
@@ -121,7 +128,7 @@ export default function Blockchain() {
           {selectedBlock ? (
             <BlockCard block={selectedBlock} seeAll />
           ) : (
-            <MultipleBlocks blocks={blocks} />
+            <MultipleBlocks blocks={blocks || []} />
           )}
         </Container>
       </main>

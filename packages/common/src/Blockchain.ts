@@ -64,6 +64,12 @@ export default class Blockchain {
     return this.chain.find(b => b.index === blockId);
   }
 
+  getBlocksRange(startId: number, endId: number) {
+    return this.chain.filter(
+      block => block.index >= startId && block.index <= endId
+    );
+  }
+
   checkChainValidity(chain: Block[]) {
     let result = true;
     let previousHash = "0";
