@@ -2,11 +2,15 @@ import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Fab from "@material-ui/core/Fab";
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 import AddIcon from "@material-ui/icons/Add";
 import MUIDataTable, { MUIDataTableOptions } from "mui-datatables";
 
+import { Flight } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import AddFlightDialog from "../components/AddFlightDialog";
+import { addFlight } from "../api/endpoints";
 
 const csv = `2010;5;2010-01-15;20363;"3692";14683;"SAT";"San Antonio, TX";"Texas";13244;"MEM";"Memphis, TN";"Tennessee";"1605";-5.00;"1749";-11.00;0.00;90.00;
 2010;6;2010-01-16;20363;"3692";14683;"SAT";"San Antonio, TX";"Texas";13244;"MEM";"Memphis, TN";"Tennessee";"1609";-1.00;"1803";3.00;0.00;91.00;
@@ -101,7 +105,7 @@ const useStyles = makeStyles(theme => ({
   container: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-    flexGrow: 1,
+    flexGrow: 1
   },
   fab: {
     position: "absolute",
@@ -144,12 +148,23 @@ export default function Flights() {
   };
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addConfirmOpen, setAddConfirmOpen] = useState(false);
 
   function handleOpenAddDialog() {
     setAddDialogOpen(true);
   }
   function handleCloseAddDialog() {
     setAddDialogOpen(false);
+  }
+
+  function handleCloseAddConfirm() {
+    setAddConfirmOpen(false);
+  }
+
+  function handleAddFlight(f: Flight) {
+    addFlight(f);
+    setAddConfirmOpen(true);
+    handleCloseAddDialog();
   }
 
   return (
@@ -169,7 +184,7 @@ export default function Flights() {
       <AddFlightDialog
         open={addDialogOpen}
         onClose={handleCloseAddDialog}
-        onSubmit={console.log}
+        onSubmit={handleAddFlight}
       />
       <Fab
         aria-label="add flight"
@@ -179,6 +194,15 @@ export default function Flights() {
       >
         <AddIcon />
       </Fab>
+      <Snackbar
+        open={addConfirmOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseAddConfirm}
+      >
+        <Alert onClose={handleCloseAddConfirm} severity="success">
+          Flight added
+        </Alert>
+      </Snackbar>
     </Layout>
   );
 }
