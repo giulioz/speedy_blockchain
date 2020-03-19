@@ -39,6 +39,9 @@ export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
         blocks.push({ key, value: JSON.parse(value) });
       })
       .on("end", () => {
+        // key is the same as value.index.
+        // sort the block in ascending order.
+        blocks.sort((block1, block2) => block1.value.index - block2.value.index);
         resolve(blocks);
       })
       .on("error", err => {
