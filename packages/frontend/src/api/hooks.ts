@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 import { Endpoints, Block } from "@speedy_blockchain/common";
 import apiCall, { ResType, ParamsType } from "./apiCall";
@@ -43,7 +43,7 @@ export function useLastNBlocks(maxBlocks: number) {
           body: null
         });
 
-        setData(blocks);
+        setData(blocks.reverse());
       }
     }
 
