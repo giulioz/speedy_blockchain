@@ -41,6 +41,12 @@ export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
       .on("end", () => {
         // key is the same as value.index.
         // sort the block in ascending order.
+
+        // log only for test
+        console.log("[DB] readed " + blocks.length + " blocks.");
+        var count = 0;
+        blocks.forEach(block => count += block.value.transactions.length);
+        console.log("[DB] Total transactions: " + count);
         blocks.sort((block1, block2) => block1.value.index - block2.value.index);
         resolve(blocks);
       })

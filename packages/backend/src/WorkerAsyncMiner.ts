@@ -26,7 +26,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
         ...this.currentJob.block,
         nonce: data
       };
-      const createdBlock = createBlock(unhashedNewBlock);
+      const createdBlock: Block = createBlock(unhashedNewBlock);
       db.insert(createdBlock);
       this.currentJob.done(createdBlock);
       this.nextjob();
