@@ -26,8 +26,8 @@ export default class Node {
   }
 
   // Ran every timeout
-  private periodicUpdate() {
-    this.currentBlockchain.tryMineNextBlock(miner);
+  private async periodicUpdate() {
+    await this.currentBlockchain.tryMineNextBlock(miner);
 
     // TODO: Announce new block
     // TODO: Save the block to DB
