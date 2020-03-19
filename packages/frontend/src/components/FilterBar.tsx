@@ -81,6 +81,7 @@ export default function FilterBar({
         <FiltersIcon className={classes.filterIcon} />
         {Object.keys(filters).map(filter => (
           <FilterField
+            key={filter}
             placeholder={filters[filter].label}
             value={filters[filter].value}
             onChange={onChange(filter)}

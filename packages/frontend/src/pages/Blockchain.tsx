@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -9,7 +9,7 @@ import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
 import FullProgress from "../components/FullProgress";
 import FilterBar, { FilterFieldType } from "../components/FilterBar";
-import { useRemoteData } from "../api/hooks";
+import { useLastNBlocks } from "../api/hooks";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -76,15 +76,7 @@ const maxBlocks = 50;
 export default function Blockchain() {
   const classes = useStyles();
 
-  const lastBlock = useRemoteData("GET /block/last", {});
-  const from =
-    (lastBlock && typeof lastBlock !== "string" && lastBlock.index) || 0;
-  const to = from + maxBlocks;
-
-  const blocks = useRemoteData("GET /blocks/from/:from/to/:to", {
-    from: from.toString(),
-    to: to.toString()
-  });
+  const blocks = useLastNBlocks(maxBlocks);
 
   const { id } = useParams();
   const nId = parseInt(id);
