@@ -4,7 +4,6 @@ import Transaction from "./Transaction";
 import Block, { computeBlockHash, createBlock, UnhashedBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
 import AsyncMiner from "./AsyncMiner";
-
 // difficulty of our PoW algorithm
 const difficulty = 2;
 
@@ -25,9 +24,9 @@ function isValidBlock(block: Block) {
 }
 
 export default class Blockchain {
+
   unconfirmedTransactions: Transaction[] = [];
   chain: Block[] = [];
-
   // A function to generate genesis block and pushs it to
   // the chain. The block has index 0, previousHash as 0, and
   // a valid hash.
@@ -39,6 +38,7 @@ export default class Blockchain {
       previousHash: "0",
       nonce: 0
     });
+
     this.chain.push(genesisBlock);
   }
 
@@ -64,6 +64,10 @@ export default class Blockchain {
 
     this.chain.push(block);
     return true;
+  }
+
+  replaceChain(blocks: Block[]) {
+    this.chain = blocks;
   }
 
   findBlockById(blockId: Block["index"]) {
@@ -92,6 +96,21 @@ export default class Blockchain {
     return result;
   }
 
+  /**
+   * chainSize: get the length of the chain 
+   * @return{number} - the length of the chain
+  */
+  chainSize() {
+    return this.chain.length;
+  }
+
+  /**
+   * hasEmptyChain: return true if there are at least one block inside the chain.
+   * @return{boolean} true if the chain is not empty, false otherwise.
+  */
+  hasEmptyChain() {
+    return this.chain.length ? false : true;
+  }
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
@@ -102,7 +121,7 @@ export default class Blockchain {
     ) {
       return false;
     }
-
+ 
     const lastBlock = this.lastBlock;
 
     const unhashedBlock: UnhashedBlock = {

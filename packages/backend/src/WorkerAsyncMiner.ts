@@ -2,7 +2,7 @@ import { Worker } from "worker_threads";
 import { Block, AsyncMiner, UnhashedBlock } from "@speedy_blockchain/common";
 import path from "path";
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
-
+import * as db from './db';
 interface Job {
   block: UnhashedBlock;
   fail(error: Error): void;
@@ -26,7 +26,9 @@ export default class WorkerAsyncMiner implements AsyncMiner {
         ...this.currentJob.block,
         nonce: data
       };
-      this.currentJob.done(createBlock(unhashedNewBlock));
+      const createdBlock = createBlock(unhashedNewBlock);
+      db.insert(createdBlock);
+      this.currentJob.done(createdBlock);
       this.nextjob();
     });
     return newWorker;

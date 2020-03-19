@@ -2,7 +2,7 @@ require("dotenv").config();
 
 import Node from "./Node";
 import { createHttpApi } from "./httpApi";
-import { initDB } from "./db";
+import { initDB, insert } from "./db";
 
 const minerName = process.env.MINER_NAME || "Miner";
 
@@ -10,6 +10,16 @@ async function main() {
   await initDB(minerName);
 
   const node = new Node();
+  let blocks = [];
+  (await node.getBlocksFromDB()).forEach(block => blocks.push(block.value)); // can't await inside a constructor -> how we can handle this?
+  // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
+  if (blocks.length) {
+    node.currentBlockchain.replaceChain(blocks);
+  } else {
+    node.currentBlockchain.pushGenesisBlock();
+    insert(node.currentBlockchain.lastBlock);
+  }  
+  
   node.startMiningLoop();
 
   const httpApi = createHttpApi(node);

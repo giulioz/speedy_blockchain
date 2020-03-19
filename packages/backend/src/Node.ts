@@ -1,6 +1,6 @@
-import { Blockchain, Peer } from "@speedy_blockchain/common";
+import { Blockchain, Peer, Block } from "@speedy_blockchain/common";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
-
+import * as db from "./db";
 const updateTimeout = 1000;
 
 const miner = new WorkerAsyncMiner();
@@ -14,9 +14,11 @@ export default class Node {
 
   constructor() {
     this.currentBlockchain = new Blockchain();
-    this.currentBlockchain.pushGenesisBlock();
   }
 
+  public async getBlocksFromDB() {
+    return await db.fetchAll();
+  }
   public startMiningLoop() {
     this.periodicUpdate();
   }
