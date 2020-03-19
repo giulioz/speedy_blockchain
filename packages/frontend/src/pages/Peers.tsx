@@ -87,7 +87,7 @@ function PeerBlock({ peer }: { peer: Peer }) {
 export default function Peers() {
   const classes = useStyles();
 
-  const peersState = useRemoteData("GET /peers", {});
+  const peersState = useRemoteData("GET /peers");
 
   return (
     <Layout title="Explore Blocks">
