@@ -1,7 +1,7 @@
 import { parentPort } from "worker_threads";
-import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
 import { genZeroes } from "@speedy_blockchain/common/dist/utils";
-import { UnhashedBlock } from "@speedy_blockchain/common/src/Block";
+import { UnhashedBlock } from "@speedy_blockchain/common";
+import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
 
 // TODO: Should be imported
 const DIFFICULTY = 2;
@@ -25,7 +25,6 @@ function mine(rawBlock: UnhashedBlock) {
       rawBlock.nonce += 1;
       computedHash = computeBlockHash(rawBlock);
     }
-
-    resolve(computedHash);
+    resolve(rawBlock.nonce);
   });
 }

@@ -1,7 +1,7 @@
 import { Worker } from "worker_threads";
-import { Block, AsyncMiner } from "@speedy_blockchain/common";
+import { Block, AsyncMiner, UnhashedBlock } from "@speedy_blockchain/common";
 import path from "path";
-import { UnhashedBlock } from "@speedy_blockchain/common/src/Block";
+import { createBlock } from "@speedy_blockchain/common/dist/Block";
 
 interface Job {
   block: UnhashedBlock;
@@ -22,7 +22,11 @@ export default class WorkerAsyncMiner implements AsyncMiner {
       this.currentJob.fail(error);
     });
     newWorker.on("message", data => {
-      this.currentJob.done(data);
+      const unhashedNewBlock: UnhashedBlock = {
+        ...this.currentJob.block,
+        nonce: data
+      };
+      this.currentJob.done(createBlock(unhashedNewBlock));
       this.nextjob();
     });
     return newWorker;

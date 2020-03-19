@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import { createBlock, computeBlockHash } from "./Block";
+import { sortAsExpected } from "./Transaction";
 
 export function sha256(str: string) {
   return crypto
@@ -14,3 +16,5 @@ export function genZeroes(count: number) {
 export function getTimestamp() {
   return new Date().getTime();
 }
+
+export { createBlock, computeBlockHash, sortAsExpected };
