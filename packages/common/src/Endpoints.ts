@@ -1,6 +1,9 @@
 import Transaction from "./Transaction";
 import PeersState from "./PeersState";
+import IncomingPeer from "./Peer";
 import Block from "./Block";
+import Blockchain from "./Blockchain";
+import Peer from "./Peer";
 
 export default interface Endpoints {
   "GET /blocks/from/:from/to/:to": {
@@ -36,6 +39,24 @@ export default interface Endpoints {
   "GET /peers": {
     params: {};
     res: PeersState;
+    req: null;
+  };
+
+  "PUT /peers/:name": {
+    params: {id: string};
+    res: string;
+    req: IncomingPeer;
+  };
+
+  "PUT /peers": {
+    params: {};
+    res: string;
+    req: PeersState;
+  };
+
+  "GET /test": {
+    params: {};
+    res: Blockchain | Block | string;
     req: null;
   };
 }

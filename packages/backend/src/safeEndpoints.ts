@@ -21,6 +21,11 @@ export function safeEndpoint<K extends keyof Endpoints>(
       endpoint.substr("POST ".length),
       handler
     );
+  } else if (endpoint.startsWith("PUT ")) {
+    app.put<ParamsType<K>, ResType<K>, ReqType<K>>(
+      endpoint.substr("PUT ".length),
+      handler
+    );
   } else {
     throw new Error("Not implemented");
   }

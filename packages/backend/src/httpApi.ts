@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-
+import * as db from './db';
 import Node from "./Node";
 import { safeEndpoint as ep } from "./safeEndpoints";
 
@@ -71,13 +71,33 @@ export function createHttpApi(node: Node) {
   // submit a new transaction with content
   ep(app, "POST /transaction", (req, res) => {
     node.currentBlockchain.pushTransaction(req.body);
-
+    
     res.status(201).send("Success");
   });
 
+
+  // just for test purpose
+  ep(app, "GET /test", async (req, res) => {
+    res.status(201).send(node.currentBlockchain);
+  });
+
+  // register a new node
+  ep(app, "PUT /peers/:name", (req, res) => {
+    console.log("REGISTER NEW NODE WITH IP -> " + req.body.ip + " " + req.body.port);
+    node.peersState.insertIncomingPeer(req.body);
+    // send 
+    res.status(201).send("Success");
+  });
+
+  ep(app, "PUT /peers", (req, res) => {
+    node.peersState.peers = [...req.body.peers];
+    // send 
+    res.status(201).send("Success");
+  })
+
   // get current peers status of the node
   ep(app, "GET /peers", (req, res) => {
-    res.send({ peers: node.peers });
+    res.send(node.peersState);
   });
 
   return app;

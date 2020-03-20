@@ -10,7 +10,7 @@ async function main() {
   await initDB(minerName);
 
   const node = new Node();
-
+  await node.rehydrateBlocksFromDB();
   node.startMiningLoop();
 
   const httpApi = createHttpApi(node);
