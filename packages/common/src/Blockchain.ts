@@ -24,7 +24,6 @@ function isValidBlock(block: Block) {
 }
 
 export default class Blockchain {
-
   unconfirmedTransactions: Transaction[] = [];
   chain: Block[] = [];
   // A function to generate genesis block and pushs it to
@@ -96,21 +95,6 @@ export default class Blockchain {
     return result;
   }
 
-  /**
-   * chainSize: get the length of the chain 
-   * @return{number} - the length of the chain
-  */
-  chainSize() {
-    return this.chain.length;
-  }
-
-  /**
-   * hasEmptyChain: return true if there are at least one block inside the chain.
-   * @return{boolean} true if the chain is not empty, false otherwise.
-  */
-  hasEmptyChain() {
-    return this.chain.length ? false : true;
-  }
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
@@ -127,11 +111,13 @@ export default class Blockchain {
       ho notato che se usiamo l'array unconfirmedTransaction può essere che appena generato il blocco si siano aggiunte nuove transaction,
       e quindi la POW va a puttane.
       Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare 
-    */ 
+    */
+
     const transactionsToValidate = [];
     while (this.unconfirmedTransactions.length) {
       transactionsToValidate.push(this.unconfirmedTransactions.shift());
     }
+    
     const unhashedBlock: UnhashedBlock = {
       index: lastBlock.index + 1,
       transactions: transactionsToValidate,

@@ -1,8 +1,14 @@
 import { Worker } from "worker_threads";
-import { Block, AsyncMiner, UnhashedBlock } from "@speedy_blockchain/common";
 import path from "path";
+
+import {
+  Block,
+  AsyncMiner,
+  UnhashedBlock,
+  Transaction
+} from "@speedy_blockchain/common";
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
-import * as db from './db';
+
 interface Job {
   block: UnhashedBlock;
   fail(error: Error): void;
@@ -27,7 +33,6 @@ export default class WorkerAsyncMiner implements AsyncMiner {
         nonce: data
       };
       const createdBlock: Block = createBlock(unhashedNewBlock);
-      db.insert(createdBlock);
       this.currentJob.done(createdBlock);
       this.nextjob();
     });
@@ -42,8 +47,12 @@ export default class WorkerAsyncMiner implements AsyncMiner {
       } else {
         this.currentJob = newJob;
       }
-      this.worker.postMessage(rawBlock);
+      this.worker.postMessage({ type: "mineBlock", data: rawBlock });
     });
+  }
+
+  public notifyNewTransaction(t: Transaction) {
+    this.worker.postMessage({ type: "newTransaction", data: t });
   }
 
   // Easiest way...

@@ -5,26 +5,28 @@ import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
 
 // TODO: Should be imported
 const DIFFICULTY = 2;
-const DEBUG = false;
 
-const log = msg => DEBUG && console.log("MINER > " + msg);
+let miningBlock: UnhashedBlock | null = null;
 
-parentPort.on("message", async rawBlock => {
-  log("STARTED MINING");
-  const minedBlock = await mine(rawBlock);
-  log("FINISHED MINING");
-  parentPort.postMessage(minedBlock);
+parentPort.on("message", ({ type, data }) => {
+  if (type === "mineBlock") {
+    miningBlock = data;
+    const minedBlock = mine();
+    // TODO
+    parentPort.postMessage(minedBlock);
+  } else if (type === "newTransaction") {
+    // Add transaction to current mining
+  }
 });
 
-function mine(rawBlock: UnhashedBlock) {
-  return new Promise((resolve, reject) => {
-    rawBlock.nonce = Math.round(Math.random() * 10000);
+function mine() {
+  miningBlock.nonce = Math.round(Math.random() * 10000);
 
-    let computedHash = computeBlockHash(rawBlock);
-    while (!computedHash.startsWith(genZeroes(DIFFICULTY))) {
-      rawBlock.nonce += 1;
-      computedHash = computeBlockHash(rawBlock);
-    }
-    resolve(rawBlock.nonce);
-  });
+  let computedHash = computeBlockHash(miningBlock);
+  while (!computedHash.startsWith(genZeroes(DIFFICULTY))) {
+    miningBlock.nonce += 1;
+    computedHash = computeBlockHash(miningBlock);
+  }
+
+  return miningBlock.nonce;
 }
