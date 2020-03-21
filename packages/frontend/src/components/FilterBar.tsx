@@ -66,12 +66,12 @@ function FilterField({
   );
 }
 
-export default function FilterBar({
+export default function FilterBar<T extends { [id: string]: FilterFieldType }>({
   filters,
   onChange,
 }: {
-  filters: { [id: string]: FilterFieldType };
-  onChange: (id: string) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  filters: T;
+  onChange: (id: keyof T) => (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   const classes = useStyles();
 

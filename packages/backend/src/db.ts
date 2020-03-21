@@ -3,8 +3,7 @@ import path from "path";
 import level from "level";
 import { Block } from "@speedy_blockchain/common";
 
-let db = null;
-export default db;
+let db: any = null;
 
 function createFolder(folder: string) {
   if (!fs.existsSync(folder)) {
@@ -23,11 +22,11 @@ export async function initDB(minerName: string) {
 }
 
 export async function insert(block: Block): Promise<void> {
-  return await db.put(block.index, JSON.stringify(block));
+  return db.put(block.index, JSON.stringify(block));
 }
 
 export async function getBlock(index: number): Promise<Block> {
-  return await db.get(index);
+  return db.get(index);
 }
 
 export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
@@ -35,7 +34,7 @@ export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
     const blocks: { key: string; value: Block }[] = [];
 
     db.createReadStream()
-      .on("data", ({ key, value }) => {
+      .on("data", ({ key, value }: { key: string; value: string }) => {
         blocks.push({ key, value: JSON.parse(value) });
       })
       .on("end", () => {
@@ -43,16 +42,18 @@ export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
         // sort the block in ascending order.
 
         // log only for test
-        console.log("[DB] read " + blocks.length + " blocks.");
+        console.log(`[DB] read ${blocks.length} blocks.`);
         let count = 0;
-        blocks.forEach(block => (count += block.value.transactions.length));
-        console.log("[DB] Total transactions: " + count);
+        blocks.forEach(block => {
+          count += block.value.transactions.length;
+        });
+        console.log(`[DB] Total transactions: ${count}`);
         blocks.sort(
           (block1, block2) => block1.value.index - block2.value.index
         );
         resolve(blocks);
       })
-      .on("error", err => {
+      .on("error", (err: any) => {
         reject(err);
       });
   });

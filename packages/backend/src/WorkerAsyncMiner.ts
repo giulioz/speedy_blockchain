@@ -15,18 +15,32 @@ import {
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
 
 interface Job {
-  block: UnhashedBlock;
-  fail(error: Error): void;
+  block: UnhashedBlock | null;
+  fail(err: any): any;
   done(data: Block): void;
 }
 
 const EMPTY_JOB = {
   block: null,
-  done: null,
+  done: () => {},
   fail: (err: any) => {
     throw err;
   },
 };
+
+function minerScriptPath(): string {
+  const defaultPath = path.resolve(__dirname, "./minerScript.js");
+  const testsPath = path.resolve(
+    __dirname,
+    "../dist/backend/src/minerScript.js"
+  );
+
+  if (fs.existsSync(defaultPath)) {
+    return defaultPath;
+  }
+
+  return testsPath;
+}
 
 export type OutgoingMessage =
   | { type: "setDifficulty"; data: number }
@@ -36,6 +50,7 @@ export type OutgoingMessage =
 
 export default class WorkerAsyncMiner implements AsyncMiner {
   worker: Worker;
+
   currentJob: Job = EMPTY_JOB;
 
   constructor(difficulty: number = DIFFICULTY) {
@@ -44,7 +59,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
   }
 
   private createNewWorker(): Worker {
-    const newWorker = new Worker(this.minerScriptPath());
+    const newWorker = new Worker(minerScriptPath());
 
     newWorker.on("error", error => {
       this.currentJob.fail(error);
@@ -67,13 +82,13 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     return new Promise((resolve, reject) => {
       if (this.busy) {
         reject(new Error("WorkerAsyncMiner currently busy"));
-      } else {
-        const newJob = { block: rawBlock, done: resolve, fail: reject };
-        this.currentJob = newJob;
-
-        const msg: OutgoingMessage = { type: "mineBlock", data: rawBlock };
-        this.worker.postMessage(msg);
       }
+
+      const newJob = { block: rawBlock, done: resolve, fail: reject };
+      this.currentJob = newJob;
+
+      const msg: OutgoingMessage = { type: "mineBlock", data: rawBlock };
+      this.worker.postMessage(msg);
     });
   }
 
@@ -88,9 +103,9 @@ export default class WorkerAsyncMiner implements AsyncMiner {
       this.worker.postMessage(msg);
 
       return true;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
   public async abort() {
@@ -107,19 +122,5 @@ export default class WorkerAsyncMiner implements AsyncMiner {
 
   public async dispose() {
     await this.worker.terminate();
-  }
-
-  private minerScriptPath(): string {
-    const defaultPath = path.resolve(__dirname, "./minerScript.js");
-    const testsPath = path.resolve(
-      __dirname,
-      "../dist/backend/src/minerScript.js"
-    );
-
-    if (fs.existsSync(defaultPath)) {
-      return defaultPath;
-    } else {
-      return testsPath;
-    }
   }
 }

@@ -65,7 +65,7 @@ export default function AddFlightDialog({
 
   const [flight, setFlight] = useState<Flight>(EMPTY_FLIGHT);
 
-  const changeFlightValue = ({ target }) =>
+  const changeFlightValue = ({ target }: React.ChangeEvent<HTMLInputElement>) =>
     setFlight(prev => ({ ...prev, [target.name]: target.value }));
 
   return (

@@ -28,9 +28,26 @@ export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
   );
 }
 
+export function checkChainValidity(chain: Block[]) {
+  let result = true;
+  let previousHash = "0";
+
+  chain.forEach(block => {
+    if (!isValidBlock(block) || previousHash !== block.previousHash) {
+      result = false;
+    }
+
+    previousHash = block.hash;
+  });
+
+  return result;
+}
+
 export default class Blockchain {
   unconfirmedTransactions: Transaction[] = [];
+
   chain: Block[] = [];
+
   // A function to generate genesis block and pushs it to
   // the chain. The block has index 0, previousHash as 0, and
   // a valid hash.
@@ -85,21 +102,6 @@ export default class Blockchain {
     );
   }
 
-  checkChainValidity(chain: Block[]) {
-    let result = true;
-    let previousHash = "0";
-
-    chain.forEach(block => {
-      if (!isValidBlock(block) || previousHash !== block.previousHash) {
-        result = false;
-      }
-
-      previousHash = block.hash;
-    });
-
-    return result;
-  }
-
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
@@ -110,11 +112,14 @@ export default class Blockchain {
     ) {
       return false;
     }
-    const lastBlock = this.lastBlock;
 
-    const transactionsToValidate = [];
-    while (this.unconfirmedTransactions.length) {
-      transactionsToValidate.push(this.unconfirmedTransactions.pop());
+    const { lastBlock } = this;
+
+    const transactionsToValidate: Transaction[] = [];
+    while (this.unconfirmedTransactions.length > 0) {
+      transactionsToValidate.push(
+        this.unconfirmedTransactions.pop() as Transaction
+      );
     }
 
     const unhashedBlock: UnhashedBlock = {
@@ -156,8 +161,8 @@ export default class Blockchain {
     if (block) {
       const transaction = block.transactions.find(t => t.id === transactionId);
       return transaction || null;
-    } else {
-      return null;
     }
+
+    return null;
   }
 }

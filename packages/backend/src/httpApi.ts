@@ -3,9 +3,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import Node from "./Node";
-import { safeEndpoint as ep } from "./safeEndpoints";
+import ep from "./safeEndpoints";
 
-export function createHttpApi(node: Node) {
+export default function createHttpApi(node: Node) {
   const app = express();
   app.use(bodyParser.json());
   app.use(cors());

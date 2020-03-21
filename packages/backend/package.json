@@ -27,7 +27,9 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
-    "jest": "^25.1.0",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1",
@@ -39,7 +41,7 @@
     "build": "tsc",
     "test": "jest",
     "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\"",
-    "lint": "eslint --fix 'src/**/*.ts'",
+    "lint": "eslint --ext js,ts,tsx src",
     "format": "prettier --list-different --write \"{scripts,src,tests}/**/*.{js,md,tsx,ts,html,json}\"",
     "precommit": "lint-staged"
   }
