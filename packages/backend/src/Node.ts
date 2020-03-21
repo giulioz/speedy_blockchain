@@ -12,7 +12,7 @@ export default class Node {
   private updateTimeout: NodeJS.Timeout;
   public superPeer: boolean;
   constructor() {
-    let currentPeer: Peer = this.getPeerObj();
+    const currentPeer: Peer = this.getPeerObj();
     this.currentBlockchain = new Blockchain();
     this.peersState = new PeersState();
     this.superPeer = currentPeer.superPeer;
@@ -46,7 +46,7 @@ export default class Node {
   private getPeerObj(): Peer {
     return {
       ip: process.env.NODE_HOST,
-      port: parseInt(process.env.NODE_PORT),
+      port: parseInt(process.env.NODE_PORT, 10),
       name: process.env.MINER_NAME,
       active: true,
       superPeer:

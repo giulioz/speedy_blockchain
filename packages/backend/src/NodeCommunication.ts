@@ -1,19 +1,20 @@
-import { PeersState, Peer } from "@speedy_blockchain/common/src";
+import { PeersState } from "@speedy_blockchain/common/src";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
+
 const maxRetry = 3; // max number to retry for a http call
 
 export async function sendPeersListToOtherNodes(peerList: PeersState) {
   peerList.peers.sort((peer1, peer2) => peer1.checkedAt - peer2.checkedAt);
   peerList.peers.forEach(async peer => {
     if (
-      peer.ip != process.env.NODE_HOST ||
-      peer.port != parseInt(process.env.NODE_PORT)
+      peer.ip !== process.env.NODE_HOST ||
+      peer.port !== parseInt(process.env.NODE_PORT, 10)
     ) {
       if (
         !(await httpCall(peer.ip, peer.port, "PUT", "peers", peerList)).success
       ) {
-        //TODO: remove peer from peerList if unavailable.
+        // TODO: remove peer from peerList if unavailable.
         console.log("REMOVE PEER - TODO");
       } else {
         peer.checkedAt = Date.now();
@@ -32,20 +33,20 @@ async function httpCall(
   let retry = 0;
   let success = false;
   let response = null;
-  const url = "http://" + ip + ":" + port + "/" + entryPoint; //TODO: find a better way to do this
-  let headers = { "Content-Type": "application/json" };
-  let data = JSON.stringify(body);
+  const url = "http://" + ip + ":" + port + "/" + entryPoint; // TODO: find a better way to do this
+  const headers = { "Content-Type": "application/json" };
+  const data = JSON.stringify(body);
   let options = null;
   if (method !== "GET") {
     options = {
-      method: method,
-      headers: headers,
+      method,
+      headers,
       body: data,
     };
   } else {
     options = {
-      method: method,
-      headers: headers,
+      method,
+      headers,
     };
   }
   // very brutto - FIX THIS!
@@ -83,17 +84,17 @@ async function httpCall(
         });
     } while (!success && retry < maxRetry);
   }
-  return { success: success, data: response };
+  return { success, data: response };
 }
 
 /*export async function getDBFromSuperPeer() {
-    var data = await httpCall(process.env.LEADER_HOST, parseInt(process.env.LEADER_PORT), 'GET', 'db/', peer);
+    const data = await httpCall(process.env.LEADER_HOST, parseInt(process.env.LEADER_PORT), 'GET', 'db/', peer);
 }*/
 
 export async function getLastBlockFromSuperPeer() {
-  var lastBlock = await httpCall(
+  const lastBlock = await httpCall(
     process.env.LEADER_HOST,
-    parseInt(process.env.LEADER_PORT),
+    parseInt(process.env.LEADER_PORT, 10),
     "GET",
     "block/last",
     null
@@ -105,14 +106,14 @@ export async function getLastBlockFromSuperPeer() {
 }
 
 export async function registerNodeToSuperPeer() {
-  var peer: IncomingPeer = {
+  const peer: IncomingPeer = {
     ip: process.env.NODE_HOST,
-    port: parseInt(process.env.NODE_PORT),
+    port: parseInt(process.env.NODE_PORT, 10),
     name: process.env.MINER_NAME,
   };
   return await httpCall(
     process.env.LEADER_HOST,
-    parseInt(process.env.LEADER_PORT),
+    parseInt(process.env.LEADER_PORT, 10),
     "PUT",
     "peers/" + process.env.MINER_NAME,
     peer

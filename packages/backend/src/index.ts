@@ -27,7 +27,7 @@ async function main() {
         const lastBlock = await NodeCommunication.getLastBlockFromSuperPeer();
         node.currentBlockchain.chain = [lastBlock]; // TODO: only for test - fix this
       }
-      //await NodeCommunication.getDBFromSuperPeer();
+      // await NodeCommunication.getDBFromSuperPeer();
     }
     console.log("Node listening on " + port);
   });
