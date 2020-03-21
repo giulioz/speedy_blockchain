@@ -1,8 +1,10 @@
-/* tslint:disable-next-line:no-var-requires */
 require("dotenv").config();
 
+/* eslint-disable-next-line import/first */
 import Node from "./Node";
-import { createHttpApi } from "./httpApi";
+/* eslint-disable-next-line import/first */
+import createHttpApi from "./httpApi";
+/* eslint-disable-next-line import/first */
 import { initDB } from "./db";
 
 const minerName = process.env.MINER_NAME || "Miner";
@@ -19,7 +21,7 @@ async function main() {
     ? parseInt(process.env.NODE_PORT, 10)
     : 8080;
   httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", () =>
-    console.log("Node listening on " + port)
+    console.log(`Node listening on ${port}`)
   );
 }
 

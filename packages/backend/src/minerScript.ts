@@ -11,23 +11,24 @@ const CHUNK_SIZE = 50;
 
 let miningBlock: UnhashedBlock | null = null;
 
-parentPort.on("message", (message: OutgoingMessage) => {
-  if (message.type === "setDifficulty") {
-    DIF_START = genZeroes(message.data);
-  } else if (message.type === "mineBlock") {
-    startMining(message.data);
-  } else if (message.type === "newTransaction") {
-    pushNewTransaction(message.data);
-  } else if (message.type === "abort") {
-    abort();
+// Process a small chunk of nonces
+function mineChunk(): number | null {
+  if (!miningBlock) {
+    throw new Error("No block in queue");
   }
-});
 
-function startMining(block: UnhashedBlock) {
-  miningBlock = block;
-  miningBlock.nonce = Math.round(Math.random() * 10000);
+  let computedHash = computeBlockHash(miningBlock);
 
-  miningLoop();
+  for (let i = 0; i < CHUNK_SIZE; i += 1) {
+    if (computedHash.startsWith(DIF_START)) {
+      return miningBlock.nonce;
+    }
+
+    miningBlock.nonce += 1;
+    computedHash = computeBlockHash(miningBlock);
+  }
+
+  return null;
 }
 
 function miningLoop() {
@@ -40,7 +41,9 @@ function miningLoop() {
 
   if (resultNonce) {
     // Has result, send it back
-    parentPort.postMessage(miningBlock);
+    if (parentPort) {
+      parentPort.postMessage(miningBlock);
+    }
 
     miningBlock = null;
   } else {
@@ -49,26 +52,37 @@ function miningLoop() {
   }
 }
 
-// Process a small chunk of nonces
-function mineChunk(): number | null {
-  let computedHash = computeBlockHash(miningBlock);
-
-  for (let i = 0; i < CHUNK_SIZE; i++) {
-    if (computedHash.startsWith(DIF_START)) {
-      return miningBlock.nonce;
-    } else {
-      miningBlock.nonce += 1;
-      computedHash = computeBlockHash(miningBlock);
-    }
+function pushNewTransaction(t: Transaction) {
+  if (!miningBlock) {
+    throw new Error("No block in queue");
   }
 
-  return null;
-}
-
-function pushNewTransaction(t: Transaction) {
   miningBlock.transactions.push(t);
 }
 
 function abort() {
   miningBlock = null;
 }
+
+function startMining(block: UnhashedBlock) {
+  miningBlock = block;
+  miningBlock.nonce = Math.round(Math.random() * 10000);
+
+  miningLoop();
+}
+
+if (!parentPort) {
+  throw new Error("No parent port available");
+}
+
+parentPort.on("message", (message: OutgoingMessage) => {
+  if (message.type === "setDifficulty") {
+    DIF_START = genZeroes(message.data);
+  } else if (message.type === "mineBlock") {
+    startMining(message.data);
+  } else if (message.type === "newTransaction") {
+    pushNewTransaction(message.data);
+  } else if (message.type === "abort") {
+    abort();
+  }
+});

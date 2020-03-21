@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -24,13 +24,15 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+type Filters = {
+  id: FilterFieldType;
+  timestamp: FilterFieldType;
+  hash: FilterFieldType;
+  nonce: FilterFieldType;
+};
+
 function MultipleBlocks({ blocks }: { blocks: Block[] }) {
-  const [filters, setFilters] = useState<{
-    id: FilterFieldType;
-    timestamp: FilterFieldType;
-    hash: FilterFieldType;
-    nonce: FilterFieldType;
-  }>({
+  const [filters, setFilters] = useState<Filters>({
     id: { label: "Block ID", value: "" },
     timestamp: { label: "Timestamp", value: "" },
     hash: { label: "Hash", value: "", grow: true },
@@ -49,7 +51,7 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
         b.nonce.toString().includes(filters.nonce.value))
   );
 
-  const handleFilterChange = (field: string) => (
+  const handleFilterChange = (field: keyof Filters) => (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     e.persist();
@@ -79,7 +81,7 @@ export default function Blockchain() {
   const blocks = useLastNBlocks(maxBlocks);
 
   const { id } = useParams();
-  const nId = parseInt(id);
+  const nId = id && parseInt(id);
   const selectedBlock = blocks && blocks.find(b => b.index === nId);
 
   return (

@@ -24,20 +24,24 @@
     "@types/jest": "^25.1.4",
     "@types/node-fetch": "^2.5.5",
     "concurrently": "^5.1.0",
-    "jest": "^25.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
     "nodemon": "^2.0.2",
     "prettier": "^1.19.1",
     "ts-jest": "^25.2.1",
-    "ts-node": "^8.6.2",
-    "tslint": "^6.1.0"
+    "ts-node": "^8.6.2"
   },
   "scripts": {
     "start": "node dist/backend/src/index.js",
     "build": "tsc",
     "test": "jest",
     "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\"",
-    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "lint": "eslint --ext js,ts,tsx src",
     "format": "prettier --list-different --write \"{scripts,src,tests}/**/*.{js,md,tsx,ts,html,json}\"",
     "precommit": "lint-staged"
   }

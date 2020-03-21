@@ -1,5 +1,4 @@
-import { Blockchain, Peer } from "@speedy_blockchain/common";
-import { Transaction } from "@speedy_blockchain/common";
+import { Blockchain, Peer, Transaction } from "@speedy_blockchain/common";
 
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
@@ -11,9 +10,10 @@ const miner = new WorkerAsyncMiner();
 // Manages the blockchain, mining and communication with peers
 export default class Node {
   public currentBlockchain: Blockchain;
+
   public peers: Peer[] = [];
 
-  private updateTimeout: NodeJS.Timeout;
+  private updateTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
     this.currentBlockchain = new Blockchain();
@@ -37,7 +37,9 @@ export default class Node {
   }
 
   public stopMiningLoop() {
-    clearTimeout(this.updateTimeout);
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
   }
 
   // Ran every timeout
