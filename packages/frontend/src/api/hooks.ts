@@ -13,7 +13,7 @@ export function useRemoteData<K extends keyof Endpoints>(
     async function loadData() {
       const data = await apiCall(endpoint, {
         params: params || {},
-        body: null
+        body: null,
       });
       setData(data);
     }
@@ -31,7 +31,7 @@ export function useLastNBlocks(maxBlocks: number) {
     async function loadData() {
       const lastBlock = await apiCall("GET /block/last", {
         params: {},
-        body: null
+        body: null,
       });
 
       if (typeof lastBlock !== "string") {
@@ -40,7 +40,7 @@ export function useLastNBlocks(maxBlocks: number) {
 
         const blocks = await apiCall("GET /blocks/from/:from/to/:to", {
           params: { from: from.toString(), to: lastIndex.toString() },
-          body: null
+          body: null,
         });
 
         setData(blocks.reverse());

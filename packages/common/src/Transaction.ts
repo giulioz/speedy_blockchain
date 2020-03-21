@@ -17,6 +17,6 @@ export function sortAsExpected(t: Transaction): Transaction {
   return {
     id: t.id,
     timestamp: t.timestamp,
-    content: t.content
+    content: t.content,
   };
 }

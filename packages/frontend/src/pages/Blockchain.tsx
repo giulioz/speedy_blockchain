@@ -16,12 +16,12 @@ const useStyles = makeStyles(theme => ({
   content: {
     flexGrow: 1,
     height: "100vh",
-    overflow: "auto"
+    overflow: "auto",
   },
   container: {
     paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4)
-  }
+    paddingBottom: theme.spacing(4),
+  },
 }));
 
 function MultipleBlocks({ blocks }: { blocks: Block[] }) {
@@ -34,7 +34,7 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
     id: { label: "Block ID", value: "" },
     timestamp: { label: "Timestamp", value: "" },
     hash: { label: "Hash", value: "", grow: true },
-    nonce: { label: "Nonce", value: "" }
+    nonce: { label: "Nonce", value: "" },
   });
 
   const filteredBlocks = blocks.filter(
@@ -55,7 +55,7 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
     e.persist();
     setFilters(f => ({
       ...f,
-      [field]: { ...f[field], value: e.target.value }
+      [field]: { ...f[field], value: e.target.value },
     }));
   };
 
