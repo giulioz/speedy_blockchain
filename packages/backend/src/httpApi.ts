@@ -4,7 +4,7 @@ import cors from "cors";
 import * as db from './db';
 import Node from "./Node";
 import { safeEndpoint as ep } from "./safeEndpoints";
-
+import * as NodeCommunication from "./NodeCommunication";
 export function createHttpApi(node: Node) {
   const app = express();
   app.use(bodyParser.json());
@@ -85,13 +85,15 @@ export function createHttpApi(node: Node) {
   ep(app, "PUT /peers/:name", (req, res) => {
     console.log("REGISTER NEW NODE WITH IP -> " + req.body.ip + " " + req.body.port);
     node.peersState.insertIncomingPeer(req.body);
+    NodeCommunication.sendPeersListToOtherNodes(node.peersState);
     // send 
     res.status(201).send("Success");
   });
 
   ep(app, "PUT /peers", (req, res) => {
+    console.log("REPLACE peers object");
     node.peersState.peers = [...req.body.peers];
-    // send 
+    // send
     res.status(201).send("Success");
   })
 

@@ -9,13 +9,14 @@ const miner = new WorkerAsyncMiner();
 export default class Node {
   public currentBlockchain: Blockchain;
   public peersState: PeersState;
-
   private updateTimeout: NodeJS.Timeout;
-
+  public superPeer: boolean;
   constructor() {
+    let currentPeer: Peer = this.getPeerObj();
     this.currentBlockchain = new Blockchain();
     this.peersState = new PeersState();
-    this.peersState.insertPeer(this.getPeerObj())
+    this.superPeer = currentPeer.superPeer;
+    this.peersState.insertPeer(currentPeer)
   }
 
   public async rehydrateBlocksFromDB() {
@@ -45,7 +46,7 @@ export default class Node {
       port: parseInt(process.env.NODE_PORT),
       name: process.env.MINER_NAME,
       active: true,
-      superPeer: process.env.SUPER_PEER_NAME === process.env.MINER_NAME, // maybe we can remove the superPeer var here.
+      superPeer: (process.env.LEADER_HOST, process.env.LEADER_PORT) === (process.env.NODE_HOST, process.env.NODE_PORT), // maybe we can remove the superPeer var here.
       checkedAt: Date.now()
     }
   }

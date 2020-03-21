@@ -5,6 +5,6 @@ export default interface Peer {
   port: number;
   name: string;
   active: boolean; // worst case la mettiamo sempre a true
-  checkedAt: Number;
+  checkedAt: number;
   superPeer: boolean;
 }
