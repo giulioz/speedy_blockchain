@@ -13,11 +13,17 @@
   "devDependencies": {
     "@types/uuid": "^7.0.0",
     "ts-node": "^8.6.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "tslint": "^6.1.0",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1"
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "format": "prettier --list-different --write \"{scripts,src}/**/*.{js,md,tsx,ts,html,json}\"",
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "uuid": "^7.0.2"

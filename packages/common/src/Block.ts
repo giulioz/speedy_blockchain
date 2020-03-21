@@ -18,7 +18,7 @@ export function computeBlockHash(b: UnhashedBlock) {
     transactions: b.transactions.map(t => sortAsExpected(t)),
     timestamp: b.timestamp,
     previousHash: b.previousHash,
-    nonce: b.nonce
+    nonce: b.nonce,
   };
 
   const blockString = JSON.stringify(sorted);

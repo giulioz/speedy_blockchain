@@ -11,8 +11,8 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(16),
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
-  }
+    justifyContent: "center",
+  },
 }));
 
 export default function FullProgress() {

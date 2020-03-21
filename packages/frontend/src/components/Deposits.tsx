@@ -10,8 +10,8 @@ function preventDefault(event: React.MouseEvent) {
 
 const useStyles = makeStyles({
   depositContext: {
-    flex: 1
-  }
+    flex: 1,
+  },
 });
 
 export default function Deposits() {

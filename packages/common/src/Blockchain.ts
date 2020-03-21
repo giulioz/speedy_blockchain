@@ -15,7 +15,7 @@ function isValidBlock(block: Block) {
     transactions: block.transactions,
     timestamp: block.timestamp,
     previousHash: block.previousHash,
-    nonce: block.nonce
+    nonce: block.nonce,
   };
   return (
     block.hash.startsWith(genZeroes(difficulty)) &&
@@ -35,7 +35,7 @@ export default class Blockchain {
       transactions: [],
       timestamp: getTimestamp(),
       previousHash: "0",
-      nonce: 0
+      nonce: 0,
     });
 
     this.chain.push(genesisBlock);
@@ -110,20 +110,20 @@ export default class Blockchain {
       in questo modo ci prendiamo tutte le transaction disponibili in questo momento.
       ho notato che se usiamo l'array unconfirmedTransaction può essere che appena generato il blocco si siano aggiunte nuove transaction,
       e quindi la POW va a puttane.
-      Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare 
+      Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare
     */
 
     const transactionsToValidate = [];
     while (this.unconfirmedTransactions.length) {
       transactionsToValidate.push(this.unconfirmedTransactions.shift());
     }
-    
+
     const unhashedBlock: UnhashedBlock = {
       index: lastBlock.index + 1,
       transactions: transactionsToValidate,
       timestamp: getTimestamp(),
       previousHash: lastBlock.hash,
-      nonce: 0
+      nonce: 0,
     };
     const block = await asyncMiner.mine(unhashedBlock);
     this.addBlock(block);
@@ -134,7 +134,7 @@ export default class Blockchain {
     const transaction: Transaction = {
       id: uuidv4(),
       timestamp: getTimestamp(),
-      content
+      content,
     };
 
     this.unconfirmedTransactions.push(transaction);

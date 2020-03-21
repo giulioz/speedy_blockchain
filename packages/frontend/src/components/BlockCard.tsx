@@ -22,14 +22,14 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(3),
     display: "flex",
     overflow: "auto",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   upper: {
-    textTransform: "uppercase"
+    textTransform: "uppercase",
   },
   infoBox: {
     marginTop: theme.spacing(2),
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
   },
   baseline: {
     alignSelf: "baseline",
@@ -41,27 +41,27 @@ const useStyles = makeStyles(theme => ({
       width: "100%",
       marginTop: theme.spacing(2),
       marginBottom: theme.spacing(2),
-      marginLeft: 0
-    }
+      marginLeft: 0,
+    },
   },
   inline: {
     display: "inline-block",
     marginRight: theme.spacing(4),
     [theme.breakpoints.down("sm")]: {
-      marginLeft: 0
-    }
+      marginLeft: 0,
+    },
   },
   transactionsTitle: {
-    marginTop: theme.spacing(2)
+    marginTop: theme.spacing(2),
   },
   seeMore: {
-    marginTop: theme.spacing(1)
-  }
+    marginTop: theme.spacing(1),
+  },
 }));
 
 export default function BlockCard({
   block,
-  seeAll = false
+  seeAll = false,
 }: {
   block: Block;
   seeAll?: boolean;

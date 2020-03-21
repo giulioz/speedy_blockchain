@@ -18,5 +18,5 @@ export {
   PeersState,
   AsyncMiner,
   Endpoints,
-  utils
+  utils,
 };

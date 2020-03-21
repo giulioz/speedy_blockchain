@@ -100,18 +100,18 @@ const useStyles = makeStyles(theme => ({
     height: "100vh",
     overflow: "auto",
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   container: {
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-    flexGrow: 1
+    flexGrow: 1,
   },
   fab: {
     position: "absolute",
     bottom: theme.spacing(2),
-    right: theme.spacing(2)
-  }
+    right: theme.spacing(2),
+  },
 }));
 
 export default function Flights() {
@@ -136,7 +136,7 @@ export default function Flights() {
     "ARR_TIME",
     "ARR_DELAY",
     "CANCELLED",
-    "AIR_TIME"
+    "AIR_TIME",
   ];
 
   const data = csv.split("\n").map(l => l.split(";"));
@@ -144,7 +144,7 @@ export default function Flights() {
   const options: MUIDataTableOptions = {
     filterType: "checkbox",
     responsive: "scrollFullHeight",
-    fixedHeaderOptions: { xAxis: true, yAxis: true }
+    fixedHeaderOptions: { xAxis: true, yAxis: true },
   };
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);

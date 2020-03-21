@@ -13,19 +13,19 @@ const theme = (createMuiTheme as any)({
   palette: {
     type: "dark",
     primary: {
-      main: "#2979ff"
+      main: "#2979ff",
     },
     secondary: {
-      main: "#81c784"
-    }
+      main: "#81c784",
+    },
   },
   overrides: {
     MUIDataTable: {
       responsiveScrollFullHeight: {
-        overflow: "scroll"
-      }
-    }
-  }
+        overflow: "scroll",
+      },
+    },
+  },
 });
 
 function App() {

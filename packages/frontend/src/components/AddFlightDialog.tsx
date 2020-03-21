@@ -10,24 +10,24 @@ import { Flight } from "@speedy_blockchain/common/dist";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    minWidth: "500px"
+    minWidth: "500px",
   },
   form: {
     display: "grid",
     width: "100%",
     gridTemplateColumns: "1fr 1fr 1fr",
     gridColumnGap: theme.spacing(4),
-    gridRowGap: theme.spacing(2)
+    gridRowGap: theme.spacing(2),
   },
   bigField: {
-    gridColumn: "1 / 4"
+    gridColumn: "1 / 4",
   },
   mediumFieldLeft: {
-    gridColumn: "1 / 3"
+    gridColumn: "1 / 3",
   },
   mediumFieldRight: {
-    gridColumn: "2 / 4"
-  }
+    gridColumn: "2 / 4",
+  },
 }));
 
 const EMPTY_FLIGHT: Flight = {
@@ -49,13 +49,13 @@ const EMPTY_FLIGHT: Flight = {
   ORIGIN_CITY_NAME: "",
   ORIGIN_STATE_NM: "",
   ORIGIN: "",
-  YEAR: 0
+  YEAR: 0,
 };
 
 export default function AddFlightDialog({
   open,
   onClose,
-  onSubmit
+  onSubmit,
 }: {
   open: boolean;
   onClose: () => void;

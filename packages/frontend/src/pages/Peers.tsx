@@ -14,11 +14,11 @@ const useStyles = makeStyles(theme => ({
   content: {
     flexGrow: 1,
     height: "100vh",
-    overflow: "auto"
+    overflow: "auto",
   },
   container: {
     paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4)
+    paddingBottom: theme.spacing(4),
   },
   paper: {
     minHeight: "80vh",
@@ -27,14 +27,14 @@ const useStyles = makeStyles(theme => ({
     overflow: "auto",
     flexDirection: "column",
     "& > .MuiTypography-root": {
-      marginBottom: theme.spacing(3)
-    }
+      marginBottom: theme.spacing(3),
+    },
   },
   block: {
     paddingLeft: theme.spacing(1),
     width: "100%",
     backgroundColor: theme.palette.background.default,
-    marginBottom: theme.spacing(1)
+    marginBottom: theme.spacing(1),
   },
   cardContent: {
     display: "flex",
@@ -43,23 +43,23 @@ const useStyles = makeStyles(theme => ({
       display: "flex",
       flexDirection: "row",
       justifyContent: "space-between",
-      flexBasis: "200px"
+      flexBasis: "200px",
     },
     "& > :last-child": {
-      justifyContent: "flex-end"
+      justifyContent: "flex-end",
     },
     "& .MuiTypography-root": {
       display: "flex",
       alignItems: "center",
-      flexBasis: "100px"
-    }
+      flexBasis: "100px",
+    },
   },
   online: {
-    color: "green"
+    color: "green",
   },
   disconnected: {
-    color: "tomato"
-  }
+    color: "tomato",
+  },
 }));
 
 function PeerBlock({ peer }: { peer: Peer }) {

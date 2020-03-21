@@ -7,8 +7,9 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.20.2",
-    "concurrently": "^5.1.0"
+    "concurrently": "^5.1.0",
+    "husky": "^4.2.3",
+    "lerna": "^3.20.2"
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\" \"npm run dev-common\"",
@@ -17,7 +18,14 @@
     "dev-common": "lerna run dev --scope @speedy_blockchain/common",
     "build-backend": "lerna run build --scope @speedy_blockchain/backend",
     "build-common": "lerna run build --scope @speedy_blockchain/common",
-    "docker-build": "docker build -t speedy_blockchain ."
+    "docker-build": "docker build -t speedy_blockchain .",
+    "format": "lerna run format",
+    "lint": "lerna run lint"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit"
+    }
   },
   "workspaces": [
     "packages/*"

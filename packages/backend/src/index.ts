@@ -1,3 +1,4 @@
+/* tslint:disable-next-line:no-var-requires */
 require("dotenv").config();
 
 import Node from "./Node";
@@ -16,7 +17,10 @@ async function main() {
   node.startMiningLoop();
 
   const httpApi = createHttpApi(node);
-  const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT) : 8080;
+  
+  const port = process.env.NODE_PORT
+    ? parseInt(process.env.NODE_PORT, 10)
+    : 8080;
   httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", () => {
     if (!node.superPeer) {
       NodeCommunication.registerNodeToSuperPeer();
