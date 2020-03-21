@@ -27,8 +27,10 @@ export default class Node {
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
     } else {
-      this.currentBlockchain.pushGenesisBlock();
-      db.insert(this.currentBlockchain.lastBlock);
+      if (this.superPeer)  { // solo il superPeer crea il genesis block.
+        this.currentBlockchain.pushGenesisBlock();
+        db.insert(this.currentBlockchain.lastBlock);
+      }
     }
   }
 

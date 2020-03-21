@@ -22,7 +22,7 @@ export function createHttpApi(node: Node) {
   // get last block
   ep(app, "GET /block/last", (req, res) => {
     const last = node.currentBlockchain.lastBlock;
-
+    
     if (last) {
       res.send(last);
     } else {
