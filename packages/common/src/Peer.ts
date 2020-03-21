@@ -1,4 +1,4 @@
-export type IncomingPeer = Omit<Peer, "checkedAt"|"active"|"superPeer">;
+export type IncomingPeer = Omit<Peer, "checkedAt" | "active" | "superPeer">;
 
 export default interface Peer {
   ip: string;

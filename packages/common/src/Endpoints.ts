@@ -43,7 +43,7 @@ export default interface Endpoints {
   };
 
   "PUT /peers/:name": {
-    params: {id: string};
+    params: { id: string };
     res: string;
     req: IncomingPeer;
   };

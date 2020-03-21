@@ -20,7 +20,7 @@ async function main() {
   const port = process.env.NODE_PORT
     ? parseInt(process.env.NODE_PORT, 10)
     : 8080;
-  
+
   httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", async () => {
     if (!node.superPeer) {
       if ((await NodeCommunication.registerNodeToSuperPeer()).success) {
@@ -30,8 +30,7 @@ async function main() {
       //await NodeCommunication.getDBFromSuperPeer();
     }
     console.log("Node listening on " + port);
-  }
-  );
+  });
 }
 
 main();

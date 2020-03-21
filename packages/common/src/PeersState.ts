@@ -2,8 +2,10 @@ import Peer, { IncomingPeer } from "./Peer";
 export default class PeersState {
   peers: Peer[] = [];
 
-  insertIncomingPeer (incomingPeer: IncomingPeer) {
-    const indexPeer = this.peers.findIndex(peer => peer.ip === incomingPeer.ip && peer.port === incomingPeer.port);
+  insertIncomingPeer(incomingPeer: IncomingPeer) {
+    const indexPeer = this.peers.findIndex(
+      peer => peer.ip === incomingPeer.ip && peer.port === incomingPeer.port
+    );
     if (indexPeer === -1) {
       this.peers.push({
         ip: incomingPeer.ip,
@@ -11,7 +13,7 @@ export default class PeersState {
         name: incomingPeer.name,
         active: true,
         superPeer: false,
-        checkedAt: Date.now()
+        checkedAt: Date.now(),
       });
     } else {
       this.peers[indexPeer].name = incomingPeer.name;
@@ -21,7 +23,9 @@ export default class PeersState {
   }
 
   insertPeer(peer: Peer) {
-    const indexPeer = this.peers.findIndex(_peer => _peer.ip === peer.ip && _peer.port === peer.port);
+    const indexPeer = this.peers.findIndex(
+      _peer => _peer.ip === peer.ip && _peer.port === peer.port
+    );
     if (indexPeer === -1) {
       this.peers.push(peer);
     } else {

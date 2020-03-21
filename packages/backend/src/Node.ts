@@ -16,7 +16,7 @@ export default class Node {
     this.currentBlockchain = new Blockchain();
     this.peersState = new PeersState();
     this.superPeer = currentPeer.superPeer;
-    this.peersState.insertPeer(currentPeer)
+    this.peersState.insertPeer(currentPeer);
   }
 
   public async rehydrateBlocksFromDB() {
@@ -27,7 +27,8 @@ export default class Node {
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
     } else {
-      if (this.superPeer)  { // solo il superPeer crea il genesis block.
+      if (this.superPeer) {
+        // solo il superPeer crea il genesis block.
         this.currentBlockchain.pushGenesisBlock();
         db.insert(this.currentBlockchain.lastBlock);
       }
@@ -42,17 +43,19 @@ export default class Node {
     clearTimeout(this.updateTimeout);
   }
 
-  private getPeerObj() : Peer{
+  private getPeerObj(): Peer {
     return {
       ip: process.env.NODE_HOST,
       port: parseInt(process.env.NODE_PORT),
       name: process.env.MINER_NAME,
       active: true,
-      superPeer: process.env.LEADER_HOST === process.env.NODE_HOST && process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
-      checkedAt: Date.now()
-    }
+      superPeer:
+        process.env.LEADER_HOST === process.env.NODE_HOST &&
+        process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
+      checkedAt: Date.now(),
+    };
   }
-  
+
   // Ran every timeout
   private async periodicUpdate() {
     const minedBlock = await this.currentBlockchain.tryMineNextBlock(miner);
