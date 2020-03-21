@@ -1,0 +1,4 @@
+{
+  "*.{ts,tsx}": ["prettier --list-different --write", "tslint --fix -c tslint.json"],
+  "*.{js,jsx,md,html,css}": ["prettier --list-different --write"]
+}
