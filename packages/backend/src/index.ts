@@ -6,6 +6,7 @@ import Node from "./Node";
 import createHttpApi from "./httpApi";
 /* eslint-disable-next-line import/first */
 import { initDB } from "./db";
+/* eslint-disable-next-line import/first */
 import * as NodeCommunication from "./NodeCommunication";
 
 const minerName = process.env.MINER_NAME || "Miner";

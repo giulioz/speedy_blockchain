@@ -82,9 +82,7 @@ export default function createHttpApi(node: Node) {
 
   // register a new node
   ep(app, "PUT /peers/:name", (req, res) => {
-    console.log(
-      "REGISTER NEW NODE WITH IP -> " + req.body.ip + " " + req.body.port
-    );
+    console.log(`REGISTER NEW NODE WITH IP -> ${req.body.ip} ${req.body.port}`);
     node.peersState.insertIncomingPeer(req.body);
     NodeCommunication.sendPeersListToOtherNodes(node.peersState);
     // send
@@ -93,6 +91,7 @@ export default function createHttpApi(node: Node) {
 
   ep(app, "PUT /peers", (req, res) => {
     console.log("REPLACE peers object");
+    /* eslint-disable-next-line no-param-reassign */
     node.peersState.peers = [...req.body.peers];
     // send
     res.status(201).send("Success");

@@ -11,6 +11,19 @@ const updateTimeout = 1000;
 
 const miner = new WorkerAsyncMiner();
 
+function getPeerObj(): Peer {
+  return {
+    ip: process.env.NODE_HOST || "",
+    port: parseInt(process.env.NODE_PORT || "", 10),
+    name: process.env.MINER_NAME || "",
+    active: true,
+    superPeer:
+      process.env.LEADER_HOST === process.env.NODE_HOST &&
+      process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
+    checkedAt: Date.now(),
+  };
+}
+
 // Manages the blockchain, mining and communication with peers
 export default class Node {
   public currentBlockchain: Blockchain;
@@ -22,7 +35,7 @@ export default class Node {
   public superPeer: boolean;
 
   constructor() {
-    const currentPeer: Peer = this.getPeerObj();
+    const currentPeer: Peer = getPeerObj();
     this.currentBlockchain = new Blockchain();
     this.peersState = new PeersState();
     this.superPeer = currentPeer.superPeer;
@@ -36,12 +49,10 @@ export default class Node {
     // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
-    } else {
-      if (this.superPeer) {
-        // solo il superPeer crea il genesis block.
-        this.currentBlockchain.pushGenesisBlock();
-        db.insert(this.currentBlockchain.lastBlock);
-      }
+    } else if (this.superPeer) {
+      // solo il superPeer crea il genesis block.
+      this.currentBlockchain.pushGenesisBlock();
+      db.insert(this.currentBlockchain.lastBlock);
     }
   }
 
@@ -53,19 +64,6 @@ export default class Node {
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout);
     }
-  }
-
-  private getPeerObj(): Peer {
-    return {
-      ip: process.env.NODE_HOST || "",
-      port: parseInt(process.env.NODE_PORT || "", 10),
-      name: process.env.MINER_NAME || "",
-      active: true,
-      superPeer:
-        process.env.LEADER_HOST === process.env.NODE_HOST &&
-        process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
-      checkedAt: Date.now(),
-    };
   }
 
   // Ran every timeout

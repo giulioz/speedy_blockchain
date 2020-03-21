@@ -1,4 +1,5 @@
 import Peer, { IncomingPeer } from "./Peer";
+
 export default class PeersState {
   peers: Peer[] = [];
 

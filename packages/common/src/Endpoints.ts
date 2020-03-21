@@ -3,7 +3,6 @@ import PeersState from "./PeersState";
 import IncomingPeer from "./Peer";
 import Block from "./Block";
 import Blockchain from "./Blockchain";
-import Peer from "./Peer";
 
 export default interface Endpoints {
   "GET /blocks/from/:from/to/:to": {
