@@ -1,5 +1,6 @@
 import { Worker } from "worker_threads";
 import path from "path";
+import fs from "fs";
 
 import {
   Block,
@@ -7,6 +8,10 @@ import {
   UnhashedBlock,
   Transaction,
 } from "@speedy_blockchain/common";
+import {
+  DIFFICULTY,
+  MAX_TRANSACTIONS,
+} from "@speedy_blockchain/common/dist/Blockchain";
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
 
 interface Job {
@@ -15,60 +20,106 @@ interface Job {
   done(data: Block): void;
 }
 
-const EMPTY_JOB = { block: null, done: null, fail: null };
+const EMPTY_JOB = {
+  block: null,
+  done: null,
+  fail: (err: any) => {
+    throw err;
+  },
+};
+
+export type OutgoingMessage =
+  | { type: "setDifficulty"; data: number }
+  | { type: "mineBlock"; data: UnhashedBlock }
+  | { type: "newTransaction"; data: Transaction }
+  | { type: "abort" };
 
 export default class WorkerAsyncMiner implements AsyncMiner {
-  worker: Worker = this.createNewWorker();
+  worker: Worker;
   currentJob: Job = EMPTY_JOB;
-  queuedJobs: Job[] = [];
+
+  constructor(difficulty: number = DIFFICULTY) {
+    this.worker = this.createNewWorker();
+    this.setDifficulty(difficulty);
+  }
 
   private createNewWorker(): Worker {
     const newWorker = new Worker(this.minerScriptPath());
+
     newWorker.on("error", error => {
       this.currentJob.fail(error);
     });
-    newWorker.on("message", data => {
-      const unhashedNewBlock: UnhashedBlock = {
-        ...this.currentJob.block,
-        nonce: data,
-      };
-      const createdBlock: Block = createBlock(unhashedNewBlock);
+
+    newWorker.on("message", (data: Block) => {
+      const createdBlock: Block = createBlock(data);
       this.currentJob.done(createdBlock);
-      this.nextjob();
+      this.currentJob = EMPTY_JOB;
     });
+
     return newWorker;
+  }
+
+  public get busy() {
+    return Boolean(this.currentJob.block);
   }
 
   public mine(rawBlock: UnhashedBlock): Promise<Block> {
     return new Promise((resolve, reject) => {
-      const newJob = { block: rawBlock, done: resolve, fail: reject };
-      if (this.currentJob.block) {
-        this.queuedJobs.push(newJob);
+      if (this.busy) {
+        reject(new Error("WorkerAsyncMiner currently busy"));
       } else {
+        const newJob = { block: rawBlock, done: resolve, fail: reject };
         this.currentJob = newJob;
+
+        const msg: OutgoingMessage = { type: "mineBlock", data: rawBlock };
+        this.worker.postMessage(msg);
       }
-      this.worker.postMessage({ type: "mineBlock", data: rawBlock });
     });
   }
 
   public notifyNewTransaction(t: Transaction) {
-    this.worker.postMessage({ type: "newTransaction", data: t });
+    if (
+      this.currentJob.block &&
+      this.currentJob.block.transactions.length < MAX_TRANSACTIONS
+    ) {
+      this.currentJob.block.transactions.push(t);
+
+      const msg: OutgoingMessage = { type: "newTransaction", data: t };
+      this.worker.postMessage(msg);
+
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  // Easiest way...
-  public async stop() {
-    this.currentJob.fail(new Error("Miner stopped"));
-    const newWorker = this.createNewWorker();
+  public async abort() {
+    const msg: OutgoingMessage = { type: "abort" };
+    this.worker.postMessage(msg);
+
+    this.currentJob.fail(new Error("Aborted"));
+  }
+
+  public async setDifficulty(d: number) {
+    const msg: OutgoingMessage = { type: "setDifficulty", data: d };
+    this.worker.postMessage(msg);
+  }
+
+  public async dispose() {
     await this.worker.terminate();
-    this.worker = newWorker;
-  }
-
-  private nextjob() {
-    const nextJob = this.queuedJobs.shift();
-    this.currentJob = nextJob ? nextJob : EMPTY_JOB;
   }
 
   private minerScriptPath(): string {
-    return path.resolve(__dirname, "./minerScript.js");
+    const defaultPath = path.resolve(__dirname, "./minerScript.js");
+    const testsPath = path.resolve(
+      __dirname,
+      "../dist/backend/src/minerScript.js"
+    );
+
+    if (fs.existsSync(defaultPath)) {
+      return defaultPath;
+    } else {
+      return testsPath;
+    }
   }
 }

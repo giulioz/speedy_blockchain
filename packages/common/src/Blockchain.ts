@@ -4,12 +4,16 @@ import Transaction from "./Transaction";
 import Block, { computeBlockHash, createBlock, UnhashedBlock } from "./Block";
 import { genZeroes, getTimestamp } from "./utils";
 import AsyncMiner from "./AsyncMiner";
+
 // difficulty of our PoW algorithm
-const difficulty = 2;
+export const DIFFICULTY = 2;
+
+// max transactions per block
+export const MAX_TRANSACTIONS = 4000;
 
 // Check if blockHash is valid hash of block and satisfies
 // the difficulty criteria.
-function isValidBlock(block: Block) {
+export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
   const unhashedBlock: UnhashedBlock = {
     index: block.index,
     transactions: block.transactions,
@@ -17,6 +21,7 @@ function isValidBlock(block: Block) {
     previousHash: block.previousHash,
     nonce: block.nonce,
   };
+
   return (
     block.hash.startsWith(genZeroes(difficulty)) &&
     block.hash === computeBlockHash(unhashedBlock)
@@ -106,16 +111,10 @@ export default class Blockchain {
       return false;
     }
     const lastBlock = this.lastBlock;
-    /*
-      in questo modo ci prendiamo tutte le transaction disponibili in questo momento.
-      ho notato che se usiamo l'array unconfirmedTransaction può essere che appena generato il blocco si siano aggiunte nuove transaction,
-      e quindi la POW va a puttane.
-      Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare
-    */
 
     const transactionsToValidate = [];
     while (this.unconfirmedTransactions.length) {
-      transactionsToValidate.push(this.unconfirmedTransactions.shift());
+      transactionsToValidate.push(this.unconfirmedTransactions.pop());
     }
 
     const unhashedBlock: UnhashedBlock = {
@@ -125,19 +124,22 @@ export default class Blockchain {
       previousHash: lastBlock.hash,
       nonce: 0,
     };
+
     const block = await asyncMiner.mine(unhashedBlock);
     this.addBlock(block);
     return block;
   }
 
-  pushTransaction(content: Transaction["content"]) {
+  pushTransaction(content: Transaction["content"], asyncMiner: AsyncMiner) {
     const transaction: Transaction = {
       id: uuidv4(),
       timestamp: getTimestamp(),
       content,
     };
 
-    this.unconfirmedTransactions.push(transaction);
+    if (!asyncMiner.notifyNewTransaction(transaction)) {
+      this.unconfirmedTransactions.push(transaction);
+    }
   }
 
   findTransactionById(

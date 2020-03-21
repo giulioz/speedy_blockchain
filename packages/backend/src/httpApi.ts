@@ -70,7 +70,7 @@ export function createHttpApi(node: Node) {
 
   // submit a new transaction with content
   ep(app, "POST /transaction", (req, res) => {
-    node.currentBlockchain.pushTransaction(req.body);
+    node.pushTransaction(req.body);
 
     res.status(201).send("Success");
   });

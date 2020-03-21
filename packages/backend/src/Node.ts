@@ -1,6 +1,9 @@
 import { Blockchain, Peer } from "@speedy_blockchain/common";
+import { Transaction } from "@speedy_blockchain/common";
+
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
+
 const updateTimeout = 1000;
 
 const miner = new WorkerAsyncMiner();
@@ -48,5 +51,9 @@ export default class Node {
     // TODO: Save the block to DB
 
     this.updateTimeout = setTimeout(() => this.periodicUpdate(), updateTimeout);
+  }
+
+  public pushTransaction(t: Transaction["content"]) {
+    this.currentBlockchain.pushTransaction(t, miner);
   }
 }
