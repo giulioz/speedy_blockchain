@@ -8,33 +8,33 @@ import FiltersIcon from "@material-ui/icons/FilterList";
 
 const useStyles = makeStyles(theme => ({
   filterBarPaper: {
-    marginBottom: theme.spacing(4)
+    marginBottom: theme.spacing(4),
   },
   filterBar: {
-    alignItems: "center"
+    alignItems: "center",
   },
   filterIcon: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   filterField: {
     borderRadius: theme.shape.borderRadius,
     marginRight: theme.spacing(2),
     backgroundColor: fade(theme.palette.common.white, 0.15),
     "&:hover": {
-      backgroundColor: fade(theme.palette.common.white, 0.25)
-    }
+      backgroundColor: fade(theme.palette.common.white, 0.25),
+    },
   },
   filterFieldGrow: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   inputRoot: {
-    color: "inherit"
+    color: "inherit",
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 2),
     transition: theme.transitions.create("width"),
-    width: "100%"
-  }
+    width: "100%",
+  },
 }));
 
 export type FilterFieldType = { label: string; value: string; grow?: boolean };
@@ -43,7 +43,7 @@ function FilterField({
   placeholder,
   value,
   onChange,
-  grow = false
+  grow = false,
 }: {
   placeholder: string;
   value: string;
@@ -57,7 +57,7 @@ function FilterField({
       className={clsx(classes.filterField, grow && classes.filterFieldGrow)}
       classes={{
         root: classes.inputRoot,
-        input: classes.inputInput
+        input: classes.inputInput,
       }}
       placeholder={placeholder}
       value={value}
@@ -68,7 +68,7 @@ function FilterField({
 
 export default function FilterBar({
   filters,
-  onChange
+  onChange,
 }: {
   filters: { [id: string]: FilterFieldType };
   onChange: (id: string) => (e: React.ChangeEvent<HTMLInputElement>) => void;

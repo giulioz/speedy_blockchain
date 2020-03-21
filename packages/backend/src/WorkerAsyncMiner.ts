@@ -5,7 +5,7 @@ import {
   Block,
   AsyncMiner,
   UnhashedBlock,
-  Transaction
+  Transaction,
 } from "@speedy_blockchain/common";
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
 
@@ -30,7 +30,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     newWorker.on("message", data => {
       const unhashedNewBlock: UnhashedBlock = {
         ...this.currentJob.block,
-        nonce: data
+        nonce: data,
       };
       const createdBlock: Block = createBlock(unhashedNewBlock);
       this.currentJob.done(createdBlock);
