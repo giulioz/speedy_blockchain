@@ -1,12 +1,14 @@
+import fetch from "node-fetch";
+
 import { PeersState } from "@speedy_blockchain/common/src";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
-import fetch from "node-fetch";
 
 const maxRetry = 3; // max number to retry for a http call
 
 export async function sendPeersListToOtherNodes(peerList: PeersState) {
   peerList.peers.sort((peer1, peer2) => peer1.checkedAt - peer2.checkedAt);
-  peerList.peers.forEach(async peer => {
+
+  return Promise.all(peerList.peers.map(async peer => {
     if (
       peer.ip !== process.env.NODE_HOST ||
       peer.port !== parseInt(process.env.NODE_PORT, 10)
@@ -20,7 +22,7 @@ export async function sendPeersListToOtherNodes(peerList: PeersState) {
         peer.checkedAt = Date.now();
       }
     }
-  });
+  }));
 }
 
 async function httpCall(
