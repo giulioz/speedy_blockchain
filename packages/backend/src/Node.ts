@@ -48,7 +48,7 @@ export default class Node {
       port: parseInt(process.env.NODE_PORT),
       name: process.env.MINER_NAME,
       active: true,
-      superPeer: (process.env.LEADER_HOST, process.env.LEADER_PORT) === (process.env.NODE_HOST, process.env.NODE_PORT), // maybe we can remove the superPeer var here.
+      superPeer: process.env.LEADER_HOST === process.env.NODE_HOST && process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
       checkedAt: Date.now()
     }
   }
