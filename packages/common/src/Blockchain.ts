@@ -110,7 +110,7 @@ export default class Blockchain {
       in questo modo ci prendiamo tutte le transaction disponibili in questo momento.
       ho notato che se usiamo l'array unconfirmedTransaction può essere che appena generato il blocco si siano aggiunte nuove transaction,
       e quindi la POW va a puttane.
-      Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare 
+      Non so se sia la soluzione giusta, però ho fatto alcuni test e sembra funzionare
     */
 
     const transactionsToValidate = [];

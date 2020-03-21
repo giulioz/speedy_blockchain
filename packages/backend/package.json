@@ -24,11 +24,17 @@
     "@types/node-fetch": "^2.5.5",
     "concurrently": "^5.1.0",
     "nodemon": "^2.0.2",
-    "ts-node": "^8.6.2"
+    "ts-node": "^8.6.2",
+    "tslint": "^6.1.0",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1"
   },
   "scripts": {
     "start": "node dist/backend/src/index.js",
     "build": "tsc",
-    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\""
+    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\"",
+    "lint": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "format": "prettier --list-different --write \"{scripts,src}/**/*.{js,md,tsx,ts,html,json}\"",
+    "precommit": "lint-staged"
   }
 }

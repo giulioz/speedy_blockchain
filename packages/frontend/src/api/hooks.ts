@@ -11,11 +11,11 @@ export function useRemoteData<K extends keyof Endpoints>(
 
   useEffect(() => {
     async function loadData() {
-      const data = await apiCall(endpoint, {
+      const received = await apiCall(endpoint, {
         params: params || {},
         body: null,
       });
-      setData(data);
+      setData(received);
     }
 
     loadData();

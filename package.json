@@ -9,9 +9,7 @@
   "devDependencies": {
     "concurrently": "^5.1.0",
     "husky": "^4.2.3",
-    "lerna": "^3.20.2",
-    "lint-staged": "^10.0.8",
-    "prettier": "^1.19.1"
+    "lerna": "^3.20.2"
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\" \"npm run dev-common\"",
@@ -21,11 +19,12 @@
     "build-backend": "lerna run build --scope @speedy_blockchain/backend",
     "build-common": "lerna run build --scope @speedy_blockchain/common",
     "docker-build": "docker build -t speedy_blockchain .",
-    "format": "prettier --list-different --write \"packages/*/{scripts,src}/**/*.{js,md,tsx,ts,html,json}\""
+    "format": "lerna run format",
+    "lint": "lerna run lint"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lerna run --concurrency 1 --stream precommit"
     }
   },
   "workspaces": [
