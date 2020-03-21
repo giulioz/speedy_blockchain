@@ -1,4 +1,4 @@
-/* tslint:disable-next-line:no-var-requires */
+/* eslint-disable-next-line:no-var-requires */
 require("dotenv").config();
 
 import Node from "./Node";
