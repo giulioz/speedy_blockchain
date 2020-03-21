@@ -25,7 +25,7 @@ export function useRemoteData<K extends keyof Endpoints>(
 }
 
 export function useLastNBlocks(maxBlocks: number) {
-  const [data, setData] = useState<Block[]>(null);
+  const [data, setData] = useState<Block[] | null>(null);
 
   useEffect(() => {
     async function loadData() {

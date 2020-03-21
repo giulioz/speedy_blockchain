@@ -19,7 +19,7 @@ function withParameters<K extends keyof Endpoints>(
     .split("/")
     .map(part => {
       if (part.startsWith(":")) {
-        return params[part.substring(1)];
+        return params[part.substring(1) as keyof ParamsType<K>];
       } else {
         return part;
       }

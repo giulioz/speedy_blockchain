@@ -7,11 +7,11 @@ export default interface Transaction {
 }
 
 export function sortAsExpected(t: Transaction): Transaction {
-  const orderedContent = {};
+  const orderedContent: any = {};
   Object.keys(t.content)
     .sort()
     .forEach(key => {
-      orderedContent[key] = t.content[key];
+      orderedContent[key] = t.content[key as keyof typeof t["content"]];
     });
 
   return {

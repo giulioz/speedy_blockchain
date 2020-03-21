@@ -1,8 +1,10 @@
-/* tslint:disable-next-line:no-var-requires */
 require("dotenv").config();
 
+/* eslint-disable-next-line import/first */
 import Node from "./Node";
-import { createHttpApi } from "./httpApi";
+/* eslint-disable-next-line import/first */
+import createHttpApi from "./httpApi";
+/* eslint-disable-next-line import/first */
 import { initDB } from "./db";
 import * as NodeCommunication from "./NodeCommunication";
 
@@ -29,7 +31,7 @@ async function main() {
       }
       // await NodeCommunication.getDBFromSuperPeer();
     }
-    console.log("Node listening on " + port);
+    console.log(`Node listening on ${port}`);
   });
 }
 

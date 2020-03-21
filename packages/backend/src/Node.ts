@@ -1,6 +1,12 @@
-import { Blockchain, Peer, PeersState } from "@speedy_blockchain/common";
+import {
+  Blockchain,
+  Peer,
+  PeersState,
+  Transaction,
+} from "@speedy_blockchain/common";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
+
 const updateTimeout = 1000;
 
 const miner = new WorkerAsyncMiner();
@@ -8,9 +14,13 @@ const miner = new WorkerAsyncMiner();
 // Manages the blockchain, mining and communication with peers
 export default class Node {
   public currentBlockchain: Blockchain;
+
   public peersState: PeersState;
-  private updateTimeout: NodeJS.Timeout;
+
+  private updateTimeout: NodeJS.Timeout | null = null;
+
   public superPeer: boolean;
+
   constructor() {
     const currentPeer: Peer = this.getPeerObj();
     this.currentBlockchain = new Blockchain();
@@ -40,14 +50,16 @@ export default class Node {
   }
 
   public stopMiningLoop() {
-    clearTimeout(this.updateTimeout);
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
   }
 
   private getPeerObj(): Peer {
     return {
-      ip: process.env.NODE_HOST,
-      port: parseInt(process.env.NODE_PORT, 10),
-      name: process.env.MINER_NAME,
+      ip: process.env.NODE_HOST || "",
+      port: parseInt(process.env.NODE_PORT || "", 10),
+      name: process.env.MINER_NAME || "",
       active: true,
       superPeer:
         process.env.LEADER_HOST === process.env.NODE_HOST &&
@@ -67,5 +79,9 @@ export default class Node {
     // TODO: Save the block to DB
 
     this.updateTimeout = setTimeout(() => this.periodicUpdate(), updateTimeout);
+  }
+
+  public pushTransaction(t: Transaction["content"]) {
+    this.currentBlockchain.pushTransaction(t, miner);
   }
 }
