@@ -7,8 +7,9 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "concurrently": "^5.1.0",
     "lerna": "^3.20.2",
-    "concurrently": "^5.1.0"
+    "prettier": "^1.19.1"
   },
   "scripts": {
     "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\" \"npm run dev-common\"",
@@ -17,7 +18,8 @@
     "dev-common": "lerna run dev --scope @speedy_blockchain/common",
     "build-backend": "lerna run build --scope @speedy_blockchain/backend",
     "build-common": "lerna run build --scope @speedy_blockchain/common",
-    "docker-build": "docker build -t speedy_blockchain ."
+    "docker-build": "docker build -t speedy_blockchain .",
+    "format": "prettier --list-different --write \"packages/*/{scripts,src}/**/*.{js,md,tsx,ts,html,json}\""
   },
   "workspaces": [
     "packages/*"
