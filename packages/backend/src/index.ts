@@ -6,8 +6,6 @@ import Node from "./Node";
 import createHttpApi from "./httpApi";
 /* eslint-disable-next-line import/first */
 import { initDB } from "./db";
-/* eslint-disable-next-line import/first */
-import * as NodeCommunication from "./NodeCommunication";
 
 const minerName = process.env.MINER_NAME || "Miner";
 
@@ -24,16 +22,12 @@ async function main() {
     ? parseInt(process.env.NODE_PORT, 10)
     : 8080;
 
-  httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", async () => {
-    if (!node.superPeer) {
-      if ((await NodeCommunication.registerNodeToSuperPeer()).success) {
-        const lastBlock = await NodeCommunication.getLastBlockFromSuperPeer();
-        node.currentBlockchain.chain = [lastBlock]; // TODO: only for test - fix this
-      }
-      // await NodeCommunication.getDBFromSuperPeer();
-    }
-    console.log(`Node listening on ${port}`);
+  await new Promise(resolve => {
+    httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", resolve);
   });
+  console.log(`Node listening on ${port}`);
+
+  await node.initCommunication();
 }
 
 main();

@@ -81,7 +81,7 @@ export default function createHttpApi(node: Node) {
   });
 
   // register a new node
-  ep(app, "PUT /peers/:name", (req, res) => {
+  ep(app, "PUT /peers/:id", (req, res) => {
     console.log(`REGISTER NEW NODE WITH IP -> ${req.body.ip} ${req.body.port}`);
     node.peersState.insertIncomingPeer(req.body);
     NodeCommunication.sendPeersListToOtherNodes(node.peersState);

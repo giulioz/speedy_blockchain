@@ -6,6 +6,7 @@ import {
 } from "@speedy_blockchain/common";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
+import * as NodeCommunication from "./NodeCommunication";
 
 const updateTimeout = 1000;
 
@@ -40,6 +41,22 @@ export default class Node {
     this.peersState = new PeersState();
     this.superPeer = currentPeer.superPeer;
     this.peersState.insertPeer(currentPeer);
+  }
+
+  public async initCommunication() {
+    if (!this.superPeer) {
+      await NodeCommunication.registerNodeToSuperPeer();
+      // await NodeCommunication.getPeersFromSuperPeer();
+      // await NodeCommunication.notifyAll();
+
+      const lastBlock = await NodeCommunication.getLastBlockFromSuperPeer();
+      if (lastBlock === "Block not found.") {
+        throw new Error("No last block from super peer.");
+      }
+
+      this.currentBlockchain.chain = [lastBlock]; // TODO: only for test - fix this
+      // await NodeCommunication.getDBFromSuperPeer();
+    }
   }
 
   public async rehydrateBlocksFromDB() {
