@@ -43,12 +43,11 @@ interface SearchFormProps {
   title: string;
   searching: boolean;
   children: any;
-  setNamedInputState: (event: any) => void;
   onSearch: () => void;
 }
 
 export default function SearchForm(props: SearchFormProps) {
-  const { title, children, setNamedInputState, onSearch, searching } = props;
+  const { title, children, onSearch, searching } = props;
   const classes = useStyles();
 
   return (

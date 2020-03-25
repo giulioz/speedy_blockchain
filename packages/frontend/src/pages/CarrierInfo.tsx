@@ -71,9 +71,11 @@ const useStyles = makeStyles(theme => ({
 
 interface CarrierSearchState {
   carrierId: string;
+  // from: Date;
+  // to: Date;
 }
 
-const DEFAULT_CARRIER_SEARCH_STATE = {
+const DEFAULT_CARRIER_SEARCH_STATE: CarrierSearchState = {
   carrierId: "",
 };
 
@@ -93,7 +95,7 @@ function useCarrierSearch() {
       carrierID: "20363",
       averageDelay: 1.4,
       totalNumberOfFlights: 720,
-      dealayedFlights: 69, // nice
+      delayedFlights: 69, // nice
       flightsInAdvance: 13,
       // flights: Flights[],
     };
@@ -162,7 +164,6 @@ export default function CarrierInfo() {
             title="Enter a carrier airline ID and a time range"
             searching={searching}
             onSearch={onSearch}
-            setNamedInputState={setNamedInputState}
           >
             <TextField
               name="carrierId"
@@ -202,7 +203,7 @@ export default function CarrierInfo() {
                 />
                 <DataCard
                   title="Delayed flights"
-                  value={carrierData.dealayedFlights}
+                  value={carrierData.delayedFlights}
                 />
                 <DataCard
                   title="Flights in advance"
