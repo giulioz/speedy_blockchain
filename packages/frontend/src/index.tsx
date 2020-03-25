@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Blockchain from "./pages/Blockchain";
 import Flights from "./pages/Flights";
 import Peers from "./pages/Peers";
+import CarrierInfo from "./pages/CarrierInfo";
 
 const theme = (createMuiTheme as any)({
   palette: {
@@ -49,7 +50,7 @@ function App() {
             <Layout title="Find Flight"></Layout>
           </Route>
           <Route path="/carrierInfo">
-            <Layout title="Carrier Info"></Layout>
+            <CarrierInfo />
           </Route>
           <Route path="/routeFinder">
             <Layout title="Route Finder"></Layout>

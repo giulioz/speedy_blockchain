@@ -17,3 +17,17 @@ export function useTimeout(timeout: number) {
 
   return value;
 }
+
+export function useNamedInputState<T>(initialState: T) {
+  const [namedInputState, setState] = useState<T>(initialState);
+
+  const setNamedInputState = (event: any) => {
+    const { target } = event;
+    setState({
+      ...namedInputState,
+      [target.name]: target.value,
+    });
+  };
+
+  return { namedInputState, setNamedInputState };
+}
