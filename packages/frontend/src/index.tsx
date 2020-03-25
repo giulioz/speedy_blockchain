@@ -14,10 +14,10 @@ const theme = (createMuiTheme as any)({
   palette: {
     type: "dark",
     primary: {
-      main: "#2979ff",
+      main: "#bf6618",
     },
     secondary: {
-      main: "#81c784",
+      main: "#71bf18",
     },
   },
   overrides: {
