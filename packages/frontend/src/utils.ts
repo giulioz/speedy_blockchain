@@ -21,12 +21,12 @@ export function useTimeout(timeout: number) {
 export function useNamedInputState<T>(initialState: T) {
   const [namedInputState, setState] = useState<T>(initialState);
 
-  const setNamedInputState = (event: any) => {
+  const setNamedInputState = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event;
     setState({
       ...namedInputState,
       [target.name]: target.value,
-    });
+    } as { [K in keyof T]: T[K] });
   };
 
   return { namedInputState, setNamedInputState };
