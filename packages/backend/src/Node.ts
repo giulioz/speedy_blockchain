@@ -31,14 +31,13 @@ export default class Node {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
 
-    // // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
-    // if (blocks.length > 0) {
-    //   this.currentBlockchain.replaceChain(blocks);
-    // } else if (this.superPeer) {
-    //   // solo il superPeer crea il genesis block.
-    //   this.currentBlockchain.pushGenesisBlock();
-    //   db.insert(this.currentBlockchain.lastBlock);
-    // }
+    // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
+    if (blocks.length > 0) {
+      this.currentBlockchain.replaceChain(blocks);
+    } else {
+      this.currentBlockchain.pushGenesisBlock();
+      db.insert(this.currentBlockchain.lastBlock);
+    }
   }
 
   public addPeer(peer: IncomingPeer) {

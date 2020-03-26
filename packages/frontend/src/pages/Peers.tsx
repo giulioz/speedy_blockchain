@@ -72,7 +72,9 @@ function PeerBlock({ peer }: { peer: Peer }) {
           <Typography variant="h6">
             {peer.name ? peer.name : "Anonymous"}
           </Typography>
-          <Typography color="textSecondary">( {peer.ip} )</Typography>
+          <Typography color="textSecondary">
+            ({peer.hostname}:{peer.port})
+          </Typography>
         </div>
         <Typography
           className={peer.active ? classes.online : classes.disconnected}
@@ -84,10 +86,28 @@ function PeerBlock({ peer }: { peer: Peer }) {
   );
 }
 
+function PeerList() {
+  const peersState = useRemoteData("GET /peers");
+
+  if (!peersState) {
+    return null;
+  }
+
+  if (peersState.status === "error") {
+    return <Typography>Error fetching peers.</Typography>;
+  }
+
+  return (
+    <>
+      {peersState?.data.map(peer => (
+        <PeerBlock key={peer.hostname} peer={peer} />
+      ))}
+    </>
+  );
+}
+
 export default function Peers() {
   const classes = useStyles();
-
-  const peersState = useRemoteData("GET /peers");
 
   return (
     <Layout title="Explore Blocks">
@@ -96,10 +116,7 @@ export default function Peers() {
         <Container maxWidth="lg" className={classes.container}>
           <Paper className={classes.paper}>
             <Title>Peers list</Title>
-            {peersState &&
-              peersState.peers.map(peer => (
-                <PeerBlock key={peer.ip} peer={peer} />
-              ))}
+            <PeerList />
           </Paper>
         </Container>
       </main>

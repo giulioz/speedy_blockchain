@@ -78,9 +78,11 @@ export async function initialBlockDownload(
   blockchain: Blockchain
 ) {
   // Get the chains from the peers
-  const chains: ChainInfo[] = await Promise.all(
-    peers.map(peer => httpCall(peer, "GET /chainInfo"))
-  );
+  const chains = (
+    await Promise.all(peers.map(peer => httpCall(peer, "GET /chainInfo")))
+  )
+    .filter(r => r.status !== ("error" as const))
+    .map(r => (r as { status: "ok"; data: ChainInfo }).data);
 
   // Find the longest chain, and select a random peer with the longest chain and the same hash
   const sortedChains = chains.sort((a, b) => b.length - a.length);
@@ -106,11 +108,11 @@ export async function initialBlockDownload(
       blockId: index.toString(),
     });
 
-    if ((block as any).status === "Block not found.") {
+    if (block.status === "error") {
       throw new Error("Invalid response in IBD");
     }
 
-    if (!blockchain.addBlock(block as Block)) {
+    if (!blockchain.addBlock(block.data)) {
       throw new Error("Invalid longest chain in IBD");
     }
 
@@ -147,9 +149,15 @@ export async function fetchRemotePeers(initialPeers: Peer[]) {
       })
     )
   );
-  const validResults = results.filter(
-    result => result !== "UNREACHABLE"
-  ) as Peer[][];
+  const validResults = results
+    .filter(result => result !== "UNREACHABLE" && result.status !== "error")
+    .map(
+      r =>
+        (r as {
+          status: "ok";
+          data: Peer[];
+        }).data
+    );
 
   const allPeers = validResults.reduce((acc, c) => [...acc, ...c], []);
   const peersSerializedUnique = [...new Set(allPeers.map(serializePeer))];

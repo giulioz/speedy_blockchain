@@ -5,37 +5,39 @@ import Block from "./Block";
 import Blockchain from "./Blockchain";
 import ChainInfo from "./ChainInfo";
 
-export type ResponseStatus<T extends string = string> = { status: T };
+export type ResponseStatus<T = null, E extends string = string> =
+  | { status: "error"; error: E }
+  | { status: "ok"; data: T };
 
 export default interface Endpoints {
   "GET /chainInfo": {
     params: {};
-    res: ChainInfo;
+    res: ResponseStatus<ChainInfo>;
     req: null;
   };
   "GET /blocks/from/:from/to/:to": {
     params: { from: string; to: string };
-    res: Block[];
+    res: ResponseStatus<Block[]>;
     req: null;
   };
   "GET /block/last": {
     params: {};
-    res: Block | ResponseStatus<"Block not found.">;
+    res: ResponseStatus<Block, "Block not found.">;
     req: null;
   };
   "GET /block/:blockId": {
     params: { blockId: string };
-    res: Block | ResponseStatus<"Block not found.">;
+    res: ResponseStatus<Block, "Block not found.">;
     req: null;
   };
   "GET /block/:blockId/:transactionId": {
     params: { blockId: string; transactionId: string };
-    res: Transaction | ResponseStatus;
+    res: ResponseStatus<Transaction>;
     req: null;
   };
   "GET /transaction/:id": {
     params: { id: string };
-    res: Transaction | ResponseStatus;
+    res: ResponseStatus<Transaction>;
     req: null;
   };
   "POST /transaction": {
@@ -45,7 +47,7 @@ export default interface Endpoints {
   };
   "GET /peers": {
     params: {};
-    res: Peer[];
+    res: ResponseStatus<Peer[]>;
     req: null;
   };
   "POST /announce": {
@@ -68,7 +70,7 @@ export default interface Endpoints {
 
   "GET /test": {
     params: {};
-    res: Blockchain | Block | ResponseStatus;
+    res: ResponseStatus<Blockchain | Block>;
     req: null;
   };
 }
