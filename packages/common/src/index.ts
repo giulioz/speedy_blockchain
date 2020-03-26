@@ -4,11 +4,11 @@ import Transaction from "./Transaction";
 import Flight from "./Flight";
 import Peer from "./Peer";
 import PeersState from "./PeersState";
-import CarrierData from "./CarrierData";
 import AsyncMiner from "./AsyncMiner";
 import Endpoints from "./Endpoints";
 import ChainInfo from "./ChainInfo";
 import * as utils from "./utils";
+import { CarrierData, CarrierRequest, FlightRequest } from "./Queries";
 
 export {
   Blockchain,
@@ -18,9 +18,11 @@ export {
   Flight,
   Peer,
   PeersState,
-  CarrierData,
   AsyncMiner,
   Endpoints,
   ChainInfo,
+  CarrierData,
+  CarrierRequest,
+  FlightRequest,
   utils,
 };

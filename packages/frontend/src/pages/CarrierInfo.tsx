@@ -9,8 +9,8 @@ import {
   LinearProgress,
 } from "@material-ui/core";
 import { Spring } from "react-spring/renderprops";
-import { CarrierData } from "@speedy_blockchain/common";
-import { useNamedInputState } from "../utils";
+import { CarrierRequest, CarrierData } from "@speedy_blockchain/common";
+import { useNamedInputState, useAsyncFormSearch } from "../utils";
 import SearchForm from "../components/SearchForm";
 
 const useStyles = makeStyles(theme => ({
@@ -64,54 +64,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-interface CarrierSearchState {
-  carrierId: string;
-  // from: Date;
-  // to: Date;
-}
-
-const DEFAULT_CARRIER_SEARCH_STATE: CarrierSearchState = {
-  carrierId: "",
-};
-
-function useCarrierSearch() {
-  const { namedInputState, setNamedInputState } = useNamedInputState(
-    DEFAULT_CARRIER_SEARCH_STATE
-  );
-  const [searching, setSearching] = useState<boolean>(false);
-  const [carrierData, setCarrierData] = useState<CarrierData | null>(null);
-
-  const handleSearch = () => setSearching(true);
-
-  async function searchData() {
-    console.log(namedInputState);
-    // const data = await fetchCarrierData(namedInputState);
-    const mockData: CarrierData = {
-      carrierID: "20363",
-      averageDelay: 1.4,
-      totalNumberOfFlights: 720,
-      delayedFlights: 69, // nice
-      flightsInAdvance: 13,
-      // flights: Flights[],
-    };
-    const data = await new Promise<CarrierData>(resolve =>
-      setTimeout(() => {
-        resolve(mockData);
-      }, 1000)
-    );
-    setSearching(false);
-    setCarrierData(data);
-  }
-
-  useEffect(() => {
-    if (searching) {
-      searchData();
-    }
-  }, [searchData, searching]);
-
-  return { carrierData, searching, onSearch: handleSearch, setNamedInputState };
-}
-
 interface DataCardProps {
   title: string;
   value: number;
@@ -140,14 +92,34 @@ function DataCard(props: DataCardProps) {
   );
 }
 
+const mockData: CarrierData = {
+  OP_CARRIER_AIRLINE_ID: "20363",
+  AVERAGE_DELAY: 1.4,
+  TOTAL_NUMBER_OF_FLIGHTS: 720,
+  DELAYED_FLIGHTS: 69, // nice
+  FLIGHTS_IN_ADVANCE: 13,
+  // flights: Flights[],
+};
+
+const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
+  OP_CARRIER_AIRLINE_ID: "",
+  // FROM: null,
+  // TO: null,
+};
+
 export default function CarrierInfo() {
   const classes = useStyles();
+
   const {
-    carrierData,
+    data,
     searching,
     onSearch,
-    setNamedInputState,
-  } = useCarrierSearch();
+    onNamedInputStateChange,
+  } = useAsyncFormSearch({
+    initialState: DEFAULT_CARRIER_REQUEST_STATE,
+    apiCallback: () => mockData,
+    isMock: true,
+  });
 
   return (
     <Layout title="Carrier Info">
@@ -161,48 +133,50 @@ export default function CarrierInfo() {
             onSearch={onSearch}
           >
             <TextField
-              name="carrierId"
+              name="OP_CARRIER_AIRLINE_ID"
               label="Carrier Airline ID"
               variant="outlined"
               placeholder="Example: 20363"
-              onChange={setNamedInputState}
+              onChange={onNamedInputStateChange}
             />
             <TextField
-              name="from"
+              name="FROM"
               label="From"
               placeholder={"Example: " + new Date()}
               variant="outlined"
+              onChange={onNamedInputStateChange}
             />
             <TextField
-              name="to"
+              name="TO"
               label="To"
               placeholder={"Example: " + new Date()}
               variant="outlined"
+              onChange={onNamedInputStateChange}
             />
           </SearchForm>
           {/* WIP */}
-          {carrierData && (
+          {data && (
             <Paper className={classes.carrierDataContainer}>
               <Typography variant="h4" color="secondary">
-                Carrier #{carrierData.carrierID}
+                Carrier #{data.OP_CARRIER_AIRLINE_ID}
               </Typography>
               <div className={classes.dataCardContainer}>
                 <DataCard
                   title="Total flights"
-                  value={carrierData.totalNumberOfFlights}
+                  value={data.TOTAL_NUMBER_OF_FLIGHTS}
                 />
                 <DataCard
                   title="Average delay"
                   variant="decimal"
-                  value={carrierData.averageDelay}
+                  value={data.AVERAGE_DELAY}
                 />
                 <DataCard
                   title="Delayed flights"
-                  value={carrierData.delayedFlights}
+                  value={data.DELAYED_FLIGHTS}
                 />
                 <DataCard
                   title="Flights in advance"
-                  value={carrierData.flightsInAdvance}
+                  value={data.FLIGHTS_IN_ADVANCE}
                 />
               </div>
             </Paper>
