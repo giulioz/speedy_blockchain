@@ -31,3 +31,51 @@ export function useNamedInputState<T>(initialState: T) {
 
   return { namedInputState, setNamedInputState };
 }
+
+export function useAsyncFormSearch<T, K>({
+  initialState,
+  apiCallback,
+  isMock = false,
+}: {
+  initialState: T;
+  apiCallback: (state?: T) => K;
+  isMock?: boolean;
+}): {
+  data: K | null;
+  searching: boolean;
+  onSearch: () => void;
+  onNamedInputStateChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+} {
+  const { namedInputState, setNamedInputState } = useNamedInputState(
+    initialState
+  );
+  const [searching, setSearching] = useState<boolean>(false);
+  const [data, setData] = useState<K | null>(null);
+
+  const handleSearch = () => setSearching(true);
+
+  async function searchData() {
+    const mocked = new Promise<K>(resolve =>
+      setTimeout(() => {
+        resolve(apiCallback());
+      }, 1000)
+    );
+    const data: K = isMock ? await mocked : await apiCallback(namedInputState);
+
+    setSearching(false);
+    setData(data);
+  }
+
+  useEffect(() => {
+    if (searching) {
+      searchData();
+    }
+  }, [searchData, searching]);
+
+  return {
+    data,
+    searching,
+    onSearch: handleSearch,
+    onNamedInputStateChange: setNamedInputState,
+  };
+}

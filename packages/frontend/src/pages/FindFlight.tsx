@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
-import { Flight } from "@speedy_blockchain/common";
+import { Flight, FlightRequest } from "@speedy_blockchain/common";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
 import {
@@ -11,7 +11,8 @@ import {
   Typography,
   TextField,
   Button,
-  IconButton
+  IconButton,
+  LinearProgress,
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import FlightIcon from "@material-ui/icons/Flight";
@@ -19,63 +20,22 @@ import LocationOnIcon from "@material-ui/icons/LocationOn";
 import ScheduleIcon from "@material-ui/icons/Schedule";
 import amber from "@material-ui/core/colors/amber";
 import green from "@material-ui/core/colors/green";
-
-function useFlightSearch() {
-  const [search, setSearch] = useState<string>("");
-  const [flight, setFlight] = useState<Flight | null>(null);
-
-  useEffect(() => {
-    async function searchData() {
-      // const data = await fetchFlight(search);
-      const mockData: Flight = {
-        AIR_TIME: 90.0,
-        ARR_DELAY: -11.0,
-        ARR_TIME: "1749",
-        CANCELLED: 0.0,
-        DAY_OF_WEEK: 5,
-        DEP_DELAY: -5.0,
-        DEP_TIME: "1605",
-        DEST_AIRPORT_ID: 13244,
-        DEST_CITY_NAME: "Memphis, TN",
-        DEST_STATE_NM: "Tennessee",
-        DEST: "MEM",
-        FLIGHT_DATE: new Date(),
-        OP_CARRIER_AIRLINE_ID: 20363,
-        OP_CARRIER_FL_NUM: "3692",
-        ORIGIN_AIRPORT_ID: 14683,
-        ORIGIN_CITY_NAME: "San Antonio, TX",
-        ORIGIN_STATE_NM: "Texas",
-        ORIGIN: "SAT",
-        YEAR: 2010
-      };
-      const data = await new Promise<Flight>(resolve =>
-        setTimeout(() => {
-          resolve(mockData);
-        }, 1000)
-      );
-
-      setFlight(data);
-    }
-
-    searchData();
-  }, [search]);
-
-  return { foundFlight: flight, setSearch };
-}
+import SearchForm from "../components/SearchForm";
+import { useAsyncFormSearch } from "../utils";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
     height: "100vh",
-    overflow: "auto"
+    overflow: "auto",
   },
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
     "& > :first-child": {
-      marginBottom: theme.spacing(4)
-    }
+      marginBottom: theme.spacing(4),
+    },
   },
   paper: {
     padding: theme.spacing(2),
@@ -83,15 +43,15 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     justifyContent: "space-between",
     "& .MuiTypography-root": {
-      margin: 0
-    }
+      margin: 0,
+    },
   },
   fieldContainer: {
     display: "flex",
     alignItems: "center",
     "& .MuiInputBase-root": {
-      marginRight: theme.spacing(2)
-    }
+      marginRight: theme.spacing(2),
+    },
   },
   flightContainer: {
     width: "100%",
@@ -100,63 +60,65 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     justifyContent: "space-between",
     padding: theme.spacing(2),
-    marginBottom: theme.spacing(2)
+    marginBottom: theme.spacing(2),
   },
   flightTitleContainer: {
     display: "flex",
     alignItems: "center",
     "& > *": {
-      marginRight: theme.spacing(4)
-    }
+      marginRight: theme.spacing(4),
+    },
   },
   flightInfoContainer: {
     display: "flex",
     alignItems: "center",
     "& > *": {
-      marginRight: theme.spacing(4)
+      marginRight: theme.spacing(4),
     },
     "& > div": {
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "column",
     },
     "& > :last-child": {
-      alignItems: "flex-end"
-    }
+      alignItems: "flex-end",
+    },
   },
   huge: {
-    fontSize: 40
+    fontSize: 40,
   },
   flightBetweenContainer: {
     display: "flex",
     alignItems: "stretch",
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "300px"
+    width: "300px",
   },
   dottedLineContainer: {
     display: "flex",
-    alignItems: "center"
+    alignItems: "center",
   },
   dottedLine: {
     height: "1px",
     width: "80px",
-    border: "2px dashed white"
+    border: "2px dashed white",
   },
   duration: {
     display: "flex",
     justifyContent: "center",
     marginTop: theme.spacing(1),
     "& :first-child": {
-      marginRight: theme.spacing(1)
-    }
-  }
+      marginRight: theme.spacing(1),
+    },
+  },
 }));
 
-function CityTime({ city, time, delay }) {
-  const absDelay = Math.abs(delay);
-  const sign = delay < 0 ? "-" : "+";
+function CityTime(props: { city: string; time: string; delay: number }) {
+  const { city, time, delay } = props;
+  const parsedDelay = +delay;
+  const absDelay = Math.abs(parsedDelay);
+  const sign = parsedDelay < 0 ? "-" : "+";
   const delayString = sign + absDelay + " min";
-  const color = delay < 0 ? green[500] : amber[500];
+  const color = parsedDelay < 0 ? green[500] : amber[500];
   return (
     <div>
       <Typography>{city}</Typography>
@@ -170,7 +132,8 @@ function CityTime({ city, time, delay }) {
   );
 }
 
-function FlightBetweenIcon({ duration }) {
+function FlightBetweenIcon(props: { duration: number }) {
+  const { duration } = props;
   const classes = useStyles();
   const durationString = duration + " min";
   return (
@@ -197,7 +160,8 @@ function FlightBetweenIcon({ duration }) {
   );
 }
 
-function FlightCard({ flight }: { flight: Flight }) {
+function FlightCard(props: { flight: Flight }) {
+  const { flight } = props;
   const classes = useStyles();
 
   return (
@@ -222,60 +186,74 @@ function FlightCard({ flight }: { flight: Flight }) {
   );
 }
 
+const mockData: Flight = {
+  AIR_TIME: 90.0,
+  ARR_DELAY: -11.0,
+  ARR_TIME: "17:49",
+  CANCELLED: 0.0,
+  DAY_OF_WEEK: 5,
+  DEP_DELAY: -5.0,
+  DEP_TIME: "16:05",
+  DEST_AIRPORT_ID: 13244,
+  DEST_CITY_NAME: "Memphis, TN",
+  DEST_STATE_NM: "Tennessee",
+  DEST: "MEM",
+  FLIGHT_DATE: new Date(),
+  OP_CARRIER_AIRLINE_ID: 20363,
+  OP_CARRIER_FL_NUM: "3692",
+  ORIGIN_AIRPORT_ID: 14683,
+  ORIGIN_CITY_NAME: "San Antonio, TX",
+  ORIGIN_STATE_NM: "Texas",
+  ORIGIN: "SAT",
+  YEAR: 2010,
+};
+
+const emptyFlight: FlightRequest = {
+  FLIGHT_DATE: new Date(),
+  OP_CARRIER_FL_NUM: "",
+};
+
 export default function FindFlight() {
   const classes = useStyles();
 
-  // const { foundFlight, setSearch } = useFlightSearch();
+  const {
+    data,
+    searching,
+    onSearch,
+    onNamedInputStateChange,
+  } = useAsyncFormSearch({
+    initialState: emptyFlight,
+    apiCallback: () => mockData,
+    isMock: true,
+  });
 
-  const mockData: Flight = {
-    AIR_TIME: 90.0,
-    ARR_DELAY: -11.0,
-    ARR_TIME: "17:49",
-    CANCELLED: 0.0,
-    DAY_OF_WEEK: 5,
-    DEP_DELAY: -5.0,
-    DEP_TIME: "16:05",
-    DEST_AIRPORT_ID: 13244,
-    DEST_CITY_NAME: "Memphis, TN",
-    DEST_STATE_NM: "Tennessee",
-    DEST: "MEM",
-    FLIGHT_DATE: new Date(),
-    OP_CARRIER_AIRLINE_ID: 20363,
-    OP_CARRIER_FL_NUM: "3692",
-    ORIGIN_AIRPORT_ID: 14683,
-    ORIGIN_CITY_NAME: "San Antonio, TX",
-    ORIGIN_STATE_NM: "Texas",
-    ORIGIN: "SAT",
-    YEAR: 2010
-  };
   return (
     <Layout title="Find a flight">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
+        {searching && <LinearProgress color="secondary" />}
         <Container maxWidth="lg" className={classes.container}>
-          <Paper className={classes.paper}>
-            <Typography variant="h6" color="secondary">
-              Enter a flight
-            </Typography>
-            <div className={classes.fieldContainer}>
-              <TextField
-                name="OP_CARRIER_AIRLINE_ID"
-                label="OP_CARRIER_AIRLINE_ID"
-                variant="outlined"
-                placeholder="Example: 20363"
-              />
-              <TextField
-                name="FLIGHT_DATE"
-                label="FLIGHT_DATE"
-                placeholder={"Example: " + new Date()}
-                variant="outlined"
-              />
-              <IconButton>
-                <SearchIcon />
-              </IconButton>
-            </div>
-          </Paper>
-          <FlightCard flight={mockData} />
+          <SearchForm
+            title="Enter a flight"
+            searching={searching}
+            onSearch={onSearch}
+          >
+            <TextField
+              name="OP_CARRIER_FL_NUM"
+              label="Flight number"
+              variant="outlined"
+              placeholder="Example: 20363"
+              onChange={onNamedInputStateChange}
+            />
+            <TextField
+              name="FLIGHT_DATE"
+              label="Flight date"
+              placeholder={"Example: " + new Date()}
+              variant="outlined"
+              onChange={onNamedInputStateChange}
+            />
+          </SearchForm>
+          {data && <FlightCard flight={data} />}
         </Container>
       </main>
     </Layout>
