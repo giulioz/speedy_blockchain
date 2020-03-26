@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   node_1:
-    build: .
+    image: "speedy_blockchain:latest"
     ports:
       - "8001:8080"
       - "4001:3000"
@@ -11,7 +11,7 @@ services:
       - ./blockchain_data/node_1:/data
 
   node_2:
-    build: .
+    image: "speedy_blockchain:latest"
     ports:
       - "8002:8080"
       - "4002:3000"
@@ -21,7 +21,7 @@ services:
       - ./blockchain_data/node_2:/data
 
   node_3:
-    build: .
+    image: "speedy_blockchain:latest"
     ports:
       - "8003:8080"
       - "4003:3000"
