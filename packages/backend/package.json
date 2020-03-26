@@ -40,7 +40,7 @@
     "start": "node dist/backend/src/index.js",
     "build": "tsc",
     "test": "jest",
-    "dev": "concurrently --kill-others \"tsc -w\" \"nodemon dist/backend/src/index.js\"",
+    "dev": "nodemon -e ts -w ./src -x ts-node src/index.ts",
     "lint": "eslint --ext js,ts,tsx src",
     "format": "prettier --list-different --write \"{scripts,src,tests}/**/*.{js,md,tsx,ts,html,json}\"",
     "precommit": "lint-staged"
