@@ -3,34 +3,53 @@ services:
   node_1:
     image: "speedy_blockchain:latest"
     ports:
-      - "8001:8080"
       - "4001:3000"
     networks:
       - blockchain_network
     volumes:
       - ./blockchain_data/node_1:/data
+    env_file:
+      - ./packages/backend/.env
+    environment:
+      - NODE_HOST=node_1
+      - NODE_PORT=8080
+      - DISCOVERY_HOST=node_1
+      - DISCOVERY_PORT=8080
+      - MINER_NAME=MINER_1
 
   node_2:
     image: "speedy_blockchain:latest"
     ports:
-      - "8002:8080"
       - "4002:3000"
     networks:
       - blockchain_network
     volumes:
       - ./blockchain_data/node_2:/data
+    env_file:
+      - ./packages/backend/.env
+    environment:
+      - NODE_HOST=node_2
+      - NODE_PORT=8080
+      - DISCOVERY_HOST=node_2
+      - DISCOVERY_PORT=8080
+      - MINER_NAME=MINER_2
 
   node_3:
     image: "speedy_blockchain:latest"
     ports:
-      - "8003:8080"
       - "4003:3000"
     networks:
       - blockchain_network
     volumes:
       - ./blockchain_data/node_3:/data
+    env_file:
+      - ./packages/backend/.env
+    environment:
+      - NODE_HOST=node_3
+      - NODE_PORT=8080
+      - DISCOVERY_HOST=node_3
+      - DISCOVERY_PORT=8080
+      - MINER_NAME=MINER_3
 
 networks:
   blockchain_network:
-# volumes:
-#   blockchain_data
