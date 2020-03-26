@@ -1,8 +1,8 @@
 import {
   Blockchain,
   Peer,
-  PeersState,
   Transaction,
+  utils,
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
@@ -24,7 +24,25 @@ export default class Node {
   private commTimeout: NodeJS.Timeout | null = null;
 
   public async initCommunication() {
-    await NodeCommunication.announcement(this.peers);
+    let retry = 0;
+
+    while (retry < 4) {
+      await NodeCommunication.announcement(this.peers);
+      await this.refreshPeers();
+
+      const done = await NodeCommunication.initialBlockDownload(
+        this.peers,
+        this.currentBlockchain
+      );
+
+      if (!done) {
+        console.warn("Retriyng...");
+        retry += 1;
+        await utils.sleep(1000);
+      } else {
+        return;
+      }
+    }
   }
 
   public async rehydrateBlocksFromDB() {

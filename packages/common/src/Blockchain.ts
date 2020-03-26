@@ -6,7 +6,7 @@ import { genZeroes, getTimestamp } from "./utils";
 import AsyncMiner from "./AsyncMiner";
 
 // difficulty of our PoW algorithm
-export const DIFFICULTY = 2;
+export const DIFFICULTY = 5;
 
 // max transactions per block
 export const MAX_TRANSACTIONS = 4000;
@@ -15,7 +15,8 @@ export const createGenesisBlock = () =>
   createBlock({
     index: 0,
     transactions: [],
-    timestamp: getTimestamp(),
+    // by default the genesis block come from the end of time... (to match with other peers)
+    timestamp: 0,
     previousHash: "0",
     nonce: 0,
   });
@@ -54,7 +55,6 @@ export function checkChainValidity(chain: Block[]) {
 
 export default class Blockchain {
   unconfirmedTransactions: Transaction[] = [];
-
   chain: Block[] = [];
 
   // A function to generate genesis block and pushs it to

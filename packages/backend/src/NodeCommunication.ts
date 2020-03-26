@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-import { Endpoints, ChainInfo, Block, utils } from "@speedy_blockchain/common";
+import { Endpoints, ChainInfo, utils } from "@speedy_blockchain/common";
 import Peer from "@speedy_blockchain/common/src/Peer";
 import Blockchain from "@speedy_blockchain/common/src/Blockchain";
 import {
@@ -77,12 +77,19 @@ export async function initialBlockDownload(
   peers: Peer[],
   blockchain: Blockchain
 ) {
+  console.log("Starting initial block download...");
+
   // Get the chains from the peers
   const chains = (
     await Promise.all(peers.map(peer => httpCall(peer, "GET /chainInfo")))
   )
     .filter(r => r.status !== ("error" as const))
     .map(r => (r as { status: "ok"; data: ChainInfo }).data);
+
+  if (chains.length === 0) {
+    console.log("No peer to perform IBD! Skipping...");
+    return false;
+  }
 
   // Find the longest chain, and select a random peer with the longest chain and the same hash
   const sortedChains = chains.sort((a, b) => b.length - a.length);
@@ -102,7 +109,7 @@ export async function initialBlockDownload(
   const syncPeer =
     sameHashPeers[Math.floor(Math.random() * sameHashPeers.length)].peer;
 
-  let index = 1; // start after the genesis
+  let index = blockchain.lastBlock.index + 1;
   while (index < longestChainLength) {
     const block = await httpCall(syncPeer, "GET /block/:blockId", {
       blockId: index.toString(),
@@ -113,15 +120,19 @@ export async function initialBlockDownload(
     }
 
     if (!blockchain.addBlock(block.data)) {
-      throw new Error("Invalid longest chain in IBD");
+      throw new Error("Invalid block in longest chain in IBD");
     }
 
     index += 1;
   }
 
   if (blockchain.lastBlock.hash !== mostFrequentHash) {
+    console.error(blockchain.lastBlock.hash, "VS", mostFrequentHash);
     throw new Error("Invalid longest chain in IBD");
   }
+
+  console.log("IBD Completed.");
+  return true;
 
   // TODO: Come gestiamo questa situazione? Buttiamo via tutto?
 }
