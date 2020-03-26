@@ -17,7 +17,14 @@ You can find package specific scripts in the packages readme.
 
 ## Docker
 
-Use `docker-compose up` to run 3 istances of nodes that can comunicate to each other.
+Use `yarn docker-run` to run 3 istances of nodes that can comunicate to each other.
+
+The web applications of the instances are available in:
+```
+http://localhost:4001
+http://localhost:4002
+http://localhost:4003
+```
 
 They will create a local folder in the project called: _blockchain_data/_, and inside that folder every node will store it's data.
 
