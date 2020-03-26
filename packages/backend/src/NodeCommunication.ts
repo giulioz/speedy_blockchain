@@ -1,47 +1,54 @@
 import fetch from "node-fetch";
 
-import { PeersState, Endpoints } from "@speedy_blockchain/common";
-import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
+import { Endpoints, ChainInfo, Block, utils } from "@speedy_blockchain/common";
+import Peer from "@speedy_blockchain/common/src/Peer";
+import Blockchain from "@speedy_blockchain/common/src/Blockchain";
+import {
+  ParamsType,
+  ReqType,
+  ResType,
+} from "@speedy_blockchain/common/src/utils";
 
 const MAX_RETRY = 3; // max number to retry for a http call
+const SLEEP_TIME = 1000; // time between retries
 
-export type ParamsType<K extends keyof Endpoints> = Endpoints[K]["params"];
-export type ResType<K extends keyof Endpoints> = Endpoints[K]["res"];
-export type ReqType<K extends keyof Endpoints> = Endpoints[K]["req"];
+export const getSelfPeer = (): Peer => ({
+  hostname: process.env.NODE_HOST || "",
+  port: parseInt(process.env.NODE_PORT || "", 10),
+  name: process.env.MINER_NAME || "",
+  active: true,
+  checkedAt: Date.now(),
+});
 
-// TODO: This needs some testing...
-function withParameters<K extends keyof Endpoints>(
-  endpoint: K,
-  params: ParamsType<K>
-) {
-  const url = endpoint
-    .split(" ")
-    .slice(1)
-    .join(" ");
+export const getDiscoveryPeer = (): Peer => ({
+  hostname: process.env.DISCOVERY_HOST || "",
+  port: parseInt(process.env.DISCOVERY_PORT || "", 10),
+  name: "",
+  active: false,
+  checkedAt: Date.now(),
+});
 
-  return url
-    .split("/")
-    .map(part => {
-      if (part.startsWith(":")) {
-        return params[part.substring(1) as keyof ParamsType<K>];
-      } else {
-        return part;
-      }
-    })
-    .join("/");
+export const isSuperBlock =
+  process.env.NODE_HOST === process.env.DISCOVERY_HOST &&
+  process.env.NODE_PORT === process.env.DISCOVERY_PORT;
+if (isSuperBlock) {
+  console.log("I'm a superblock!");
+}
+
+export function serializePeer(peer: Peer) {
+  return `http://${peer.hostname}:${peer.port}`;
 }
 
 async function httpCall<K extends keyof Endpoints>(
-  ip: string,
-  port: number,
+  peer: Peer,
   endpoint: K,
-  params?: ParamsType<K>,
+  params?: ParamsType<K> | null,
   body?: ReqType<K>
 ): Promise<ResType<K>> {
   const method = endpoint.split(" ")[0];
-  const path = withParameters(endpoint, params || {});
+  const path = utils.withParameters(endpoint, params || {});
 
-  const url = `http://${ip}:${port}/${path}`;
+  const url = `${serializePeer(peer)}${path}`;
   const headers = { "Content-Type": "application/json" };
   const data = body && JSON.stringify(body);
   const options = {
@@ -58,6 +65,7 @@ async function httpCall<K extends keyof Endpoints>(
       return response.json();
     } catch (err) {
       console.error(`[Comm error] ${err}`);
+      await utils.sleep(SLEEP_TIME);
       retry += 1;
     }
   } while (retry < MAX_RETRY);
@@ -65,67 +73,98 @@ async function httpCall<K extends keyof Endpoints>(
   throw new Error("Communication failure, max retry count reached.");
 }
 
-export async function sendPeersListToOtherNodes(peerList: PeersState) {
-  peerList.peers.sort((peer1, peer2) => peer1.checkedAt - peer2.checkedAt);
+export async function initialBlockDownload(
+  peers: Peer[],
+  blockchain: Blockchain
+) {
+  // Get the chains from the peers
+  const chains: ChainInfo[] = await Promise.all(
+    peers.map(peer => httpCall(peer, "GET /chainInfo"))
+  );
 
-  return Promise.all(
-    peerList.peers.map(async peer => {
-      if (
-        peer.ip !== process.env.NODE_HOST ||
-        peer.port !== parseInt(process.env.NODE_PORT || "", 10)
-      ) {
-        try {
-          await httpCall(peer.ip, peer.port, "PUT /peers", peerList);
+  // Find the longest chain, and select a random peer with the longest chain and the same hash
+  const sortedChains = chains.sort((a, b) => b.length - a.length);
+  const longestChainLength = sortedChains[0].length;
+  const longestChainPeers = sortedChains.filter(
+    chain => chain.length === longestChainLength
+  );
+  const mostFrequentHash = longestChainPeers
+    .map((c, i, arr) => ({
+      ...c,
+      frequency: arr.filter(c2 => c2.lastHash === c.lastHash).length,
+    }))
+    .sort((a, b) => b.frequency - a.frequency)[0].lastHash;
+  const sameHashPeers = longestChainPeers.filter(
+    c => c.lastHash === mostFrequentHash
+  );
+  const syncPeer =
+    sameHashPeers[Math.floor(Math.random() * sameHashPeers.length)].peer;
 
-          /* eslint-disable-next-line no-param-reassign */
-          peer.checkedAt = Date.now();
-        } catch (err) {
-          // TODO: remove peer from peerList if unavailable.
-          console.log("REMOVE PEER - TODO");
-        }
-      }
-    })
+  let index = 1; // start after the genesis
+  while (index < longestChainLength) {
+    const block = await httpCall(syncPeer, "GET /block/:blockId", {
+      blockId: index.toString(),
+    });
+
+    if ((block as any).status === "Block not found.") {
+      throw new Error("Invalid response in IBD");
+    }
+
+    if (!blockchain.addBlock(block as Block)) {
+      throw new Error("Invalid longest chain in IBD");
+    }
+
+    index += 1;
+  }
+
+  if (blockchain.lastBlock.hash !== mostFrequentHash) {
+    throw new Error("Invalid longest chain in IBD");
+  }
+
+  // TODO: Come gestiamo questa situazione? Buttiamo via tutto?
+}
+
+export async function announcement(peers: Peer[]) {
+  await Promise.all(
+    peers.map(p => httpCall(p, "POST /announce", null, getSelfPeer()))
   );
 }
 
-export async function getLastBlockFromSuperPeer() {
-  try {
-    return await httpCall(
-      process.env.LEADER_HOST || "",
-      parseInt(process.env.LEADER_PORT || "", 10),
-      "GET /block/last"
-    );
-  } catch (err) {
-    throw new Error(`Unable to get last block from Super Peer! ${err}`);
-  }
-}
+export async function fetchRemotePeers(initialPeers: Peer[]) {
+  const unresponsivePeers: Peer[] = [];
 
-export async function registerNodeToSuperPeer() {
-  if (
-    process.env.MINER_NAME &&
-    process.env.NODE_HOST &&
-    process.env.NODE_PORT &&
-    process.env.LEADER_HOST &&
-    process.env.LEADER_PORT
-  ) {
-    const peer: IncomingPeer = {
-      ip: process.env.NODE_HOST,
-      port: parseInt(process.env.NODE_PORT, 10),
-      name: process.env.MINER_NAME,
-    };
+  const reqPromises = initialPeers.map(p => ({
+    p,
+    promise: httpCall(p, "GET /peers"),
+  }));
 
-    try {
-      await httpCall(
-        process.env.LEADER_HOST,
-        parseInt(process.env.LEADER_PORT, 10),
-        "PUT /peers/:id",
-        { id: process.env.MINER_NAME },
-        peer
-      );
+  const results = await Promise.all(
+    reqPromises.map(({ p, promise }) =>
+      promise.catch(e => {
+        unresponsivePeers.push(p);
+        console.warn(e);
+        return "UNREACHABLE" as const;
+      })
+    )
+  );
+  const validResults = results.filter(
+    result => result !== "UNREACHABLE"
+  ) as Peer[][];
 
-      return true;
-    } catch (err) {
-      throw new Error(`Unable to register to Super Peer! ${err}`);
-    }
-  }
+  const allPeers = validResults.reduce((acc, c) => [...acc, ...c], []);
+  const peersSerializedUnique = [...new Set(allPeers.map(serializePeer))];
+
+  const unique = peersSerializedUnique.map(
+    serializedPeer =>
+      allPeers.find(p => serializePeer(p) === serializedPeer) as Peer
+  );
+
+  const reachable = unique.filter(
+    p =>
+      !unresponsivePeers.find(
+        up => p.hostname === up.hostname && p.port === up.port
+      )
+  );
+
+  return reachable;
 }

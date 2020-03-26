@@ -1,38 +1,13 @@
-import { Endpoints } from "@speedy_blockchain/common/dist";
+import { Endpoints, utils } from "@speedy_blockchain/common/dist";
+import { ParamsType, ResType, ReqType } from "@speedy_blockchain/common/src/utils";
 import config from "../config";
-
-export type ParamsType<K extends keyof Endpoints> = Endpoints[K]["params"];
-export type ResType<K extends keyof Endpoints> = Endpoints[K]["res"];
-export type ReqType<K extends keyof Endpoints> = Endpoints[K]["req"];
-
-// TODO: This needs some testing...
-function withParameters<K extends keyof Endpoints>(
-  endpoint: K,
-  params: ParamsType<K>
-) {
-  const url = endpoint
-    .split(" ")
-    .slice(1)
-    .join(" ");
-
-  return url
-    .split("/")
-    .map(part => {
-      if (part.startsWith(":")) {
-        return params[part.substring(1) as keyof ParamsType<K>];
-      } else {
-        return part;
-      }
-    })
-    .join("/");
-}
 
 export default async function apiCall<K extends keyof Endpoints>(
   endpoint: K,
   options: { params: ParamsType<K>; body: ReqType<K> }
 ): Promise<ResType<K>> {
   const method = endpoint.split(" ")[0];
-  const url = withParameters(endpoint, options.params);
+  const url = utils.withParameters(endpoint, options.params);
 
   const res = await fetch(config.apiURL + url, {
     method,

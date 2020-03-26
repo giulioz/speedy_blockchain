@@ -5,15 +5,14 @@ export default class PeersState {
 
   insertIncomingPeer(incomingPeer: IncomingPeer) {
     const indexPeer = this.peers.findIndex(
-      peer => peer.ip === incomingPeer.ip && peer.port === incomingPeer.port
+      peer => peer.hostname === incomingPeer.hostname && peer.port === incomingPeer.port
     );
     if (indexPeer === -1) {
       this.peers.push({
-        ip: incomingPeer.ip,
+        hostname: incomingPeer.hostname,
         port: incomingPeer.port,
         name: incomingPeer.name,
         active: true,
-        superPeer: false,
         checkedAt: Date.now(),
       });
     } else {
@@ -25,7 +24,7 @@ export default class PeersState {
 
   insertPeer(peer: Peer) {
     const indexPeer = this.peers.findIndex(
-      _peer => _peer.ip === peer.ip && _peer.port === peer.port
+      _peer => _peer.hostname === peer.hostname && _peer.port === peer.port
     );
     if (indexPeer === -1) {
       this.peers.push(peer);

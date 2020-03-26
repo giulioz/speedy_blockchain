@@ -4,87 +4,97 @@ import {
   PeersState,
   Transaction,
 } from "@speedy_blockchain/common";
+import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
+
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
 import * as NodeCommunication from "./NodeCommunication";
 
-const updateTimeout = 1000;
+const miningTimeoutTime = 1000;
+const commTimeoutTime = 1000;
 
 const miner = new WorkerAsyncMiner();
 
-function getPeerObj(): Peer {
-  return {
-    ip: process.env.NODE_HOST || "",
-    port: parseInt(process.env.NODE_PORT || "", 10),
-    name: process.env.MINER_NAME || "",
-    active: true,
-    superPeer:
-      process.env.LEADER_HOST === process.env.NODE_HOST &&
-      process.env.LEADER_PORT === process.env.NODE_PORT, // maybe we can remove the superPeer var here.
-    checkedAt: Date.now(),
-  };
-}
-
 // Manages the blockchain, mining and communication with peers
 export default class Node {
-  public currentBlockchain: Blockchain;
+  public currentBlockchain: Blockchain = new Blockchain();
+  public peers: Peer[] = [];
 
-  public peersState: PeersState;
-
-  private updateTimeout: NodeJS.Timeout | null = null;
-
-  public superPeer: boolean;
-
-  constructor() {
-    const currentPeer: Peer = getPeerObj();
-    this.currentBlockchain = new Blockchain();
-    this.peersState = new PeersState();
-    this.superPeer = currentPeer.superPeer;
-    this.peersState.insertPeer(currentPeer);
-  }
+  private miningTimeout: NodeJS.Timeout | null = null;
+  private commTimeout: NodeJS.Timeout | null = null;
 
   public async initCommunication() {
-    if (!this.superPeer) {
-      await NodeCommunication.registerNodeToSuperPeer();
-      // await NodeCommunication.getPeersFromSuperPeer();
-      // await NodeCommunication.notifyAll();
-
-      const lastBlock = await NodeCommunication.getLastBlockFromSuperPeer();
-      if (lastBlock === "Block not found.") {
-        throw new Error("No last block from super peer.");
-      }
-
-      this.currentBlockchain.chain = [lastBlock]; // TODO: only for test - fix this
-      // await NodeCommunication.getDBFromSuperPeer();
-    }
+    await NodeCommunication.announcement(this.peers);
   }
 
   public async rehydrateBlocksFromDB() {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
 
-    // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
-    if (blocks.length > 0) {
-      this.currentBlockchain.replaceChain(blocks);
-    } else if (this.superPeer) {
-      // solo il superPeer crea il genesis block.
-      this.currentBlockchain.pushGenesisBlock();
-      db.insert(this.currentBlockchain.lastBlock);
+    // // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
+    // if (blocks.length > 0) {
+    //   this.currentBlockchain.replaceChain(blocks);
+    // } else if (this.superPeer) {
+    //   // solo il superPeer crea il genesis block.
+    //   this.currentBlockchain.pushGenesisBlock();
+    //   db.insert(this.currentBlockchain.lastBlock);
+    // }
+  }
+
+  public addPeer(peer: IncomingPeer) {
+    const found = this.peers.find(
+      p => p.hostname === peer.hostname && p.port === peer.port
+    );
+
+    if (!found) {
+      const newPeers: Peer = { ...peer, active: true, checkedAt: Date.now() };
+      this.peers = [...this.peers, newPeers];
+    } else {
+      this.peers = this.peers.map(p =>
+        p.hostname === peer.hostname && p.port === peer.port
+          ? { ...p, active: true, checkedAt: Date.now() }
+          : p
+      );
     }
   }
 
-  public startMiningLoop() {
-    this.periodicUpdate();
+  public async refreshPeers() {
+    if (!NodeCommunication.isSuperBlock && this.peers.length === 0) {
+      this.peers = [NodeCommunication.getDiscoveryPeer()];
+    }
+
+    const myself = NodeCommunication.getSelfPeer();
+    const remotePeers = await NodeCommunication.fetchRemotePeers(this.peers);
+    const excludedMyself = remotePeers.filter(
+      p => p.hostname !== myself.hostname || p.port !== myself.port
+    );
+
+    this.peers = excludedMyself.map(p => ({
+      ...p,
+      checkedAt: Date.now(),
+      active: true,
+    }));
   }
 
-  public stopMiningLoop() {
-    if (this.updateTimeout) {
-      clearTimeout(this.updateTimeout);
+  public pushTransaction(t: Transaction["content"]) {
+    this.currentBlockchain.pushTransaction(t, miner);
+  }
+
+  public startLoop() {
+    this.miningUpdate();
+    this.commUpdate();
+  }
+
+  public stopLoop() {
+    if (this.miningTimeout) {
+      clearTimeout(this.miningTimeout);
+    }
+    if (this.commTimeout) {
+      clearTimeout(this.commTimeout);
     }
   }
 
-  // Ran every timeout
-  private async periodicUpdate() {
+  private async miningUpdate() {
     const minedBlock = await this.currentBlockchain.tryMineNextBlock(miner);
     if (minedBlock) {
       db.insert(minedBlock);
@@ -93,10 +103,16 @@ export default class Node {
     // TODO: Announce new block
     // TODO: Save the block to DB
 
-    this.updateTimeout = setTimeout(() => this.periodicUpdate(), updateTimeout);
+    this.miningTimeout = setTimeout(
+      () => this.miningUpdate(),
+      miningTimeoutTime
+    );
   }
 
-  public pushTransaction(t: Transaction["content"]) {
-    this.currentBlockchain.pushTransaction(t, miner);
+  private async commUpdate() {
+    await this.refreshPeers();
+    await NodeCommunication.announcement(this.peers);
+
+    this.commTimeout = setTimeout(() => this.commUpdate(), commTimeoutTime);
   }
 }

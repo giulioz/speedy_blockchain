@@ -2,13 +2,22 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import Node from "./Node";
-import * as NodeCommunication from "./NodeCommunication";
 import ep from "./safeEndpoints";
+import * as NodeCommunication from "./NodeCommunication";
 
 export default function createHttpApi(node: Node) {
   const app = express();
   app.use(bodyParser.json());
   app.use(cors());
+
+  // get chain info
+  ep(app, "GET /chainInfo", (req, res) => {
+    res.send({
+      peer: NodeCommunication.getSelfPeer(),
+      length: node.currentBlockchain.maxLength,
+      lastHash: node.currentBlockchain.lastBlock.hash,
+    });
+  });
 
   // get block by id range
   ep(app, "GET /blocks/from/:from/to/:to", (req, res) => {
@@ -26,7 +35,7 @@ export default function createHttpApi(node: Node) {
     if (last) {
       res.send(last);
     } else {
-      res.status(404).send("Block not found.");
+      res.status(404).send({ status: "Block not found." });
     }
   });
 
@@ -38,7 +47,7 @@ export default function createHttpApi(node: Node) {
     if (found) {
       res.send(found);
     } else {
-      res.status(404).send("Block not found.");
+      res.status(404).send({ status: "Block not found." });
     }
   });
 
@@ -53,7 +62,7 @@ export default function createHttpApi(node: Node) {
     if (found) {
       res.send(found);
     } else {
-      res.status(404).send("Transaction not found.");
+      res.status(404).send({ status: "Transaction not found." });
     }
   });
 
@@ -64,7 +73,7 @@ export default function createHttpApi(node: Node) {
     if (found) {
       res.send(found);
     } else {
-      res.status(404).send("Transaction not found.");
+      res.status(404).send({ status: "Transaction not found." });
     }
   });
 
@@ -72,7 +81,7 @@ export default function createHttpApi(node: Node) {
   ep(app, "POST /transaction", (req, res) => {
     node.pushTransaction(req.body);
 
-    res.status(201).send("Success");
+    res.status(201).send({ status: "Success" });
   });
 
   // just for test purpose
@@ -81,25 +90,14 @@ export default function createHttpApi(node: Node) {
   });
 
   // register a new node
-  ep(app, "PUT /peers/:id", (req, res) => {
-    console.log(`REGISTER NEW NODE WITH IP -> ${req.body.ip} ${req.body.port}`);
-    node.peersState.insertIncomingPeer(req.body);
-    NodeCommunication.sendPeersListToOtherNodes(node.peersState);
-    // send
-    res.status(201).send("Success");
-  });
-
-  ep(app, "PUT /peers", (req, res) => {
-    console.log("REPLACE peers object");
-    /* eslint-disable-next-line no-param-reassign */
-    node.peersState.peers = [...req.body.peers];
-    // send
-    res.status(201).send("Success");
+  ep(app, "POST /announce", (req, res) => {
+    node.addPeer(req.body);
+    res.status(201).send({ status: "Success" });
   });
 
   // get current peers status of the node
   ep(app, "GET /peers", (req, res) => {
-    res.send(node.peersState);
+    res.send([...node.peers, NodeCommunication.getSelfPeer()]);
   });
 
   return app;

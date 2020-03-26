@@ -14,20 +14,19 @@ async function main() {
 
   const node = new Node();
   await node.rehydrateBlocksFromDB();
-  node.startMiningLoop();
 
   const httpApi = createHttpApi(node);
-
   const port = process.env.NODE_PORT
     ? parseInt(process.env.NODE_PORT, 10)
     : 8080;
-
   await new Promise(resolve => {
     httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", resolve);
   });
   console.log(`Node listening on ${port}`);
 
   await node.initCommunication();
+
+  node.startLoop();
 }
 
 main();
