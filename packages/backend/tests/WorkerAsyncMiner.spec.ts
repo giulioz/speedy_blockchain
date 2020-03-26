@@ -1,7 +1,6 @@
 import { isValidBlock } from "@speedy_blockchain/common/dist/Blockchain";
+import { utils } from "@speedy_blockchain/common";
 import WorkerAsyncMiner from "../src/WorkerAsyncMiner";
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const transactions: any = [
   {
@@ -115,7 +114,7 @@ test("mining difficulty 8 with abort after 100 ms", async () => {
     nonce: 0,
   });
 
-  await sleep(100);
+  await utils.sleep(100);
 
   miner.abort();
   expect(abortPromise).rejects.toThrowError("Aborted");
@@ -136,7 +135,7 @@ test("mining difficulty 4 with new transactions", async () => {
     nonce: 0,
   });
 
-  await sleep(10);
+  await utils.sleep(10);
 
   miner.notifyNewTransaction({
     id: "GGGGGG",
@@ -167,14 +166,14 @@ test("mining difficulty 4 with new transactions after finished", async () => {
     nonce: 0,
   });
 
-  await sleep(10);
+  await utils.sleep(10);
   miner.notifyNewTransaction({
     id: "GGGGGG",
     timestamp: 42,
     content: { a: "GGGGGG", b: "GGGGGG", c: "GGGGGG" },
   } as any);
 
-  await sleep(1000);
+  await utils.sleep(1000);
   const added2 = miner.notifyNewTransaction({
     id: "HHHHHH",
     timestamp: 42,

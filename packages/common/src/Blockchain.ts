@@ -11,6 +11,15 @@ export const DIFFICULTY = 2;
 // max transactions per block
 export const MAX_TRANSACTIONS = 4000;
 
+export const createGenesisBlock = () =>
+  createBlock({
+    index: 0,
+    transactions: [],
+    timestamp: getTimestamp(),
+    previousHash: "0",
+    nonce: 0,
+  });
+
 // Check if blockHash is valid hash of block and satisfies
 // the difficulty criteria.
 export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
@@ -52,19 +61,15 @@ export default class Blockchain {
   // the chain. The block has index 0, previousHash as 0, and
   // a valid hash.
   pushGenesisBlock() {
-    const genesisBlock = createBlock({
-      index: 0,
-      transactions: [],
-      timestamp: getTimestamp(),
-      previousHash: "0",
-      nonce: 0,
-    });
-
-    this.chain.push(genesisBlock);
+    this.chain.push(createGenesisBlock());
   }
 
   get lastBlock() {
     return this.chain[this.chain.length - 1];
+  }
+
+  get maxLength() {
+    return this.chain.length;
   }
 
   // A function that adds the block to the chain after verification.

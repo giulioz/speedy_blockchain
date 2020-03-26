@@ -1,14 +1,26 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-
 import Node from "./Node";
 import ep from "./safeEndpoints";
+import * as NodeCommunication from "./NodeCommunication";
 
 export default function createHttpApi(node: Node) {
   const app = express();
   app.use(bodyParser.json());
   app.use(cors());
+
+  // get chain info
+  ep(app, "GET /chainInfo", (req, res) => {
+    res.send({
+      status: "ok",
+      data: {
+        peer: NodeCommunication.getSelfPeer(),
+        length: node.currentBlockchain.maxLength,
+        lastHash: node.currentBlockchain.lastBlock.hash,
+      },
+    });
+  });
 
   // get block by id range
   ep(app, "GET /blocks/from/:from/to/:to", (req, res) => {
@@ -16,7 +28,10 @@ export default function createHttpApi(node: Node) {
     const to = parseInt(req.params.to, 10);
     const blocks = node.currentBlockchain.getBlocksRange(from, to);
 
-    res.send(blocks);
+    res.send({
+      status: "ok",
+      data: blocks,
+    });
   });
 
   // get last block
@@ -24,9 +39,12 @@ export default function createHttpApi(node: Node) {
     const last = node.currentBlockchain.lastBlock;
 
     if (last) {
-      res.send(last);
+      res.send({
+        status: "ok",
+        data: last,
+      });
     } else {
-      res.status(404).send("Block not found.");
+      res.status(404).send({ status: "error", error: "Block not found." });
     }
   });
 
@@ -36,9 +54,12 @@ export default function createHttpApi(node: Node) {
     const found = node.currentBlockchain.findBlockById(id);
 
     if (found) {
-      res.send(found);
+      res.send({
+        status: "ok",
+        data: found,
+      });
     } else {
-      res.status(404).send("Block not found.");
+      res.status(404).send({ status: "error", error: "Block not found." });
     }
   });
 
@@ -51,9 +72,14 @@ export default function createHttpApi(node: Node) {
     );
 
     if (found) {
-      res.send(found);
+      res.send({
+        status: "ok",
+        data: found,
+      });
     } else {
-      res.status(404).send("Transaction not found.");
+      res
+        .status(404)
+        .send({ status: "error", error: "Transaction not found." });
     }
   });
 
@@ -62,9 +88,14 @@ export default function createHttpApi(node: Node) {
     const found = node.currentBlockchain.findTransactionById(req.params.id);
 
     if (found) {
-      res.send(found);
+      res.send({
+        status: "ok",
+        data: found,
+      });
     } else {
-      res.status(404).send("Transaction not found.");
+      res
+        .status(404)
+        .send({ status: "error", error: "Transaction not found." });
     }
   });
 
@@ -72,12 +103,29 @@ export default function createHttpApi(node: Node) {
   ep(app, "POST /transaction", (req, res) => {
     node.pushTransaction(req.body);
 
-    res.status(201).send("Success");
+    res.status(201).send({ status: "ok", data: null });
+  });
+
+  // just for test purpose
+  ep(app, "GET /test", async (req, res) => {
+    res.status(201).send({
+      status: "ok",
+      data: node.currentBlockchain,
+    });
+  });
+
+  // register a new node
+  ep(app, "POST /announce", (req, res) => {
+    node.addPeer(req.body);
+    res.status(201).send({ status: "ok", data: null });
   });
 
   // get current peers status of the node
   ep(app, "GET /peers", (req, res) => {
-    res.send({ peers: node.peers });
+    res.send({
+      status: "ok",
+      data: [...node.peers, NodeCommunication.getSelfPeer()],
+    });
   });
 
   return app;

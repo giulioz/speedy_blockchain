@@ -6,13 +6,8 @@ import {
   Typography,
   TextField,
   Paper,
-  IconButton,
-  Card,
-  CardContent,
-  CardHeader,
   LinearProgress,
 } from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
 import { Spring } from "react-spring/renderprops";
 import { CarrierData } from "@speedy_blockchain/common";
 import { useNamedInputState } from "../utils";

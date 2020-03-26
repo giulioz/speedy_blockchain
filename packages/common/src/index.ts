@@ -7,6 +7,7 @@ import PeersState from "./PeersState";
 import CarrierData from "./CarrierData";
 import AsyncMiner from "./AsyncMiner";
 import Endpoints from "./Endpoints";
+import ChainInfo from "./ChainInfo";
 import * as utils from "./utils";
 
 export {
@@ -20,5 +21,6 @@ export {
   CarrierData,
   AsyncMiner,
   Endpoints,
+  ChainInfo,
   utils,
 };

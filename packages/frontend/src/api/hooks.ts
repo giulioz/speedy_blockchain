@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { Endpoints, Block } from "@speedy_blockchain/common";
-import apiCall, { ResType, ParamsType } from "./apiCall";
+import { ResType, ParamsType } from "@speedy_blockchain/common/src/utils";
+import apiCall from "./apiCall";
 
 export function useRemoteData<K extends keyof Endpoints>(
   endpoint: K,
@@ -34,8 +35,8 @@ export function useLastNBlocks(maxBlocks: number) {
         body: null,
       });
 
-      if (typeof lastBlock !== "string") {
-        const lastIndex = lastBlock.index;
+      if (lastBlock.status !== "error") {
+        const lastIndex = lastBlock.data.index;
         const from = lastIndex - maxBlocks;
 
         const blocks = await apiCall("GET /blocks/from/:from/to/:to", {
@@ -43,7 +44,9 @@ export function useLastNBlocks(maxBlocks: number) {
           body: null,
         });
 
-        setData(blocks.reverse());
+        if (blocks.status !== "error") {
+          setData(blocks.data.reverse());
+        }
       }
     }
 
