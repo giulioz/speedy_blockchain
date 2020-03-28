@@ -163,6 +163,7 @@ export default function Flights() {
 
   function handleAddFlight(f: Flight) {
     addFlight(f);
+
     setAddConfirmOpen(true);
     handleCloseAddDialog();
   }

@@ -111,6 +111,12 @@ export default function BlockCard({
             </Typography>
             <Typography gutterBottom>{block.nonce}</Typography>
           </div>
+          <div className={clsx(classes.upper, classes.inline)}>
+            <Typography color="secondary" gutterBottom>
+              Mined By
+            </Typography>
+            <Typography gutterBottom>{block.minedBy}</Typography>
+          </div>
         </div>
 
         <Typography

@@ -50,6 +50,11 @@ export default interface Endpoints {
     res: ResponseStatus;
     req: Transaction;
   };
+  "POST /flight": {
+    params: {};
+    res: ResponseStatus;
+    req: Transaction["content"];
+  };
   "GET /peers": {
     params: {};
     res: ResponseStatus<Peer[]>;

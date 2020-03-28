@@ -177,6 +177,19 @@ export default class Blockchain {
     return false;
   }
 
+  pushTransactionContent(
+    content: Transaction["content"],
+    asyncMiner: AsyncMiner
+  ) {
+    const transaction: Transaction = {
+      id: uuidv4(),
+      timestamp: getTimestamp(),
+      content,
+    };
+
+    return this.pushTransaction(transaction, asyncMiner) && transaction;
+  }
+
   findTransactionById(
     transactionId: Transaction["id"],
     blockId: Block["index"] | null = null
