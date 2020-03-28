@@ -39,7 +39,7 @@ export const isSuperBlock =
   process.env.NODE_HOST === process.env.DISCOVERY_HOST &&
   process.env.NODE_PORT === process.env.DISCOVERY_PORT;
 if (isSuperBlock) {
-  console.log("I'm a superblock!");
+  console.warn("I'm a superblock!");
 }
 
 export function serializePeer(peer: Peer) {
@@ -95,7 +95,7 @@ export async function initialBlockDownload(
     .map(r => (r as { status: "ok"; data: ChainInfo }).data);
 
   if (chains.length === 0) {
-    console.log("No peer to perform IBD! Skipping...");
+    console.warn("No peer to perform IBD! Skipping...");
     return false;
   }
 
