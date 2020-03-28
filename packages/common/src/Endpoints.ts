@@ -1,9 +1,9 @@
 import Transaction from "./Transaction";
-import PeersState from "./PeersState";
 import Peer, { IncomingPeer } from "./Peer";
 import Block from "./Block";
-import Blockchain from "./Blockchain";
 import ChainInfo from "./ChainInfo";
+import { CarrierRequest, CarrierData, FlightsRequest } from "./Queries";
+import Flight from "./Flight";
 
 export type ResponseStatus<T = null, E extends string = string> =
   | { status: "error"; error: E }
@@ -54,6 +54,16 @@ export default interface Endpoints {
     params: {};
     res: ResponseStatus;
     req: Transaction["content"];
+  };
+  "POST /query/carrier": {
+    params: {};
+    res: ResponseStatus<CarrierData>;
+    req: CarrierRequest;
+  };
+  "POST /query/flight": {
+    params: {};
+    res: ResponseStatus<Flight[]>;
+    req: FlightsRequest;
   };
   "GET /peers": {
     params: {};

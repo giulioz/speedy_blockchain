@@ -4,6 +4,10 @@ import {
   Transaction,
   utils,
   Block,
+  CarrierRequest,
+  FlightRequest as FlightsRequest,
+  Flight,
+  CarrierData,
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
@@ -160,5 +164,19 @@ export default class Node {
     await NodeCommunication.announcement(this.peers);
 
     this.commTimeout = setTimeout(() => this.commUpdate(), commTimeoutTime);
+  }
+
+  public async queryCarrier(query: CarrierRequest): Promise<CarrierData> {
+    return {
+      OP_CARRIER_AIRLINE_ID: "",
+      AVERAGE_DELAY: 0,
+      TOTAL_NUMBER_OF_FLIGHTS: 0,
+      DELAYED_FLIGHTS: 0,
+      FLIGHTS_IN_ADVANCE: 0,
+    };
+  }
+
+  public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
+    return [];
   }
 }

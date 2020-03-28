@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
-import { Flight, FlightRequest } from "@speedy_blockchain/common";
+import { Flight, FlightsRequest } from "@speedy_blockchain/common";
 import Title from "../components/Title";
 import Layout from "../components/Layout";
 import {
@@ -208,8 +208,8 @@ const mockData: Flight = {
   YEAR: 2010,
 };
 
-const emptyFlight: FlightRequest = {
-  FLIGHT_DATE: new Date(),
+const emptyFlight: FlightsRequest = {
+  FLIGHT_DATE: 0,
   OP_CARRIER_FL_NUM: "",
 };
 

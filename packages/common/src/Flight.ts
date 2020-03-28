@@ -10,7 +10,7 @@ export default interface Flight {
   DEST_CITY_NAME: string; // "Memphis, TN"
   DEST_STATE_NM: string; // "Tennessee"
   DEST: string; // "MEM"
-  FLIGHT_DATE: Date; // 2010-01-15
+  FLIGHT_DATE: number; // 2010-01-15
   OP_CARRIER_AIRLINE_ID: number; // 20363
   OP_CARRIER_FL_NUM: string; // "3692"
   ORIGIN_AIRPORT_ID: number; // 14683

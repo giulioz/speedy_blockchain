@@ -120,6 +120,18 @@ export default function createHttpApi(node: Node) {
     res.status(201).send({ status: "ok", data: null });
   });
 
+  ep(app, "POST /query/carrier", async (req, res) => {
+    const result = await node.queryCarrier(req.body);
+
+    res.status(201).send({ status: "ok", data: result });
+  });
+
+  ep(app, "POST /query/flight", async (req, res) => {
+    const result = await node.queryFlights(req.body);
+
+    res.status(201).send({ status: "ok", data: result });
+  });
+
   // submit a new transaction with content
   ep(app, "POST /flight", (req, res) => {
     node.pushTransactionContent(req.body);

@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import { Spring } from "react-spring/renderprops";
 import { CarrierRequest, CarrierData } from "@speedy_blockchain/common";
-import { useNamedInputState, useAsyncFormSearch } from "../utils";
+import { useAsyncFormSearch } from "../utils";
 import SearchForm from "../components/SearchForm";
 
 const useStyles = makeStyles(theme => ({
@@ -103,8 +103,8 @@ const mockData: CarrierData = {
 
 const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
   OP_CARRIER_AIRLINE_ID: "",
-  // FROM: null,
-  // TO: null,
+  FROM: 0,
+  TO: 100,
 };
 
 export default function CarrierInfo() {
