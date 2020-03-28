@@ -21,6 +21,6 @@ export {
   ChainInfo,
   CarrierData,
   CarrierRequest,
-  FlightsRequest as FlightRequest,
+  FlightsRequest,
   utils,
 };

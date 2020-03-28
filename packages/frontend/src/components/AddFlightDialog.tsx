@@ -42,7 +42,7 @@ const EMPTY_FLIGHT: Flight = {
   DEST_CITY_NAME: "",
   DEST_STATE_NM: "",
   DEST: "",
-  FLIGHT_DATE: new Date(),
+  FLIGHT_DATE: 0,
   OP_CARRIER_AIRLINE_ID: 0,
   OP_CARRIER_FL_NUM: "",
   ORIGIN_AIRPORT_ID: 0,

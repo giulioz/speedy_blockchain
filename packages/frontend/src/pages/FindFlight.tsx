@@ -1,20 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
 import { Flight, FlightsRequest } from "@speedy_blockchain/common";
-import Title from "../components/Title";
 import Layout from "../components/Layout";
-import {
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  LinearProgress,
-} from "@material-ui/core";
-import SearchIcon from "@material-ui/icons/Search";
+import { Typography, TextField, LinearProgress } from "@material-ui/core";
 import FlightIcon from "@material-ui/icons/Flight";
 import LocationOnIcon from "@material-ui/icons/LocationOn";
 import ScheduleIcon from "@material-ui/icons/Schedule";
@@ -198,7 +188,7 @@ const mockData: Flight = {
   DEST_CITY_NAME: "Memphis, TN",
   DEST_STATE_NM: "Tennessee",
   DEST: "MEM",
-  FLIGHT_DATE: new Date(),
+  FLIGHT_DATE: 0,
   OP_CARRIER_AIRLINE_ID: 20363,
   OP_CARRIER_FL_NUM: "3692",
   ORIGIN_AIRPORT_ID: 14683,
