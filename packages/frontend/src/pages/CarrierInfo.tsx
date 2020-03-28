@@ -103,8 +103,8 @@ const mockData: CarrierData = {
 
 const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
   OP_CARRIER_AIRLINE_ID: "",
-  FROM: 0,
-  TO: 100,
+  DATE_FROM: 0,
+  DATE_TO: 100,
 };
 
 export default function CarrierInfo() {

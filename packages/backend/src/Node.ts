@@ -5,7 +5,7 @@ import {
   utils,
   Block,
   CarrierRequest,
-  FlightRequest as FlightsRequest,
+  FlightsRequest,
   Flight,
   CarrierData,
 } from "@speedy_blockchain/common";
@@ -58,7 +58,7 @@ export default class Node {
   public async rehydrateBlocksFromDB() {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
-    console.log(blocks.length);
+    
     // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);

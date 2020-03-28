@@ -198,7 +198,7 @@ const mockData: Flight = {
   YEAR: 2010,
 };
 
-const emptyFlight: FlightsRequest = {
+const emptyFlight = {
   FLIGHT_DATE: 0,
   OP_CARRIER_FL_NUM: "",
 };
