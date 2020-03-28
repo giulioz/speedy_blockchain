@@ -113,9 +113,16 @@ export default function createHttpApi(node: Node) {
     }
   });
 
-  // submit a new transaction with content
+  // submit a new transaction (from other nodes)
   ep(app, "POST /transaction", (req, res) => {
     node.pushTransaction(req.body);
+
+    res.status(201).send({ status: "ok", data: null });
+  });
+
+  // submit a new transaction with content
+  ep(app, "POST /flight", (req, res) => {
+    node.pushTransactionContent(req.body);
 
     res.status(201).send({ status: "ok", data: null });
   });

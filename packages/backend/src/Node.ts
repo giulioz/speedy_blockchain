@@ -114,6 +114,14 @@ export default class Node {
     }
   }
 
+  public async pushTransactionContent(f: Transaction["content"]) {
+    const transaction = this.currentBlockchain.pushTransactionContent(f, miner);
+
+    if (transaction) {
+      NodeCommunication.announceTransaction(this.peers, transaction);
+    }
+  }
+
   public startLoop() {
     this.miningUpdate();
     this.commUpdate();
