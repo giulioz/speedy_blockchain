@@ -36,8 +36,6 @@ export default function createHttpApi(node: Node) {
 
   // post a new block
   ep(app, "POST /block", (req, res) => {
-    console.log("Received new block", req.body);
-
     const success = node.addBlock(req.body);
 
     if (success) {
@@ -117,8 +115,6 @@ export default function createHttpApi(node: Node) {
 
   // submit a new transaction with content
   ep(app, "POST /transaction", (req, res) => {
-    console.log("Received new transaction", req.body);
-
     node.pushTransaction(req.body);
 
     res.status(201).send({ status: "ok", data: null });
