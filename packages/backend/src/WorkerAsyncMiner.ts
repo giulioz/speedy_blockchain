@@ -46,6 +46,7 @@ export type OutgoingMessage =
   | { type: "setDifficulty"; data: number }
   | { type: "mineBlock"; data: UnhashedBlock }
   | { type: "newTransaction"; data: Transaction }
+  | { type: "removeTransactions"; data: Transaction[] }
   | { type: "abort" };
 
 export default class WorkerAsyncMiner implements AsyncMiner {
@@ -67,7 +68,17 @@ export default class WorkerAsyncMiner implements AsyncMiner {
 
     newWorker.on("message", (data: Block) => {
       const createdBlock: Block = createBlock(data);
-      this.currentJob.done(createdBlock);
+
+      if (
+        this.currentJob.block &&
+        createdBlock.transactions.length ===
+          this.currentJob.block.transactions.length
+      ) {
+        this.currentJob.done(createdBlock);
+      } else {
+        this.currentJob.fail(new Error("Removed after mining"));
+      }
+
       this.currentJob = EMPTY_JOB;
     });
 
@@ -95,11 +106,30 @@ export default class WorkerAsyncMiner implements AsyncMiner {
   public notifyNewTransaction(t: Transaction) {
     if (
       this.currentJob.block &&
-      this.currentJob.block.transactions.length < MAX_TRANSACTIONS
+      this.currentJob.block.transactions.length < MAX_TRANSACTIONS &&
+      !this.currentJob.block.transactions.find(tr => tr.id === t.id)
     ) {
       this.currentJob.block.transactions.push(t);
 
       const msg: OutgoingMessage = { type: "newTransaction", data: t };
+      this.worker.postMessage(msg);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  public notifyTransactionsRemoved(transactions: Transaction[]) {
+    if (this.currentJob.block) {
+      this.currentJob.block.transactions = this.currentJob.block.transactions.filter(
+        t => !transactions.find(t2 => t.id === t2.id)
+      );
+
+      const msg: OutgoingMessage = {
+        type: "removeTransactions",
+        data: transactions,
+      };
       this.worker.postMessage(msg);
 
       return true;

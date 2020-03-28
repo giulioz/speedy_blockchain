@@ -10,6 +10,7 @@ export default interface Block {
   timestamp: number;
   previousHash: string;
   nonce: number;
+  minedBy: string;
 }
 
 export function computeBlockHash(b: UnhashedBlock) {
@@ -19,6 +20,7 @@ export function computeBlockHash(b: UnhashedBlock) {
     timestamp: b.timestamp,
     previousHash: b.previousHash,
     nonce: b.nonce,
+    minedBy: b.minedBy,
   };
 
   const blockString = JSON.stringify(sorted);

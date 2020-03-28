@@ -3,6 +3,7 @@ import {
   Peer,
   Transaction,
   utils,
+  Block,
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
@@ -32,7 +33,8 @@ export default class Node {
 
       const done = await NodeCommunication.initialBlockDownload(
         this.peers,
-        this.currentBlockchain
+        this.currentBlockchain,
+        miner
       );
 
       if (!done) {
@@ -43,6 +45,10 @@ export default class Node {
         return;
       }
     }
+
+    console.warn(
+      "No peer to perform IBD after several retries. Assuming master node..."
+    );
   }
 
   public async rehydrateBlocksFromDB() {
@@ -93,8 +99,19 @@ export default class Node {
     }));
   }
 
-  public pushTransaction(t: Transaction["content"]) {
-    this.currentBlockchain.pushTransaction(t, miner);
+  public async addBlock(block: Block) {
+    if (this.currentBlockchain.addBlock(block, miner)) {
+      db.insert(block);
+      return true;
+    }
+
+    return false;
+  }
+
+  public async pushTransaction(t: Transaction) {
+    if (this.currentBlockchain.pushTransaction(t, miner)) {
+      NodeCommunication.announceTransaction(this.peers, t);
+    }
   }
 
   public startLoop() {
@@ -112,13 +129,17 @@ export default class Node {
   }
 
   private async miningUpdate() {
-    const minedBlock = await this.currentBlockchain.tryMineNextBlock(miner);
-    if (minedBlock) {
-      db.insert(minedBlock);
-    }
+    const minedBlock = await this.currentBlockchain.tryMineNextBlock(
+      miner,
+      NodeCommunication.getSelfPeer().name
+    );
 
-    // TODO: Announce new block
-    // TODO: Save the block to DB
+    if (minedBlock) {
+      await Promise.all([
+        db.insert(minedBlock),
+        NodeCommunication.announceBlock(this.peers, minedBlock),
+      ]);
+    }
 
     this.miningTimeout = setTimeout(
       () => this.miningUpdate(),

@@ -8,6 +8,7 @@ import createHttpApi from "./httpApi";
 import { initDB } from "./db";
 
 const minerName = process.env.MINER_NAME || "Miner";
+const port = process.env.NODE_PORT ? parseInt(process.env.NODE_PORT, 10) : 8080;
 
 async function main() {
   await initDB(minerName);
@@ -16,9 +17,6 @@ async function main() {
   await node.rehydrateBlocksFromDB();
 
   const httpApi = createHttpApi(node);
-  const port = process.env.NODE_PORT
-    ? parseInt(process.env.NODE_PORT, 10)
-    : 8080;
   await new Promise(resolve => {
     httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", resolve);
   });

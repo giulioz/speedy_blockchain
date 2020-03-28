@@ -6,7 +6,7 @@ import { genZeroes, getTimestamp } from "./utils";
 import AsyncMiner from "./AsyncMiner";
 
 // difficulty of our PoW algorithm
-export const DIFFICULTY = 5;
+export const DIFFICULTY = 4;
 
 // max transactions per block
 export const MAX_TRANSACTIONS = 4000;
@@ -19,6 +19,7 @@ export const createGenesisBlock = () =>
     timestamp: 0,
     previousHash: "0",
     nonce: 0,
+    minedBy: "god",
   });
 
 // Check if blockHash is valid hash of block and satisfies
@@ -30,12 +31,26 @@ export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
     timestamp: block.timestamp,
     previousHash: block.previousHash,
     nonce: block.nonce,
+    minedBy: block.minedBy,
   };
 
-  return (
+  const valid =
     block.hash.startsWith(genZeroes(difficulty)) &&
-    block.hash === computeBlockHash(unhashedBlock)
-  );
+    block.hash === computeBlockHash(unhashedBlock) &&
+    block.transactions.length > 0 &&
+    block.transactions.length < MAX_TRANSACTIONS;
+
+  if (!valid) {
+    console.log(
+      "INVALIDY REPORT:",
+      block.hash.startsWith(genZeroes(difficulty)),
+      block.hash,
+      computeBlockHash(unhashedBlock),
+      block.transactions.length
+    );
+  }
+
+  return valid;
 }
 
 export function checkChainValidity(chain: Block[]) {
@@ -77,7 +92,7 @@ export default class Blockchain {
   // * Checking if the proof is valid.
   // * The previousHash referred in the block and the hash of latest block
   //   in the chain match.
-  addBlock(block: Block) {
+  addBlock(block: Block, asyncMiner: AsyncMiner) {
     const previousHash = this.lastBlock.hash;
 
     if (previousHash !== block.previousHash) {
@@ -85,10 +100,20 @@ export default class Blockchain {
     }
 
     if (!isValidBlock(block)) {
+      console.warn(new Error(`Trying go add an invalid block, aborting`));
       return false;
     }
 
     this.chain.push(block);
+
+    // remove from unconfirmedTransactions the transactions of the block
+    this.unconfirmedTransactions = this.unconfirmedTransactions.filter(
+      tr => !block.transactions.find(t => t.id === tr.id)
+    );
+
+    // ...and remove also from the miner
+    asyncMiner.notifyTransactionsRemoved(block.transactions);
+
     return true;
   }
 
@@ -110,7 +135,7 @@ export default class Blockchain {
   // This function serves as an interface to add the pending
   // transactions to the blockchain by adding them to the block
   // and figuring out Proof Of Work.
-  async tryMineNextBlock(asyncMiner: AsyncMiner) {
+  async tryMineNextBlock(asyncMiner: AsyncMiner, minerName: string) {
     if (
       !this.unconfirmedTransactions ||
       this.unconfirmedTransactions.length === 0
@@ -120,12 +145,9 @@ export default class Blockchain {
 
     const { lastBlock } = this;
 
-    const transactionsToValidate: Transaction[] = [];
-    while (this.unconfirmedTransactions.length > 0) {
-      transactionsToValidate.push(
-        this.unconfirmedTransactions.pop() as Transaction
-      );
-    }
+    const transactionsToValidate: Transaction[] = [
+      ...this.unconfirmedTransactions,
+    ];
 
     const unhashedBlock: UnhashedBlock = {
       index: lastBlock.index + 1,
@@ -133,23 +155,26 @@ export default class Blockchain {
       timestamp: getTimestamp(),
       previousHash: lastBlock.hash,
       nonce: 0,
+      minedBy: minerName,
     };
 
     const block = await asyncMiner.mine(unhashedBlock);
-    this.addBlock(block);
+    this.addBlock(block, asyncMiner);
     return block;
   }
 
-  pushTransaction(content: Transaction["content"], asyncMiner: AsyncMiner) {
-    const transaction: Transaction = {
-      id: uuidv4(),
-      timestamp: getTimestamp(),
-      content,
-    };
-
-    if (!asyncMiner.notifyNewTransaction(transaction)) {
-      this.unconfirmedTransactions.push(transaction);
+  pushTransaction(transaction: Transaction, asyncMiner: AsyncMiner) {
+    const insertedInMining = asyncMiner.notifyNewTransaction(transaction);
+    if (insertedInMining) {
+      return true;
     }
+
+    if (!this.unconfirmedTransactions.find(t => t.id === transaction.id)) {
+      this.unconfirmedTransactions.push(transaction);
+      return true;
+    }
+
+    return false;
   }
 
   findTransactionById(
