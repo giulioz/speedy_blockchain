@@ -7,9 +7,9 @@ jsonFile = 'dataFlights.json'
 #da csv a json.
 
 with open(csvFile) as csvFile:
-	with open(jsonFile, 'w') as jsonFile:
+	with open(jsonFile, 'w') as jsonFile2:
 		csvReader = csv.DictReader(csvFile, delimiter=',')
-		json.dump(list(csvReader), jsonFile)
+		json.dump(list(csvReader), jsonFile2)
 
 
 #il file json presenta una key in più vuota, con le seguenti righe di codice la togli.
