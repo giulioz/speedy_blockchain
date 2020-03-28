@@ -35,7 +35,7 @@ const transactions: any = [
   },
 ];
 
-test("mining", async () => {
+test("mining default difficulty", async () => {
   const miner = new WorkerAsyncMiner();
 
   const mined = await miner.mine({
@@ -76,27 +76,29 @@ test("mining difficulty 4 busy", async () => {
 
   const miner = new WorkerAsyncMiner(difficulty);
 
-  const minedAPromise = miner.mine({
-    index: 42,
-    transactions: transactions,
-    timestamp: 42,
-    previousHash: "A",
-    nonce: 0,
-  });
-  const minedBPromise = miner.mine({
-    index: 42,
-    transactions: transactions,
-    timestamp: 42,
-    previousHash: "B",
-    nonce: 0,
-  });
+  expect(
+    (async () => {
+      const block = await miner.mine({
+        index: 42,
+        transactions: transactions,
+        timestamp: 42,
+        previousHash: "A",
+        nonce: 0,
+      });
 
-  expect(minedBPromise).rejects.toThrowError("WorkerAsyncMiner currently busy");
+      return block.previousHash;
+    })()
+  ).resolves.toBe("A");
 
-  const minedA = await minedAPromise;
-  const isMinedValidA = isValidBlock(minedA, difficulty);
-  expect(isMinedValidA).toBe(true);
-  expect(minedA.previousHash).toBe("A");
+  expect(
+    miner.mine({
+      index: 42,
+      transactions: transactions,
+      timestamp: 42,
+      previousHash: "B",
+      nonce: 0,
+    })
+  ).rejects.toThrowError("WorkerAsyncMiner currently busy");
 
   miner.dispose();
 }, 15000);
@@ -190,3 +192,68 @@ test("mining difficulty 4 with new transactions after finished", async () => {
 
   miner.dispose();
 }, 20000);
+
+test("mining difficulty 4 with removed transactions", async () => {
+  const difficulty = 4;
+
+  const miner = new WorkerAsyncMiner(difficulty);
+
+  const minedPromise = miner.mine({
+    index: 42,
+    transactions: transactions,
+    timestamp: 42,
+    previousHash: "AAAAAA",
+    nonce: 0,
+  });
+
+  await utils.sleep(10);
+
+  miner.notifyTransactionsRemoved([
+    {
+      id: "BBBBBB",
+      timestamp: 42,
+      content: { a: "BBBBBB", b: "BBBBBB", c: "BBBBBB" },
+    },
+    {
+      id: "CCCCCC",
+      timestamp: 42,
+      content: { a: "CCCCCC", b: "CCCCCC", c: "CCCCCC" },
+    },
+  ] as any[]);
+
+  const mined = await minedPromise;
+
+  const isMinedValid = isValidBlock(mined, difficulty);
+  expect(isMinedValid).toBe(true);
+  expect(mined.transactions.length).toBe(transactions.length - 2);
+  expect(mined.transactions.find(t => t.id === "BBBBBB")).toBeUndefined();
+  expect(mined.transactions.find(t => t.id === "CCCCCC")).toBeUndefined();
+
+  miner.dispose();
+}, 10000);
+
+test("mining difficulty 4 with all removed transactions", async () => {
+  const difficulty = 4;
+
+  const miner = new WorkerAsyncMiner(difficulty);
+
+  const minedPromise = miner.mine({
+    index: 42,
+    transactions: transactions,
+    timestamp: 42,
+    previousHash: "AAAAAA",
+    nonce: 0,
+  });
+
+  await utils.sleep(10);
+
+  miner.notifyTransactionsRemoved(transactions);
+
+  const mined = await minedPromise;
+
+  const isMinedValid = isValidBlock(mined, difficulty);
+  expect(isMinedValid).toBe(false);
+  expect(mined.transactions.length).toBe(0);
+
+  miner.dispose();
+}, 10000);

@@ -20,6 +20,11 @@ export default interface Endpoints {
     res: ResponseStatus<Block[]>;
     req: null;
   };
+  "POST /block": {
+    params: {};
+    res: ResponseStatus;
+    req: Block;
+  };
   "GET /block/last": {
     params: {};
     res: ResponseStatus<Block, "Block not found.">;
@@ -43,7 +48,7 @@ export default interface Endpoints {
   "POST /transaction": {
     params: {};
     res: ResponseStatus;
-    req: Transaction["content"];
+    req: Transaction;
   };
   "GET /peers": {
     params: {};
@@ -54,23 +59,5 @@ export default interface Endpoints {
     params: {};
     res: ResponseStatus;
     req: IncomingPeer;
-  };
-
-  "PUT /peers/:id": {
-    params: { id: string };
-    res: ResponseStatus;
-    req: IncomingPeer;
-  };
-
-  "PUT /peers": {
-    params: {};
-    res: ResponseStatus;
-    req: PeersState;
-  };
-
-  "GET /test": {
-    params: {};
-    res: ResponseStatus<Blockchain | Block>;
-    req: null;
   };
 }

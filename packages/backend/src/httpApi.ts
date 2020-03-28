@@ -34,6 +34,22 @@ export default function createHttpApi(node: Node) {
     });
   });
 
+  // post a new block
+  ep(app, "POST /block", (req, res) => {
+    console.log("Received new block", req.body);
+
+    const success = node.addBlock(req.body);
+
+    if (success) {
+      res.send({
+        status: "ok",
+        data: null,
+      });
+    } else {
+      res.status(500).send({ status: "error", error: "Invalid block" });
+    }
+  });
+
   // get last block
   ep(app, "GET /block/last", (req, res) => {
     const last = node.currentBlockchain.lastBlock;
@@ -101,17 +117,11 @@ export default function createHttpApi(node: Node) {
 
   // submit a new transaction with content
   ep(app, "POST /transaction", (req, res) => {
+    console.log("Received new transaction", req.body);
+
     node.pushTransaction(req.body);
 
     res.status(201).send({ status: "ok", data: null });
-  });
-
-  // just for test purpose
-  ep(app, "GET /test", async (req, res) => {
-    res.status(201).send({
-      status: "ok",
-      data: node.currentBlockchain,
-    });
   });
 
   // register a new node

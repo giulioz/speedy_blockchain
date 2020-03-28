@@ -1,6 +1,13 @@
 import fetch from "node-fetch";
 
-import { Endpoints, ChainInfo, utils } from "@speedy_blockchain/common";
+import {
+  Endpoints,
+  ChainInfo,
+  utils,
+  Block,
+  Transaction,
+  AsyncMiner,
+} from "@speedy_blockchain/common";
 import Peer from "@speedy_blockchain/common/src/Peer";
 import Blockchain from "@speedy_blockchain/common/src/Blockchain";
 import {
@@ -75,7 +82,8 @@ async function httpCall<K extends keyof Endpoints>(
 
 export async function initialBlockDownload(
   peers: Peer[],
-  blockchain: Blockchain
+  blockchain: Blockchain,
+  miner: AsyncMiner
 ) {
   console.log("Starting initial block download...");
 
@@ -119,7 +127,7 @@ export async function initialBlockDownload(
       throw new Error("Invalid response in IBD");
     }
 
-    if (!blockchain.addBlock(block.data)) {
+    if (!blockchain.addBlock(block.data, miner)) {
       throw new Error("Invalid block in longest chain in IBD");
     }
 
@@ -129,12 +137,12 @@ export async function initialBlockDownload(
   if (blockchain.lastBlock.hash !== mostFrequentHash) {
     console.error(blockchain.lastBlock.hash, "VS", mostFrequentHash);
     throw new Error("Invalid longest chain in IBD");
+
+    // TODO: Come gestiamo questa situazione? Buttiamo via tutto?
   }
 
   console.log("IBD Completed.");
   return true;
-
-  // TODO: Come gestiamo questa situazione? Buttiamo via tutto?
 }
 
 export async function announcement(peers: Peer[]) {
@@ -186,4 +194,19 @@ export async function fetchRemotePeers(initialPeers: Peer[]) {
   );
 
   return reachable;
+}
+
+export async function announceBlock(peers: Peer[], block: Block) {
+  await Promise.all(
+    peers.map(peer => httpCall(peer, "POST /block", null, block))
+  );
+}
+
+export async function announceTransaction(
+  peers: Peer[],
+  transaction: Transaction
+) {
+  await Promise.all(
+    peers.map(peer => httpCall(peer, "POST /transaction", null, transaction))
+  );
 }

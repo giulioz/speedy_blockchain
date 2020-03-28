@@ -60,6 +60,14 @@ function pushNewTransaction(t: Transaction) {
   miningBlock.transactions.push(t);
 }
 
+function removeTransactions(ts: Transaction[]) {
+  if (miningBlock) {
+    miningBlock.transactions = miningBlock.transactions.filter(
+      t => !ts.find(t2 => t.id === t2.id)
+    );
+  }
+}
+
 function abort() {
   miningBlock = null;
 }
@@ -82,6 +90,8 @@ parentPort.on("message", (message: OutgoingMessage) => {
     startMining(message.data);
   } else if (message.type === "newTransaction") {
     pushNewTransaction(message.data);
+  } else if (message.type === "removeTransactions") {
+    removeTransactions(message.data);
   } else if (message.type === "abort") {
     abort();
   }
