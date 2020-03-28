@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Layout from "../components/Layout";
@@ -27,21 +27,8 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     flexDirection: "column",
   },
-  paper: {
-    padding: theme.spacing(2),
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: theme.spacing(2),
-    "& .MuiTypography-root": {
-      marginBottom: theme.spacing(2),
-    },
-  },
-  fieldContainer: {
-    display: "flex",
-    alignItems: "center",
-    "& .MuiInputBase-root": {
-      marginRight: theme.spacing(2),
-    },
+  progressBar: {
+    minHeight: theme.spacing(1),
   },
   carrierDataContainer: {
     padding: theme.spacing(2),
@@ -125,7 +112,9 @@ export default function CarrierInfo() {
     <Layout title="Carrier Info">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        {searching && <LinearProgress color="secondary" />}
+        <div className={classes.progressBar}>
+          {searching && <LinearProgress color="secondary" />}
+        </div>
         <Container maxWidth="xl" className={classes.container}>
           <SearchForm
             title="Enter a carrier airline ID and a time range"
@@ -154,7 +143,6 @@ export default function CarrierInfo() {
               onChange={onNamedInputStateChange}
             />
           </SearchForm>
-          {/* WIP */}
           {data && (
             <Paper className={classes.carrierDataContainer}>
               <Typography variant="h4" color="secondary">
