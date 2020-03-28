@@ -58,7 +58,7 @@ export default class Node {
   public async rehydrateBlocksFromDB() {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
-
+    console.log(blocks.length);
     // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
@@ -167,16 +167,82 @@ export default class Node {
   }
 
   public async queryCarrier(query: CarrierRequest): Promise<CarrierData> {
-    return {
-      OP_CARRIER_AIRLINE_ID: "",
-      AVERAGE_DELAY: 0,
-      TOTAL_NUMBER_OF_FLIGHTS: 0,
-      DELAYED_FLIGHTS: 0,
-      FLIGHTS_IN_ADVANCE: 0,
-    };
+    return new Promise((resolve, reject) => {
+      let returnObj = {
+        OP_CARRIER_AIRLINE_ID: "",
+        AVERAGE_DELAY: 0,
+        TOTAL_NUMBER_OF_FLIGHTS: 0,
+        DELAYED_FLIGHTS: 0,
+        FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
+      };
+      if (query['OP_CARRIER_AIRLINE_ID']) {
+        const dateTo = Reflect.get(query, 'DATE_TO');
+        const dateFrom = Reflect.get(query, 'DATE_FROM');
+        let delaySum = 0;
+        returnObj['OP_CARRIER_AIRLINE_ID'] = query['OP_CARRIER_AIRLINE_ID'];
+        this.currentBlockchain.chain.forEach( block => {
+          block.transactions.forEach( transaction => {
+          {
+            if (query['OP_CARRIER_AIRLINE_ID'] )
+             // pass the condition. Check if dateBounds (if exists) also holds.
+              if ((!dateFrom || (transaction.content["FLIGHT_DATE"] >= dateFrom))
+                && (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)) {
+                  returnObj['TOTAL_NUMBER_OF_FLIGHTS'] += 1;
+                  if (transaction.content['ARR_DELAY'] > 0 ) {
+                    returnObj['DELAYED_FLIGHTS']+= 1;
+                  } else {
+                    if (transaction.content['ARR_DELAY'] < 0) {
+                      returnObj['FLIGHTS_IN_ADVANCE']+= 1;
+                    }
+                  }                  
+                }
+                delaySum += transaction.content['ARR_DELAY'];
+           }
+          });
+        });
+        if (returnObj['TOTAL_NUMBER_OF_FLIGHTS']) {
+          delaySum /= returnObj['TOTAL_NUMBER_OF_FLIGHTS'];
+        }
+        returnObj['AVERAGE_DELAY'] = delaySum;
+      }
+      resolve(returnObj)
+    });
+
   }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
-    return [];
+    let queryFields = Object.getOwnPropertyNames(query);
+    const dateTo = Reflect.get(query, 'DATE_TO');
+    const dateFrom = Reflect.get(query, 'DATE_FROM');
+    let sort = Reflect.get(query, 'SORT');
+    // const special = queryFields.filter((a) => a in ['SORT']);
+    queryFields = queryFields.filter((a) => !(['DATE_TO', 'DATE_FROM', 'SORT'].includes(a)));
+    return new Promise((resolve, reject) => {
+      let queryResult: Flight[] = [];
+      this.currentBlockchain.chain.forEach( block => {
+        block.transactions.forEach( transaction => {
+         if (queryFields.every(field => {
+           return Reflect.get(query, field) === Reflect.get(transaction.content, field)
+          })) {
+           // pass the condition. Check if dateBounds (if exists) also holds.
+            if ((!dateFrom || (transaction.content["FLIGHT_DATE"] >= dateFrom))
+              && (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)) {
+                queryResult.push(transaction.content);
+              }
+         }
+        });
+      });
+      // WIP: SORT works only with number. Sort needs to be for example: "FLIGHT_DATE" or "FLIGHT_DATE DESC" 
+      if (sort) {
+        sort = sort.split(' ');
+        if (sort.length > 1 && sort[1] === 'DESC') {
+          queryResult.sort((a,b) => Reflect.get(b, sort[0]) - Reflect.get(a, sort[0]));
+        } else {
+          queryResult.sort((a,b) => Reflect.get(a, sort[0]) - Reflect.get(b, sort[0]));
+        }
+      }
+      resolve(queryResult);
+    });
   }
 }
+
