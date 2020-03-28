@@ -2,7 +2,7 @@ import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Paper from "@material-ui/core/Paper";
-import { Flight, FlightsRequest } from "@speedy_blockchain/common";
+import { Flight, FlightRequest } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import { Typography, TextField, LinearProgress } from "@material-ui/core";
 import FlightIcon from "@material-ui/icons/Flight";
@@ -27,21 +27,8 @@ const useStyles = makeStyles(theme => ({
       marginBottom: theme.spacing(4),
     },
   },
-  paper: {
-    padding: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    "& .MuiTypography-root": {
-      margin: 0,
-    },
-  },
-  fieldContainer: {
-    display: "flex",
-    alignItems: "center",
-    "& .MuiInputBase-root": {
-      marginRight: theme.spacing(2),
-    },
+  progressBar: {
+    minHeight: theme.spacing(1),
   },
   flightContainer: {
     width: "100%",
@@ -213,7 +200,7 @@ export default function FindFlight() {
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: emptyFlight,
-    apiCallback: () => mockData,
+    apiCallback: inputState => mockData,
     isMock: true,
   });
 
@@ -221,7 +208,9 @@ export default function FindFlight() {
     <Layout title="Find a flight">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        {searching && <LinearProgress color="secondary" />}
+        <div className={classes.progressBar}>
+          {searching && <LinearProgress color="secondary" />}
+        </div>
         <Container maxWidth="lg" className={classes.container}>
           <SearchForm
             title="Enter a flight"
