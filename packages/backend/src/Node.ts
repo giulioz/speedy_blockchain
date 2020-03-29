@@ -277,4 +277,59 @@ export default class Node {
       resolve(queryResult);
     });
   }
+
+  public async queryRoute(query: any): Promise<Flight[]> {
+    // QUERY: DATE_TO, DATE_FROM, CITY_A, CITY_B
+    // DATE_TO and DATE_FROM could be  not mandatory.
+    const dateTo = query["DATE_TO"];
+    const dateFrom = query["DATE_FROM"];
+    const cityA = query["CITY_A"];
+    const cityB = query["CITY_B"];
+    const returnObj: any = {
+      OP_CARRIER_AIRLINE_ID: query["OP_CARRIER_AIRLINE_ID"],
+      TOTAL_NUMBER_OF_FLIGHTS: 0,
+      DELAYED_FLIGHTS: 0,
+      FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
+      CITY_A: cityA,
+      CITY_B: cityB,
+      MAX_DELAY: -99999999,
+      MIN_DELAY: 99999999,
+    };
+    let delaySum = 0;
+    this.currentBlockchain.chain.forEach(block => {
+      block.transactions.forEach(transaction => {
+        // check carrier name
+        const insideTime =
+          (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
+          (!dateTo || transaction.content["FL_DATE"] <= dateTo);
+
+        const sameAirline =
+          transaction.content["OP_CARRIER_AIRLINE_ID"] ===
+          query["OP_CARRIER_AIRLINE_ID"];
+        const sameRoute = 
+          (!cityA || transaction.content["ORIGIN_CITY_NAME"] === cityA || transaction.content["DEST_CITY_NAME"] === cityA) && 
+          (!cityB || transaction.content["ORIGIN_CITY_NAME"] === cityB || transaction.content["DEST_CITY_NAME"] === cityB);
+        if (insideTime && sameAirline && sameRoute) {
+          returnObj['TOTAL_NUMBER_OF_FLIGHTS'] += 1;
+          const delay = Number(transaction.content["ARR_DELAY"]);
+          delaySum += delay;
+          if (delay > returnObj["MAX_DELAY"]) {
+            returnObj["MAX_DELAY"] = delay;
+          }
+          if (delay < returnObj["MIN_DELAY"]) {
+            returnObj["MIN_DELAY"] = delay;
+          }
+
+          if (delay > 0) {
+            returnObj["DELAYED_FLIGHTS"] += 1;
+          } else if (delay < 0) {
+            returnObj["FLIGHTS_IN_ADVANCE"] += 1;
+          }
+      }
+      });
+    });
+    returnObj["AVERAGE_DELAY"] =
+      delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
+    return returnObj;
+  }
 }
