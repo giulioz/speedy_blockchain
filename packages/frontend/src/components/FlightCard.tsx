@@ -4,6 +4,8 @@ import { Paper, Typography, TextField } from "@material-ui/core";
 import FlightIcon from "@material-ui/icons/Flight";
 import LocationOnIcon from "@material-ui/icons/LocationOn";
 import ScheduleIcon from "@material-ui/icons/Schedule";
+import BlockIcon from "@material-ui/icons/Block";
+import red from "@material-ui/core/colors/red";
 import amber from "@material-ui/core/colors/amber";
 import green from "@material-ui/core/colors/green";
 import { Flight } from "@speedy_blockchain/common";
@@ -11,6 +13,7 @@ import { Flight } from "@speedy_blockchain/common";
 const useStyles = makeStyles(theme => ({
   flightContainer: {
     width: "100%",
+    flexBasis: "600px",
     minHeight: "150px",
     display: "flex",
     alignItems: "center",
@@ -27,6 +30,8 @@ const useStyles = makeStyles(theme => ({
   },
   flightInfoContainer: {
     display: "flex",
+    flexBasis: "650px",
+    justifyContent: "center",
     alignItems: "center",
     "& > *": {
       marginRight: theme.spacing(4),
@@ -47,7 +52,6 @@ const useStyles = makeStyles(theme => ({
     alignItems: "stretch",
     flexDirection: "row",
     justifyContent: "space-between",
-    width: "300px",
   },
   dottedLineContainer: {
     display: "flex",
@@ -68,9 +72,9 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function CityTime(props: { city: string; time: string; delay: number }) {
+function CityTime(props: { city: string; time: number; delay: number }) {
   const { city, time, delay } = props;
-  const parsedDelay = +delay;
+  const parsedDelay = delay && +delay;
   const absDelay = Math.abs(parsedDelay);
   const sign = parsedDelay < 0 ? "-" : "+";
   const delayString = sign + absDelay + " min";
@@ -78,12 +82,16 @@ function CityTime(props: { city: string; time: string; delay: number }) {
   return (
     <div>
       <Typography>{city}</Typography>
-      <Typography style={{ marginRight: "5px" }} variant="subtitle1">
-        {time}
-      </Typography>
-      <Typography variant="subtitle1" style={{ color: color }}>
-        {delayString}
-      </Typography>
+      {time !== 0 && (
+        <Typography style={{ marginRight: "5px" }} variant="subtitle1">
+          {time}
+        </Typography>
+      )}
+      {delay !== 0 && (
+        <Typography variant="subtitle1" style={{ color: color }}>
+          {delayString}
+        </Typography>
+      )}
     </div>
   );
 }
@@ -91,27 +99,37 @@ function CityTime(props: { city: string; time: string; delay: number }) {
 function FlightBetweenIcon(props: { duration: number }) {
   const { duration } = props;
   const classes = useStyles();
-  const durationString = duration + " min";
+  const durationString = duration && duration + " min";
   return (
-    <span>
-      <span className={classes.flightBetweenContainer}>
-        <LocationOnIcon fontSize="default" />
-        <div className={classes.dottedLineContainer}>
-          <div className={classes.dottedLine} />
-        </div>
-        <FlightIcon
-          className={classes.huge}
-          style={{ transform: "rotate(90deg)" }}
-        />
-        <div className={classes.dottedLineContainer}>
-          <div className={classes.dottedLine} />
-        </div>
-        <LocationOnIcon fontSize="default" />
-      </span>
-      <div className={classes.duration}>
-        <ScheduleIcon fontSize="small" />
-        <span>{durationString}</span>
-      </div>
+    <span style={{ width: "300px" }}>
+      {duration ? (
+        <>
+          <span className={classes.flightBetweenContainer}>
+            <LocationOnIcon fontSize="default" />
+            <div className={classes.dottedLineContainer}>
+              <div className={classes.dottedLine} />
+            </div>
+            <FlightIcon
+              className={classes.huge}
+              style={{ transform: "rotate(90deg)" }}
+            />
+            <div className={classes.dottedLineContainer}>
+              <div className={classes.dottedLine} />
+            </div>
+            <LocationOnIcon fontSize="default" />
+          </span>
+          <div className={classes.duration}>
+            <ScheduleIcon fontSize="small" />
+            <span>{durationString}</span>
+          </div>
+        </>
+      ) : (
+        <span
+          style={{ display: "flex", justifyContent: "center", width: "100%" }}
+        >
+          <BlockIcon />
+        </span>
+      )}
     </span>
   );
 }
@@ -120,10 +138,16 @@ export default function FlightCard(props: { flight: Flight }) {
   const { flight } = props;
   const classes = useStyles();
 
+  const color = flight.CANCELLED === 0 ? green[500] : red[500];
   return (
     <Paper className={classes.flightContainer}>
       <div className={classes.flightTitleContainer}>
         <Typography variant="h5">Flight #{flight.OP_CARRIER_FL_NUM}</Typography>
+      </div>
+      <div style={{ flexBasis: "110px", textAlign: "center" }}>
+        <Typography style={{ color: color }} variant="h5">
+          {flight.CANCELLED === 0 ? "Arrived" : "Cancelled"}
+        </Typography>
       </div>
       <div className={classes.flightInfoContainer}>
         <CityTime
