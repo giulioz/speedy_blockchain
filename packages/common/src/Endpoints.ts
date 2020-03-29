@@ -55,12 +55,12 @@ export default interface Endpoints {
     res: ResponseStatus;
     req: Transaction["content"];
   };
-  "POST /query/carrier": {
+  "POST /query/carriers": {
     params: {};
     res: ResponseStatus<CarrierData>;
     req: CarrierRequest;
   };
-  "POST /query/flight": {
+  "POST /query/flights": {
     params: {};
     res: ResponseStatus<Flight[]>;
     req: FlightsRequest;
