@@ -44,6 +44,7 @@ test("mining default difficulty", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   const isMinedValid = isValidBlock(mined);
@@ -63,6 +64,7 @@ test("mining difficulty 5", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   const isMinedValid = isValidBlock(mined, difficulty);
@@ -84,6 +86,7 @@ test("mining difficulty 4 busy", async () => {
         timestamp: 42,
         previousHash: "A",
         nonce: 0,
+        minedBy: "",
       });
 
       return block.previousHash;
@@ -97,6 +100,7 @@ test("mining difficulty 4 busy", async () => {
       timestamp: 42,
       previousHash: "B",
       nonce: 0,
+      minedBy: "",
     })
   ).rejects.toThrowError("WorkerAsyncMiner currently busy");
 
@@ -114,6 +118,7 @@ test("mining difficulty 8 with abort after 100 ms", async () => {
     timestamp: 42,
     previousHash: "A",
     nonce: 0,
+    minedBy: "",
   });
 
   await utils.sleep(100);
@@ -135,6 +140,7 @@ test("mining difficulty 4 with new transactions", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   await utils.sleep(10);
@@ -166,6 +172,7 @@ test("mining difficulty 4 with new transactions after finished", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   await utils.sleep(10);
@@ -204,6 +211,7 @@ test("mining difficulty 4 with removed transactions", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   await utils.sleep(10);
@@ -243,6 +251,7 @@ test("mining difficulty 4 with all removed transactions", async () => {
     timestamp: 42,
     previousHash: "AAAAAA",
     nonce: 0,
+    minedBy: "",
   });
 
   await utils.sleep(10);

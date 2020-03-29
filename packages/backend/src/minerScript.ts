@@ -1,20 +1,23 @@
 import { parentPort } from "worker_threads";
 
-import { genZeroes } from "@speedy_blockchain/common/dist/utils";
-import { UnhashedBlock, Transaction } from "@speedy_blockchain/common";
-import { computeBlockHash } from "@speedy_blockchain/common/dist/Block";
+import {
+  UnhashedBlock,
+  Transaction,
+  utils,
+  computeBlockHash,
+} from "@speedy_blockchain/common";
 
 import { OutgoingMessage } from "./WorkerAsyncMiner";
 
 let DIF_START = "";
-const CHUNK_SIZE = 50;
+const CHUNK_SIZE = 100;
 
 let miningBlock: UnhashedBlock | null = null;
 
 // Process a small chunk of nonces
 function mineChunk(): number | null {
   if (!miningBlock) {
-    throw new Error("No block in queue");
+    throw new Error("No block in queue (mine)");
   }
 
   let computedHash = computeBlockHash(miningBlock);
@@ -54,7 +57,7 @@ function miningLoop() {
 
 function pushNewTransaction(t: Transaction) {
   if (!miningBlock) {
-    throw new Error("No block in queue");
+    throw new Error("No block in queue (push)");
   }
 
   miningBlock.transactions.push(t);
@@ -85,7 +88,7 @@ if (!parentPort) {
 
 parentPort.on("message", (message: OutgoingMessage) => {
   if (message.type === "setDifficulty") {
-    DIF_START = genZeroes(message.data);
+    DIF_START = utils.genZeroes(message.data);
   } else if (message.type === "mineBlock") {
     startMining(message.data);
   } else if (message.type === "newTransaction") {

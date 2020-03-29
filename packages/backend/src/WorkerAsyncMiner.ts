@@ -51,10 +51,12 @@ export type OutgoingMessage =
 
 export default class WorkerAsyncMiner implements AsyncMiner {
   worker: Worker;
-
   currentJob: Job = EMPTY_JOB;
 
-  constructor(difficulty: number = DIFFICULTY) {
+  constructor(
+    public onReschedule: (transactions: Transaction[]) => void,
+    difficulty: number = DIFFICULTY
+  ) {
     this.worker = this.createNewWorker();
     this.setDifficulty(difficulty);
   }
@@ -69,14 +71,23 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     newWorker.on("message", (data: Block) => {
       const createdBlock: Block = createBlock(data);
 
-      if (
-        this.currentJob.block &&
-        createdBlock.transactions.length ===
-          this.currentJob.block.transactions.length
-      ) {
-        this.currentJob.done(createdBlock);
+      if (!this.currentJob.block) {
+        this.currentJob.fail(new Error("No block from async miner!"));
       } else {
-        this.currentJob.fail(new Error("Removed after mining"));
+        if (
+          createdBlock.transactions.length !==
+          this.currentJob.block.transactions.length
+        ) {
+          console.warn(
+            new Error(
+              `Removed after mining (${createdBlock.transactions.length} vs ${this.currentJob.block.transactions.length}), rescheduling...`
+            )
+          );
+
+          this.onReschedule(this.currentJob.block.transactions);
+        }
+
+        this.currentJob.done(createdBlock);
       }
 
       this.currentJob = EMPTY_JOB;
@@ -106,13 +117,13 @@ export default class WorkerAsyncMiner implements AsyncMiner {
   public notifyNewTransaction(t: Transaction) {
     if (
       this.currentJob.block &&
-      this.currentJob.block.transactions.length < MAX_TRANSACTIONS &&
+      this.currentJob.block.transactions.length < MAX_TRANSACTIONS - 1 &&
       !this.currentJob.block.transactions.find(tr => tr.id === t.id)
     ) {
-      this.currentJob.block.transactions.push(t);
-
       const msg: OutgoingMessage = { type: "newTransaction", data: t };
       this.worker.postMessage(msg);
+
+      this.currentJob.block.transactions.push(t);
 
       return true;
     }
@@ -122,15 +133,15 @@ export default class WorkerAsyncMiner implements AsyncMiner {
 
   public notifyTransactionsRemoved(transactions: Transaction[]) {
     if (this.currentJob.block) {
-      this.currentJob.block.transactions = this.currentJob.block.transactions.filter(
-        t => !transactions.find(t2 => t.id === t2.id)
-      );
-
       const msg: OutgoingMessage = {
         type: "removeTransactions",
         data: transactions,
       };
       this.worker.postMessage(msg);
+
+      this.currentJob.block.transactions = this.currentJob.block.transactions.filter(
+        t => !transactions.find(t2 => t.id === t2.id)
+      );
 
       return true;
     }

@@ -11,14 +11,13 @@ import {
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
+import SimpleAsyncMiner from "./SimpleAsyncMiner";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
 import * as NodeCommunication from "./NodeCommunication";
 
 const miningTimeoutTime = 1000;
 const commTimeoutTime = 1000;
-
-const miner = new WorkerAsyncMiner();
 
 // Manages the blockchain, mining and communication with peers
 export default class Node {
@@ -27,6 +26,14 @@ export default class Node {
 
   private miningTimeout: NodeJS.Timeout | null = null;
   private commTimeout: NodeJS.Timeout | null = null;
+
+  // private handleReschedule = (transactions: Transaction[]) => {
+  //   transactions.forEach(t =>
+  //     this.currentBlockchain.pushTransaction(t, this.miner)
+  //   );
+  // };
+  // miner = new WorkerAsyncMiner(this.handleReschedule);
+  miner = new SimpleAsyncMiner();
 
   public async initCommunication() {
     let retry = 0;
@@ -38,7 +45,7 @@ export default class Node {
       const done = await NodeCommunication.initialBlockDownload(
         this.peers,
         this.currentBlockchain,
-        miner
+        this.miner
       );
 
       if (!done) {
@@ -58,7 +65,7 @@ export default class Node {
   public async rehydrateBlocksFromDB() {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
-    
+
     // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
@@ -104,7 +111,7 @@ export default class Node {
   }
 
   public async addBlock(block: Block) {
-    if (this.currentBlockchain.addBlock(block, miner)) {
+    if (this.currentBlockchain.addBlock(block, this.miner)) {
       db.insert(block);
       return true;
     }
@@ -113,13 +120,16 @@ export default class Node {
   }
 
   public async pushTransaction(t: Transaction) {
-    if (this.currentBlockchain.pushTransaction(t, miner)) {
+    if (this.currentBlockchain.pushTransaction(t, this.miner)) {
       NodeCommunication.announceTransaction(this.peers, t);
     }
   }
 
   public async pushTransactionContent(f: Transaction["content"]) {
-    const transaction = this.currentBlockchain.pushTransactionContent(f, miner);
+    const transaction = this.currentBlockchain.pushTransactionContent(
+      f,
+      this.miner
+    );
 
     if (transaction) {
       NodeCommunication.announceTransaction(this.peers, transaction);
@@ -142,7 +152,7 @@ export default class Node {
 
   private async miningUpdate() {
     const minedBlock = await this.currentBlockchain.tryMineNextBlock(
-      miner,
+      this.miner,
       NodeCommunication.getSelfPeer().name
     );
 
@@ -175,74 +185,88 @@ export default class Node {
         DELAYED_FLIGHTS: 0,
         FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
       };
-      if (query['OP_CARRIER_AIRLINE_ID']) {
-        const dateTo = Reflect.get(query, 'DATE_TO');
-        const dateFrom = Reflect.get(query, 'DATE_FROM');
+      if (query["OP_CARRIER_AIRLINE_ID"]) {
+        const dateTo = Reflect.get(query, "DATE_TO");
+        const dateFrom = Reflect.get(query, "DATE_FROM");
         let delaySum = 0;
-        returnObj['OP_CARRIER_AIRLINE_ID'] = query['OP_CARRIER_AIRLINE_ID'];
-        this.currentBlockchain.chain.forEach( block => {
-          block.transactions.forEach( transaction => {
-          {
-            if (query['OP_CARRIER_AIRLINE_ID'] )
-             // pass the condition. Check if dateBounds (if exists) also holds.
-              if ((!dateFrom || (transaction.content["FLIGHT_DATE"] >= dateFrom))
-                && (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)) {
-                  returnObj['TOTAL_NUMBER_OF_FLIGHTS'] += 1;
-                  if (transaction.content['ARR_DELAY'] > 0 ) {
-                    returnObj['DELAYED_FLIGHTS']+= 1;
+        returnObj["OP_CARRIER_AIRLINE_ID"] = query["OP_CARRIER_AIRLINE_ID"];
+        this.currentBlockchain.chain.forEach(block => {
+          block.transactions.forEach(transaction => {
+            {
+              if (query["OP_CARRIER_AIRLINE_ID"])
+                if (
+                  (!dateFrom ||
+                    transaction.content["FLIGHT_DATE"] >= dateFrom) &&
+                  (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)
+                ) {
+                  // pass the condition. Check if dateBounds (if exists) also holds.
+                  returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
+                  if (transaction.content["ARR_DELAY"] > 0) {
+                    returnObj["DELAYED_FLIGHTS"] += 1;
                   } else {
-                    if (transaction.content['ARR_DELAY'] < 0) {
-                      returnObj['FLIGHTS_IN_ADVANCE']+= 1;
+                    if (transaction.content["ARR_DELAY"] < 0) {
+                      returnObj["FLIGHTS_IN_ADVANCE"] += 1;
                     }
-                  }                  
+                  }
                 }
-                delaySum += transaction.content['ARR_DELAY'];
-           }
+              delaySum += transaction.content["ARR_DELAY"];
+            }
           });
         });
-        if (returnObj['TOTAL_NUMBER_OF_FLIGHTS']) {
-          delaySum /= returnObj['TOTAL_NUMBER_OF_FLIGHTS'];
+        if (returnObj["TOTAL_NUMBER_OF_FLIGHTS"]) {
+          delaySum /= returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
         }
-        returnObj['AVERAGE_DELAY'] = delaySum;
+        returnObj["AVERAGE_DELAY"] = delaySum;
       }
-      resolve(returnObj)
+      resolve(returnObj);
     });
-
   }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     let queryFields = Object.getOwnPropertyNames(query);
-    const dateTo = Reflect.get(query, 'DATE_TO');
-    const dateFrom = Reflect.get(query, 'DATE_FROM');
-    let sort = Reflect.get(query, 'SORT');
+    const dateTo = Reflect.get(query, "DATE_TO");
+    const dateFrom = Reflect.get(query, "DATE_FROM");
+    let sort = Reflect.get(query, "SORT");
     // const special = queryFields.filter((a) => a in ['SORT']);
-    queryFields = queryFields.filter((a) => !(['DATE_TO', 'DATE_FROM', 'SORT'].includes(a)));
+    queryFields = queryFields.filter(
+      a => !["DATE_TO", "DATE_FROM", "SORT"].includes(a)
+    );
     return new Promise((resolve, reject) => {
       let queryResult: Flight[] = [];
-      this.currentBlockchain.chain.forEach( block => {
-        block.transactions.forEach( transaction => {
-         if (queryFields.every(field => {
-           return Reflect.get(query, field) === Reflect.get(transaction.content, field)
-          })) {
-           // pass the condition. Check if dateBounds (if exists) also holds.
-            if ((!dateFrom || (transaction.content["FLIGHT_DATE"] >= dateFrom))
-              && (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)) {
-                queryResult.push(transaction.content);
-              }
-         }
+      this.currentBlockchain.chain.forEach(block => {
+        block.transactions.forEach(transaction => {
+          if (
+            queryFields.every(field => {
+              return (
+                Reflect.get(query, field) ===
+                Reflect.get(transaction.content, field)
+              );
+            })
+          ) {
+            // pass the condition. Check if dateBounds (if exists) also holds.
+            if (
+              (!dateFrom || transaction.content["FLIGHT_DATE"] >= dateFrom) &&
+              (!dateTo || transaction.content["FLIGHT_DATE"] <= dateTo)
+            ) {
+              queryResult.push(transaction.content);
+            }
+          }
         });
       });
-      // WIP: SORT works only with number. Sort needs to be for example: "FLIGHT_DATE" or "FLIGHT_DATE DESC" 
+      // WIP: SORT works only with number. Sort needs to be for example: "FLIGHT_DATE" or "FLIGHT_DATE DESC"
       if (sort) {
-        sort = sort.split(' ');
-        if (sort.length > 1 && sort[1] === 'DESC') {
-          queryResult.sort((a,b) => Reflect.get(b, sort[0]) - Reflect.get(a, sort[0]));
+        sort = sort.split(" ");
+        if (sort.length > 1 && sort[1] === "DESC") {
+          queryResult.sort(
+            (a, b) => Reflect.get(b, sort[0]) - Reflect.get(a, sort[0])
+          );
         } else {
-          queryResult.sort((a,b) => Reflect.get(a, sort[0]) - Reflect.get(b, sort[0]));
+          queryResult.sort(
+            (a, b) => Reflect.get(a, sort[0]) - Reflect.get(b, sort[0])
+          );
         }
       }
       resolve(queryResult);
     });
   }
 }
-
