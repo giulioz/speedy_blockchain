@@ -1,5 +1,5 @@
 import Blockchain from "./Blockchain";
-import Block, { UnhashedBlock } from "./Block";
+import Block, { UnhashedBlock, computeBlockHash, createBlock } from "./Block";
 import Transaction from "./Transaction";
 import Flight from "./Flight";
 import Peer from "./Peer";
@@ -30,5 +30,7 @@ export {
   FlightsRequest,
   RouteRequest,
   RouteData,
+  computeBlockHash,
+  createBlock,
   utils,
 };
