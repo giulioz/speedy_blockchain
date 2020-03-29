@@ -17,6 +17,7 @@ export default function createHttpApi(node: Node) {
       data: {
         peer: NodeCommunication.getSelfPeer(),
         length: node.currentBlockchain.maxLength,
+        transactionCount: node.currentBlockchain.transactionCount,
         lastHash: node.currentBlockchain.lastBlock.hash,
       },
     });

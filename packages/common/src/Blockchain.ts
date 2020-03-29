@@ -34,11 +34,14 @@ export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
     minedBy: block.minedBy,
   };
 
+  const isGenesisBlock = block.index === 0;
+
   const valid =
-    block.hash.startsWith(genZeroes(difficulty)) &&
-    block.hash === computeBlockHash(unhashedBlock) &&
-    block.transactions.length > 0 &&
-    block.transactions.length < MAX_TRANSACTIONS;
+    isGenesisBlock ||
+    (block.hash.startsWith(genZeroes(difficulty)) &&
+      block.hash === computeBlockHash(unhashedBlock) &&
+      block.transactions.length > 0 &&
+      block.transactions.length < MAX_TRANSACTIONS);
 
   if (!valid) {
     console.log(
@@ -71,6 +74,8 @@ export function checkChainValidity(chain: Block[]) {
 export default class Blockchain {
   unconfirmedTransactions: Transaction[] = [];
   chain: Block[] = [];
+
+  transactionCount: number = 0;
 
   // A function to generate genesis block and pushs it to
   // the chain. The block has index 0, previousHash as 0, and
@@ -114,11 +119,23 @@ export default class Blockchain {
     // ...and remove also from the miner
     asyncMiner.notifyTransactionsRemoved(block.transactions);
 
+    // update transactionCount
+    this.transactionCount += block.transactions.length;
+
     return true;
   }
 
   replaceChain(blocks: Block[]) {
     this.chain = blocks;
+
+    if (!checkChainValidity(this.chain)) {
+      throw new Error("Invalid replacement chain!");
+    }
+
+    this.transactionCount = this.chain.reduce(
+      (prev, block) => prev + block.transactions.length,
+      0
+    );
   }
 
   findBlockById(blockId: Block["index"]) {
