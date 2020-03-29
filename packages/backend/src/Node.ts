@@ -246,7 +246,7 @@ export default class Node {
     return queryResult;
   }
 
-  public async queryRoute(query: any): Promise<Flight[]> {
+  public async queryRoute(query: any): Promise<any> {
     // QUERY: DATE_TO, DATE_FROM, CITY_A, CITY_B
     // DATE_TO and DATE_FROM could be  not mandatory.
     const dateTo = query["DATE_TO"];
