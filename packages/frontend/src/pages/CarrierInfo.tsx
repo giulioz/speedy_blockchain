@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Layout from "../components/Layout";
@@ -12,6 +12,7 @@ import { Spring } from "react-spring/renderprops";
 import { CarrierRequest, CarrierData } from "@speedy_blockchain/common";
 import { useAsyncFormSearch } from "../utils";
 import SearchForm from "../components/SearchForm";
+import apiCall from "../api/apiCall";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -81,33 +82,39 @@ function DataCard(props: DataCardProps) {
   );
 }
 
-const mockData: CarrierData = {
-  OP_CARRIER_AIRLINE_ID: "20363",
-  AVERAGE_DELAY: 1.4,
-  TOTAL_NUMBER_OF_FLIGHTS: 720,
-  DELAYED_FLIGHTS: 69, // nice
-  FLIGHTS_IN_ADVANCE: 13,
-  // flights: Flights[],
-};
-
 const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
-  OP_CARRIER_AIRLINE_ID: "",
+  OP_CARRIER_AIRLINE_ID: 20378,
   DATE_FROM: 0,
-  DATE_TO: 100,
+  DATE_TO: Date.now(),
 };
 
 export default function CarrierInfo() {
   const classes = useStyles();
 
+  const apiCallback = useCallback(async (state: any) => {
+    const result = await apiCall("POST /query/carriers", {
+      body: {
+        OP_CARRIER_AIRLINE_ID: parseFloat(state.OP_CARRIER_AIRLINE_ID),
+        DATE_FROM: parseFloat(state.DATE_FROM),
+        DATE_TO: parseFloat(state.DATE_TO),
+      },
+      params: {},
+    });
+
+    if (result.status === "ok") {
+      return result.data;
+    }
+  }, []);
+
   const {
     data,
+    params,
     searching,
     onSearch,
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: DEFAULT_CARRIER_REQUEST_STATE,
-    apiCallback: () => mockData,
-    isMock: true,
+    apiCallback,
   });
 
   return (
@@ -125,20 +132,23 @@ export default function CarrierInfo() {
           >
             <TextField
               name="OP_CARRIER_AIRLINE_ID"
+              value={params?.OP_CARRIER_AIRLINE_ID}
               label="Carrier Airline ID"
               variant="outlined"
               placeholder="Example: 20363"
               onChange={onNamedInputStateChange}
             />
             <TextField
-              name="FROM"
+              name="DATE_FROM"
+              value={params?.DATE_FROM}
               label="From"
               placeholder={"Example: " + new Date()}
               variant="outlined"
               onChange={onNamedInputStateChange}
             />
             <TextField
-              name="TO"
+              name="DATE_TO"
+              value={params?.DATE_TO}
               label="To"
               placeholder={"Example: " + new Date()}
               variant="outlined"

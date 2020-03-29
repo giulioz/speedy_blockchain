@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 
 export function useTimeout(timeout: number) {
   const [value, setValue] = useState<boolean>(false);
@@ -35,13 +35,12 @@ export function useNamedInputState<T>(initialState: T) {
 export function useAsyncFormSearch<T, K>({
   initialState,
   apiCallback,
-  isMock = false,
 }: {
   initialState: T;
-  apiCallback: (state?: T) => K;
-  isMock?: boolean;
+  apiCallback: (state: T) => Promise<K>;
 }): {
   data: K | null;
+  params: T;
   searching: boolean;
   onSearch: () => void;
   onNamedInputStateChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -54,17 +53,12 @@ export function useAsyncFormSearch<T, K>({
 
   const handleSearch = () => setSearching(true);
 
-  const searchData = React.useCallback(async () => {
-    const mocked = new Promise<K>(resolve =>
-      setTimeout(() => {
-        resolve(apiCallback());
-      }, 1000)
-    );
-    const data: K = isMock ? await mocked : await apiCallback(namedInputState);
+  const searchData = useCallback(async () => {
+    const data: K = await apiCallback(namedInputState);
 
     setSearching(false);
     setData(data);
-  }, [apiCallback, setSearching, setData, isMock, namedInputState]);
+  }, [apiCallback, setSearching, setData, namedInputState]);
 
   useEffect(() => {
     if (searching) {
@@ -74,6 +68,7 @@ export function useAsyncFormSearch<T, K>({
 
   return {
     data,
+    params: namedInputState,
     searching,
     onSearch: handleSearch,
     onNamedInputStateChange: setNamedInputState,

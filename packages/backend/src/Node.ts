@@ -178,7 +178,7 @@ export default class Node {
 
   public async queryCarrier(query: CarrierRequest): Promise<CarrierData> {
     const returnObj: CarrierData = {
-      OP_CARRIER_AIRLINE_ID: query["OP_CARRIER_AIRLINE_ID"],
+      OP_CARRIER_AIRLINE_ID: query.OP_CARRIER_AIRLINE_ID,
       AVERAGE_DELAY: 0,
       MAX_DELAY: -99999999,
       MIN_DELAY: 99999999,
@@ -187,95 +187,63 @@ export default class Node {
       FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
     };
 
-    const dateTo = query["DATE_TO"];
-    const dateFrom = query["DATE_FROM"];
+    const dateTo = query.DATE_TO;
+    const dateFrom = query.DATE_FROM;
     let delaySum = 0;
 
     this.currentBlockchain.chain.forEach(block => {
       block.transactions.forEach(transaction => {
         {
           const insideTime =
-            transaction.content["FL_DATE"] >= dateFrom &&
-            transaction.content["FL_DATE"] <= dateTo;
+            transaction.content.FL_DATE >= dateFrom &&
+            transaction.content.FL_DATE <= dateTo;
 
           const sameAirline =
-            transaction.content["OP_CARRIER_AIRLINE_ID"] ===
-            query["OP_CARRIER_AIRLINE_ID"];
+            transaction.content.OP_CARRIER_AIRLINE_ID ===
+            query.OP_CARRIER_AIRLINE_ID;
 
           if (insideTime && sameAirline) {
-            returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
+            returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
 
-            const delay = Number(transaction.content["ARR_DELAY"]);
+            const delay = Number(transaction.content.ARR_DELAY);
             delaySum += delay;
-            if (delay > returnObj["MAX_DELAY"]) {
-              returnObj["MAX_DELAY"] = delay;
+            if (delay > returnObj.MAX_DELAY) {
+              returnObj.MAX_DELAY = delay;
             }
-            if (delay < returnObj["MIN_DELAY"]) {
-              returnObj["MIN_DELAY"] = delay;
+            if (delay < returnObj.MIN_DELAY) {
+              returnObj.MIN_DELAY = delay;
             }
 
             if (delay > 0) {
-              returnObj["DELAYED_FLIGHTS"] += 1;
+              returnObj.DELAYED_FLIGHTS += 1;
             } else if (delay < 0) {
-              returnObj["FLIGHTS_IN_ADVANCE"] += 1;
+              returnObj.FLIGHTS_IN_ADVANCE += 1;
             }
           }
         }
       });
     });
 
-    returnObj["AVERAGE_DELAY"] =
-      delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
+    returnObj.AVERAGE_DELAY = delaySum / returnObj.TOTAL_NUMBER_OF_FLIGHTS;
 
     return returnObj;
   }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
-    let queryFields = Object.getOwnPropertyNames(query);
-    const dateTo = query["DATE_TO"];
-    const dateFrom = query["DATE_FROM"];
-    let sort = query["SORT"];
-    // const special = queryFields.filter((a) => a in ['SORT']);
-    queryFields = queryFields.filter(
-      a => !["DATE_TO", "DATE_FROM", "SORT"].includes(a)
-    );
-    return new Promise((resolve, reject) => {
-      let queryResult: Flight[] = [];
-      this.currentBlockchain.chain.forEach(block => {
-        block.transactions.forEach(transaction => {
-          if (
-            queryFields.every(field => {
-              return (
-                (query as any)[field] ===
-                Reflect.get(transaction.content, field)
-              );
-            })
-          ) {
-            // pass the condition. Check if dateBounds (if exists) also holds.
-            if (
-              (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
-              (!dateTo || transaction.content["FL_DATE"] <= dateTo)
-            ) {
-              queryResult.push(transaction.content);
-            }
-          }
-        });
-      });
-      // WIP: SORT works only with number. Sort needs to be for example: "FL_DATE" or "FL_DATE DESC"
-      if (sort) {
-        const sortP = sort.split(" ");
-        if (sortP.length > 1 && sortP[1] === "DESC") {
-          queryResult.sort(
-            (a, b) => Reflect.get(b, sortP[0]) - Reflect.get(a, sortP[0])
-          );
-        } else {
-          queryResult.sort(
-            (a, b) => Reflect.get(a, sortP[0]) - Reflect.get(b, sortP[0])
-          );
+    const queryResult: Flight[] = [];
+
+    this.currentBlockchain.chain.forEach(block => {
+      block.transactions.forEach(transaction => {
+        if (
+          query.OP_CARRIER_FL_NUM === transaction.content.OP_CARRIER_FL_NUM &&
+          query.FL_DATE === transaction.content.FL_DATE
+        ) {
+          queryResult.push(transaction.content);
         }
-      }
-      resolve(queryResult);
+      });
     });
+
+    return queryResult;
   }
 
   public async queryRoute(query: any): Promise<Flight[]> {

@@ -1,18 +1,12 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
-import Paper from "@material-ui/core/Paper";
-import { Flight, FlightsRequest } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
-import { Typography, TextField, LinearProgress } from "@material-ui/core";
-import FlightIcon from "@material-ui/icons/Flight";
-import LocationOnIcon from "@material-ui/icons/LocationOn";
-import ScheduleIcon from "@material-ui/icons/Schedule";
-import amber from "@material-ui/core/colors/amber";
-import green from "@material-ui/core/colors/green";
+import { TextField, LinearProgress } from "@material-ui/core";
 import SearchForm from "../components/SearchForm";
 import { useAsyncFormSearch } from "../utils";
 import FlightCard from "../components/FlightCard";
+import apiCall from "../api/apiCall";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -35,45 +29,37 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const mockData: Flight = {
-  AIR_TIME: 90.0,
-  ARR_DELAY: -11.0,
-  ARR_TIME: 17.49,
-  CANCELLED: 0.0,
-  DAY_OF_WEEK: 5,
-  DEP_DELAY: -5.0,
-  DEP_TIME: 16.05,
-  DEST_AIRPORT_ID: 13244,
-  DEST_CITY_NAME: "Memphis, TN",
-  DEST_STATE_NM: "Tennessee",
-  DEST: "MEM",
-  FL_DATE: 0,
-  OP_CARRIER_AIRLINE_ID: 20363,
-  OP_CARRIER_FL_NUM: 3692,
-  ORIGIN_AIRPORT_ID: 14683,
-  ORIGIN_CITY_NAME: "San Antonio, TX",
-  ORIGIN_STATE_NM: "Texas",
-  ORIGIN: "SAT",
-  YEAR: 2010,
-};
-
 const emptyFlight = {
-  FL_DATE: 0,
-  OP_CARRIER_FL_NUM: "",
+  OP_CARRIER_FL_NUM: 3692,
+  FL_DATE: 1263855600,
 };
 
 export default function FindFlight() {
   const classes = useStyles();
 
+  const apiCallback = useCallback(async (state: any) => {
+    const result = await apiCall("POST /query/flights", {
+      body: {
+        OP_CARRIER_FL_NUM: parseFloat(state.OP_CARRIER_FL_NUM),
+        FL_DATE: parseFloat(state.FL_DATE),
+      },
+      params: {},
+    });
+
+    if (result.status === "ok") {
+      return result.data;
+    }
+  }, []);
+
   const {
     data,
+    params,
     searching,
     onSearch,
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: emptyFlight,
-    apiCallback: inputState => mockData,
-    isMock: true,
+    apiCallback,
   });
 
   return (
@@ -94,6 +80,7 @@ export default function FindFlight() {
               label="Flight number"
               variant="outlined"
               placeholder="Example: 20363"
+              value={params?.OP_CARRIER_FL_NUM}
               onChange={onNamedInputStateChange}
             />
             <TextField
@@ -101,10 +88,13 @@ export default function FindFlight() {
               label="Flight date"
               placeholder={"Example: " + new Date()}
               variant="outlined"
+              value={params?.FL_DATE}
               onChange={onNamedInputStateChange}
             />
           </SearchForm>
-          {data && <FlightCard flight={data} />}
+          {data?.map(flight => (
+            <FlightCard flight={flight} />
+          ))}
         </Container>
       </main>
     </Layout>
