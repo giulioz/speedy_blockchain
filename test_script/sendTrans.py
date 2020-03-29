@@ -15,7 +15,7 @@ for record in jsonDecoded:
 	datestr = record['FL_DATE']
 	date = datetime.datetime.strptime(datestr, "%Y-%m-%d")
 	timestamp = datetime.datetime.timestamp(date)
-	print(record)
+	# print(record)
 	record['FL_DATE'] = timestamp
 	record['DAY_OF_WEEK'] = int(record['DAY_OF_WEEK'])
 	record['DEST_AIRPORT_ID'] = int(record['DEST_AIRPORT_ID'])
@@ -30,5 +30,5 @@ for record in jsonDecoded:
 	if record['ARR_DELAY']!= '' :	record['ARR_DELAY'] = float(record['ARR_DELAY'])
 	if record['ARR_TIME']!= '' :	record['ARR_TIME'] = int(record['ARR_TIME'])
 	#print(record)	
-	time.sleep(1)
+	# time.sleep(1)
 	r=requests.post(url=api_endpoint, json=record)   	

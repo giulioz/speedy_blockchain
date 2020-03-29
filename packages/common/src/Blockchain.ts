@@ -44,7 +44,7 @@ export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
       block.transactions.length < MAX_TRANSACTIONS);
 
   if (!valid) {
-    console.log(
+    console.warn(
       "INVALIDY REPORT:",
       block.hash.startsWith(genZeroes(difficulty)),
       block.hash,

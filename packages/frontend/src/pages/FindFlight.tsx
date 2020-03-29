@@ -47,7 +47,7 @@ const mockData: Flight = {
   DEST_CITY_NAME: "Memphis, TN",
   DEST_STATE_NM: "Tennessee",
   DEST: "MEM",
-  FLIGHT_DATE: 0,
+  FL_DATE: 0,
   OP_CARRIER_AIRLINE_ID: 20363,
   OP_CARRIER_FL_NUM: 3692,
   ORIGIN_AIRPORT_ID: 14683,
@@ -58,7 +58,7 @@ const mockData: Flight = {
 };
 
 const emptyFlight = {
-  FLIGHT_DATE: 0,
+  FL_DATE: 0,
   OP_CARRIER_FL_NUM: "",
 };
 
@@ -97,7 +97,7 @@ export default function FindFlight() {
               onChange={onNamedInputStateChange}
             />
             <TextField
-              name="FLIGHT_DATE"
+              name="FL_DATE"
               label="Flight date"
               placeholder={"Example: " + new Date()}
               variant="outlined"

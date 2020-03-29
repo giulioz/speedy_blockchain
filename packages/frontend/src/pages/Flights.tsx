@@ -120,7 +120,7 @@ export default function Flights() {
   const columns = [
     "YEAR",
     "DAY_OF_WEEK",
-    "FLIGHT_DATE",
+    "FL_DATE",
     "OP_CARRIER_AIRLINE_ID",
     "OP_CARRIER_FL_NUM",
     "ORIGIN_AIRPORT_ID",

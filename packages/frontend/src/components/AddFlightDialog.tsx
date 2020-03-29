@@ -42,7 +42,7 @@ const EMPTY_FLIGHT: Flight = {
   DEST_CITY_NAME: "",
   DEST_STATE_NM: "",
   DEST: "",
-  FLIGHT_DATE: 0,
+  FL_DATE: 0,
   OP_CARRIER_AIRLINE_ID: 0,
   OP_CARRIER_FL_NUM: 0,
   ORIGIN_AIRPORT_ID: 0,
@@ -88,8 +88,8 @@ export default function AddFlightDialog({
         />
         <TextField
           onChange={changeFlightValue}
-          name="FLIGHT_DATE"
-          label="FLIGHT_DATE"
+          name="FL_DATE"
+          label="FL_DATE"
           placeholder="Example: 2010-01-15"
         />
         <TextField
