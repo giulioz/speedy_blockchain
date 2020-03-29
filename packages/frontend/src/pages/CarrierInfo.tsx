@@ -29,6 +29,8 @@ const useStyles = makeStyles(theme => ({
   },
   progressBar: {
     minHeight: theme.spacing(1),
+    width: "100%",
+    position: "fixed",
   },
   carrierDataContainer: {
     padding: theme.spacing(2),

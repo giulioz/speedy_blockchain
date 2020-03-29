@@ -7,7 +7,13 @@ import AsyncMiner from "./AsyncMiner";
 import Endpoints from "./Endpoints";
 import ChainInfo from "./ChainInfo";
 import * as utils from "./utils";
-import { CarrierData, CarrierRequest, FlightsRequest } from "./Queries";
+import {
+  CarrierData,
+  CarrierRequest,
+  FlightsRequest,
+  RouteRequest,
+  RouteData,
+} from "./Queries";
 
 export {
   Blockchain,
@@ -22,5 +28,7 @@ export {
   CarrierData,
   CarrierRequest,
   FlightsRequest,
+  RouteRequest,
+  RouteData,
   utils,
 };
