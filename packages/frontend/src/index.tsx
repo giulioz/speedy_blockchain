@@ -10,6 +10,7 @@ import Flights from "./pages/Flights";
 import Peers from "./pages/Peers";
 import CarrierInfo from "./pages/CarrierInfo";
 import FindFlight from "./pages/FindFlight";
+import RouteFinder from "./pages/RouteFinder";
 
 const theme = (createMuiTheme as any)({
   palette: {
@@ -62,7 +63,7 @@ function App() {
             <CarrierInfo />
           </Route>
           <Route path="/routeFinder">
-            <Layout title="Route Finder"></Layout>
+            <RouteFinder />
           </Route>
           <Route path="/" exact>
             <Dashboard />
