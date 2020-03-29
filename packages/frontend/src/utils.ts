@@ -40,6 +40,7 @@ export function useAsyncFormSearch<T, K>({
   apiCallback: (state: T) => Promise<K>;
 }): {
   data: K | null;
+  params: T;
   searching: boolean;
   onSearch: () => void;
   onNamedInputStateChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -67,6 +68,7 @@ export function useAsyncFormSearch<T, K>({
 
   return {
     data,
+    params: namedInputState,
     searching,
     onSearch: handleSearch,
     onNamedInputStateChange: setNamedInputState,

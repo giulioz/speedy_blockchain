@@ -83,9 +83,9 @@ function DataCard(props: DataCardProps) {
 }
 
 const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
-  OP_CARRIER_AIRLINE_ID: 0,
+  OP_CARRIER_AIRLINE_ID: 20378,
   DATE_FROM: 0,
-  DATE_TO: 100,
+  DATE_TO: Date.now(),
 };
 
 export default function CarrierInfo() {
@@ -108,6 +108,7 @@ export default function CarrierInfo() {
 
   const {
     data,
+    params,
     searching,
     onSearch,
     onNamedInputStateChange,
@@ -131,6 +132,7 @@ export default function CarrierInfo() {
           >
             <TextField
               name="OP_CARRIER_AIRLINE_ID"
+              value={params?.OP_CARRIER_AIRLINE_ID}
               label="Carrier Airline ID"
               variant="outlined"
               placeholder="Example: 20363"
@@ -138,6 +140,7 @@ export default function CarrierInfo() {
             />
             <TextField
               name="DATE_FROM"
+              value={params?.DATE_FROM}
               label="From"
               placeholder={"Example: " + new Date()}
               variant="outlined"
@@ -145,6 +148,7 @@ export default function CarrierInfo() {
             />
             <TextField
               name="DATE_TO"
+              value={params?.DATE_TO}
               label="To"
               placeholder={"Example: " + new Date()}
               variant="outlined"

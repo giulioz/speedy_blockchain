@@ -230,50 +230,19 @@ export default class Node {
   }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
-    let queryFields = Object.getOwnPropertyNames(query);
-    const dateTo = query["DATE_TO"];
-    const dateFrom = query["DATE_FROM"];
-    let sort = query["SORT"];
-    // const special = queryFields.filter((a) => a in ['SORT']);
-    queryFields = queryFields.filter(
-      a => !["DATE_TO", "DATE_FROM", "SORT"].includes(a)
-    );
-    return new Promise((resolve, reject) => {
-      let queryResult: Flight[] = [];
-      this.currentBlockchain.chain.forEach(block => {
-        block.transactions.forEach(transaction => {
-          if (
-            queryFields.every(field => {
-              return (
-                (query as any)[field] ===
-                Reflect.get(transaction.content, field)
-              );
-            })
-          ) {
-            // pass the condition. Check if dateBounds (if exists) also holds.
-            if (
-              (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
-              (!dateTo || transaction.content["FL_DATE"] <= dateTo)
-            ) {
-              queryResult.push(transaction.content);
-            }
-          }
-        });
-      });
-      // WIP: SORT works only with number. Sort needs to be for example: "FL_DATE" or "FL_DATE DESC"
-      if (sort) {
-        const sortP = sort.split(" ");
-        if (sortP.length > 1 && sortP[1] === "DESC") {
-          queryResult.sort(
-            (a, b) => Reflect.get(b, sortP[0]) - Reflect.get(a, sortP[0])
-          );
-        } else {
-          queryResult.sort(
-            (a, b) => Reflect.get(a, sortP[0]) - Reflect.get(b, sortP[0])
-          );
+    const queryResult: Flight[] = [];
+
+    this.currentBlockchain.chain.forEach(block => {
+      block.transactions.forEach(transaction => {
+        if (
+          query.OP_CARRIER_FL_NUM === transaction.content.OP_CARRIER_FL_NUM &&
+          query.FL_DATE === transaction.content.FL_DATE
+        ) {
+          queryResult.push(transaction.content);
         }
-      }
-      resolve(queryResult);
+      });
     });
+
+    return queryResult;
   }
 }
