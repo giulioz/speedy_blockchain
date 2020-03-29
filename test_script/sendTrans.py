@@ -28,4 +28,5 @@ for record in jsonDecoded:
 	record['OP_CARRIER_FL_NUM'] = int(record['OP_CARRIER_FL_NUM'])
 	record['ORIGIN_AIRPORT_ID'] = int(record['ORIGIN_AIRPORT_ID'])
 	record['YEAR'] = int(record['ORIGIN_AIRPORT_ID'])
+	sleep(1)
 	r=requests.post(url=api_endpoint, json=record)   	
