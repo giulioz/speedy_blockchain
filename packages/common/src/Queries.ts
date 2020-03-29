@@ -1,3 +1,5 @@
+import Flight from "./Flight";
+
 export interface CarrierRequest {
   OP_CARRIER_AIRLINE_ID: string;
   DATE_FROM: number;
@@ -19,4 +21,16 @@ export interface FlightsRequest {
   DATE_FROM: number;
   DATE_TO: number;
   SORT: string; // EXAMPLE: OP_CARRIER_AIRLINE_ID DESC
+}
+
+export interface RouteRequest {
+  CITY_A: string;
+  CITY_B: string;
+  DATE_FROM: number;
+  DATE_TO: number;
+}
+
+export interface RouteData {
+  TOTAL_NUMBER_OF_FLIGHTS: number;
+  FLIGHTS: Flight[];
 }

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 
 export function useTimeout(timeout: number) {
   const [value, setValue] = useState<boolean>(false);
@@ -54,7 +54,7 @@ export function useAsyncFormSearch<T, K>({
 
   const handleSearch = () => setSearching(true);
 
-  async function searchData() {
+  const searchData = React.useCallback(async () => {
     const mocked = new Promise<K>(resolve =>
       setTimeout(() => {
         resolve(apiCallback());
@@ -64,13 +64,13 @@ export function useAsyncFormSearch<T, K>({
 
     setSearching(false);
     setData(data);
-  }
+  }, [apiCallback, setSearching, setData, isMock, namedInputState]);
 
   useEffect(() => {
     if (searching) {
       searchData();
     }
-  }, [searchData, searching]);
+  }, [searching, searchData]);
 
   return {
     data,

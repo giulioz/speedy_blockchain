@@ -12,6 +12,7 @@ import amber from "@material-ui/core/colors/amber";
 import green from "@material-ui/core/colors/green";
 import SearchForm from "../components/SearchForm";
 import { useAsyncFormSearch } from "../utils";
+import FlightCard from "../components/FlightCard";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -27,154 +28,12 @@ const useStyles = makeStyles(theme => ({
       marginBottom: theme.spacing(4),
     },
   },
-  paper: {
-    padding: theme.spacing(2),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    "& .MuiTypography-root": {
-      margin: 0,
-    },
-  },
-  fieldContainer: {
-    display: "flex",
-    alignItems: "center",
-    "& .MuiInputBase-root": {
-      marginRight: theme.spacing(2),
-    },
-  },
-  flightContainer: {
+  progressBar: {
+    minHeight: theme.spacing(1),
     width: "100%",
-    minHeight: "150px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-  },
-  flightTitleContainer: {
-    display: "flex",
-    alignItems: "center",
-    "& > *": {
-      marginRight: theme.spacing(4),
-    },
-  },
-  flightInfoContainer: {
-    display: "flex",
-    alignItems: "center",
-    "& > *": {
-      marginRight: theme.spacing(4),
-    },
-    "& > div": {
-      display: "flex",
-      flexDirection: "column",
-    },
-    "& > :last-child": {
-      alignItems: "flex-end",
-    },
-  },
-  huge: {
-    fontSize: 40,
-  },
-  flightBetweenContainer: {
-    display: "flex",
-    alignItems: "stretch",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "300px",
-  },
-  dottedLineContainer: {
-    display: "flex",
-    alignItems: "center",
-  },
-  dottedLine: {
-    height: "1px",
-    width: "80px",
-    border: "2px dashed white",
-  },
-  duration: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: theme.spacing(1),
-    "& :first-child": {
-      marginRight: theme.spacing(1),
-    },
+    position: "fixed",
   },
 }));
-
-function CityTime(props: { city: string; time: string; delay: number }) {
-  const { city, time, delay } = props;
-  const parsedDelay = +delay;
-  const absDelay = Math.abs(parsedDelay);
-  const sign = parsedDelay < 0 ? "-" : "+";
-  const delayString = sign + absDelay + " min";
-  const color = parsedDelay < 0 ? green[500] : amber[500];
-  return (
-    <div>
-      <Typography>{city}</Typography>
-      <Typography style={{ marginRight: "5px" }} variant="subtitle1">
-        {time}
-      </Typography>
-      <Typography variant="subtitle1" style={{ color: color }}>
-        {delayString}
-      </Typography>
-    </div>
-  );
-}
-
-function FlightBetweenIcon(props: { duration: number }) {
-  const { duration } = props;
-  const classes = useStyles();
-  const durationString = duration + " min";
-  return (
-    <span>
-      <span className={classes.flightBetweenContainer}>
-        <LocationOnIcon fontSize="default" />
-        <div className={classes.dottedLineContainer}>
-          <div className={classes.dottedLine} />
-        </div>
-        <FlightIcon
-          className={classes.huge}
-          style={{ transform: "rotate(90deg)" }}
-        />
-        <div className={classes.dottedLineContainer}>
-          <div className={classes.dottedLine} />
-        </div>
-        <LocationOnIcon fontSize="default" />
-      </span>
-      <div className={classes.duration}>
-        <ScheduleIcon fontSize="small" />
-        <span>{durationString}</span>
-      </div>
-    </span>
-  );
-}
-
-function FlightCard(props: { flight: Flight }) {
-  const { flight } = props;
-  const classes = useStyles();
-
-  return (
-    <Paper className={classes.flightContainer}>
-      <div className={classes.flightTitleContainer}>
-        <Typography variant="h5">Flight #{flight.OP_CARRIER_FL_NUM}</Typography>
-      </div>
-      <div className={classes.flightInfoContainer}>
-        <CityTime
-          city={flight.ORIGIN_CITY_NAME}
-          time={flight.DEP_TIME}
-          delay={flight.DEP_DELAY}
-        />
-        <FlightBetweenIcon duration={flight.AIR_TIME} />
-        <CityTime
-          city={flight.DEST_CITY_NAME}
-          time={flight.ARR_TIME}
-          delay={flight.ARR_DELAY}
-        />
-      </div>
-    </Paper>
-  );
-}
 
 const mockData: Flight = {
   AIR_TIME: 90.0,
@@ -213,7 +72,7 @@ export default function FindFlight() {
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: emptyFlight,
-    apiCallback: () => mockData,
+    apiCallback: inputState => mockData,
     isMock: true,
   });
 
@@ -221,7 +80,9 @@ export default function FindFlight() {
     <Layout title="Find a flight">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        {searching && <LinearProgress color="secondary" />}
+        <div className={classes.progressBar}>
+          {searching && <LinearProgress color="secondary" />}
+        </div>
         <Container maxWidth="lg" className={classes.container}>
           <SearchForm
             title="Enter a flight"
