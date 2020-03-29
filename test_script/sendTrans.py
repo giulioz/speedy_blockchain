@@ -17,7 +17,7 @@ for record in jsonDecoded:
 	timestamp = datetime.datetime.timestamp(date)
 	record['FL_DATE'] = timestamp
 	print(record)
-	time.sleep(0.1)
-	r=requests.post(url=api_endpoint, data=record)
+	time.sleep(1)
+	r=requests.post(url=api_endpoint, json=record)
 	print(r.text)
    	
