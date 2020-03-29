@@ -18,7 +18,7 @@ export interface CarrierData {
 
 export interface FlightsRequest {
   // YOU CAN PASS EVERY ATTRIBUTE OF FLIGHT THAT YOU WANT
-  OP_CARRIER_FL_NUM: string;
+  OP_CARRIER_FL_NUM: number;
   FL_DATE: number;
   DATE_FROM: number;
   DATE_TO: number;

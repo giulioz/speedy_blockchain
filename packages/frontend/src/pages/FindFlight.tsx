@@ -72,8 +72,7 @@ export default function FindFlight() {
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: emptyFlight,
-    apiCallback: inputState => mockData,
-    isMock: true,
+    apiCallback: async inputState => mockData,
   });
 
   return (

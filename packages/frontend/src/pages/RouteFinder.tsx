@@ -153,8 +153,7 @@ export default function RouteFinder() {
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: DEFAULT_ROUTE_REQUEST_STATE,
-    apiCallback: () => mockData,
-    isMock: true,
+    apiCallback: async () => mockData,
   });
 
   const firstFlight = data?.FLIGHTS[0];
