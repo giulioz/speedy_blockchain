@@ -7,7 +7,7 @@ import * as NodeCommunication from "./NodeCommunication";
 
 export default function createHttpApi(node: Node) {
   const app = express();
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({ limit: "50mb" }));
   app.use(cors());
 
   // get chain info
@@ -123,13 +123,13 @@ export default function createHttpApi(node: Node) {
   ep(app, "POST /query/carriers", async (req, res) => {
     const result = await node.queryCarrier(req.body);
 
-    res.status(201).send({ status: "ok", data: result });
+    res.status(200).send({ status: "ok", data: result });
   });
 
   ep(app, "POST /query/flights", async (req, res) => {
     const result = await node.queryFlights(req.body);
 
-    res.status(201).send({ status: "ok", data: result });
+    res.status(200).send({ status: "ok", data: result });
   });
 
   // submit a new transaction with content
