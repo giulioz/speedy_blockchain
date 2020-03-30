@@ -97,7 +97,7 @@ export default class Blockchain {
   // * Checking if the proof is valid.
   // * The previousHash referred in the block and the hash of latest block
   //   in the chain match.
-  addBlock(block: Block, asyncMiner: AsyncMiner) {
+  async addBlock(block: Block, asyncMiner: AsyncMiner) {
     const previousHash = this.lastBlock.hash;
 
     if (previousHash !== block.previousHash) {
@@ -117,7 +117,7 @@ export default class Blockchain {
     );
 
     // ...and remove also from the miner
-    asyncMiner.notifyTransactionsRemoved(block.transactions);
+    await asyncMiner.notifyTransactionsRemoved(block.transactions);
 
     // update transactionCount
     this.transactionCount += block.transactions.length;
@@ -176,12 +176,12 @@ export default class Blockchain {
     };
 
     const block = await asyncMiner.mine(unhashedBlock);
-    this.addBlock(block, asyncMiner);
+    await this.addBlock(block, asyncMiner);
     return block;
   }
 
-  pushTransaction(transaction: Transaction, asyncMiner: AsyncMiner) {
-    const insertedInMining = asyncMiner.notifyNewTransaction(transaction);
+  async pushTransaction(transaction: Transaction, asyncMiner: AsyncMiner) {
+    const insertedInMining = await asyncMiner.notifyNewTransaction(transaction);
     if (insertedInMining) {
       return true;
     }
@@ -194,7 +194,7 @@ export default class Blockchain {
     return false;
   }
 
-  pushTransactionContent(
+  async pushTransactionContent(
     content: Transaction["content"],
     asyncMiner: AsyncMiner
   ) {

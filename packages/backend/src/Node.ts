@@ -27,18 +27,12 @@ export default class Node {
   private miningTimeout: NodeJS.Timeout | null = null;
   private commTimeout: NodeJS.Timeout | null = null;
 
-  // private handleReschedule = (transactions: Transaction[]) => {
-  //   transactions.forEach(t =>
-  //     this.currentBlockchain.pushTransaction(t, this.miner)
-  //   );
-  // };
-  // miner = new WorkerAsyncMiner(this.handleReschedule);
   miner = new SimpleAsyncMiner();
 
   public async initCommunication() {
     let retry = 0;
 
-    while (retry < 4) {
+    while (retry < 3) {
       await NodeCommunication.announcement(this.peers);
       await this.refreshPeers();
 
@@ -66,12 +60,12 @@ export default class Node {
     const dbBlocks = await db.fetchAll();
     const blocks = dbBlocks.map(b => b.value);
 
-    // non deve inziare a minare finchè non ha finito di prendersi i blocchi dal DB.
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
     } else {
       this.currentBlockchain.pushGenesisBlock();
-      db.insert(this.currentBlockchain.lastBlock);
+      // PERF: consider not awaiting
+      await db.insert(this.currentBlockchain.lastBlock);
     }
   }
 
@@ -111,8 +105,9 @@ export default class Node {
   }
 
   public async addBlock(block: Block) {
-    if (this.currentBlockchain.addBlock(block, this.miner)) {
-      db.insert(block);
+    if (await this.currentBlockchain.addBlock(block, this.miner)) {
+      // PERF: consider not awaiting
+      await db.insert(block);
       return true;
     }
 
@@ -120,19 +115,20 @@ export default class Node {
   }
 
   public async pushTransaction(t: Transaction) {
-    if (this.currentBlockchain.pushTransaction(t, this.miner)) {
-      NodeCommunication.announceTransaction(this.peers, t);
+    if (await this.currentBlockchain.pushTransaction(t, this.miner)) {
+      // PERF: consider not awaiting
+      await NodeCommunication.announceTransaction(this.peers, t);
     }
   }
 
   public async pushTransactionContent(f: Transaction["content"]) {
-    const transaction = this.currentBlockchain.pushTransactionContent(
+    const transaction = await this.currentBlockchain.pushTransactionContent(
       f,
       this.miner
     );
 
     if (transaction) {
-      NodeCommunication.announceTransaction(this.peers, transaction);
+      await NodeCommunication.announceTransaction(this.peers, transaction);
     }
   }
 
