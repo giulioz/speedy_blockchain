@@ -18,7 +18,7 @@ async function main() {
 
   const httpApi = createHttpApi(node);
   await new Promise(resolve => {
-    httpApi.listen(port, process.env.NODE_HOST || "0.0.0.0", resolve);
+    httpApi.listen(port, "0.0.0.0", resolve);
   });
   console.log(`Node listening on ${port}`);
 
