@@ -64,6 +64,7 @@ export default class Node {
 
     if (blocks.length > 0) {
       this.currentBlockchain.replaceChain(blocks);
+      await db.insertAll(blocks);
     } else {
       this.currentBlockchain.pushGenesisBlock();
       // PERF: consider not awaiting

@@ -60,7 +60,9 @@ export async function fetchAll(): Promise<{ key: string; value: Block }[]> {
 }
 
 export async function insertAll(blocks: Block[]): Promise<void> {
-  blocks.forEach(block => insert(block));
+  for (let index = 0; index < blocks.length; index++) {
+    await insert(blocks[index]);
+  }
 }
 
 export async function deleteAll() {
