@@ -8,7 +8,8 @@
     "url": "git+https://github.com/giulioz/speedy_blockchain.git"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "serve -s build",
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "lint": "eslint --ext js,ts,tsx src",
     "format": "prettier --list-different --write \"{scripts,src}/**/*.{js,md,tsx,ts,html,json}\"",
@@ -27,7 +28,8 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "^3.4.0",
     "react-spring": "^8.0.27",
-    "recharts": "^2.0.0-beta.1"
+    "recharts": "^2.0.0-beta.1",
+    "serve": "^11.3.0"
   },
   "devDependencies": {
     "@types/levelup": "^4.3.0",
