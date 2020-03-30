@@ -127,6 +127,12 @@ export default function createHttpApi(node: Node) {
     res.status(200).send({ status: "ok", data: result });
   });
 
+  ep(app, "POST /query/route", async (req, res) => {
+    const result = await node.queryRoute(req.body);
+
+    res.status(200).send({ status: "ok", data: result });
+  });
+
   ep(app, "POST /query/flights", async (req, res) => {
     const result = await node.queryFlights(req.body);
 

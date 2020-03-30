@@ -8,6 +8,8 @@ import {
   FlightsRequest,
   Flight,
   CarrierData,
+  RouteData,
+  RouteRequest
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
@@ -246,9 +248,10 @@ export default class Node {
     return queryResult;
   }
 
-  public async queryRoute(query: any): Promise<any> {
+  public async queryRoute(query: RouteRequest): Promise<RouteData> {
     // QUERY: DATE_TO, DATE_FROM, CITY_A, CITY_B
     // DATE_TO and DATE_FROM could be  not mandatory.
+    const queryResult: Flight[] = [];
     const dateTo = query["DATE_TO"];
     const dateFrom = query["DATE_FROM"];
     const cityA = query["CITY_A"];
@@ -262,6 +265,7 @@ export default class Node {
       CITY_B: cityB,
       MAX_DELAY: -99999999,
       MIN_DELAY: 99999999,
+      FLIGHTS: []
     };
     let delaySum = 0;
     this.currentBlockchain.chain.forEach(block => {
@@ -278,6 +282,7 @@ export default class Node {
           (!cityA || transaction.content["ORIGIN_CITY_NAME"] === cityA || transaction.content["DEST_CITY_NAME"] === cityA) && 
           (!cityB || transaction.content["ORIGIN_CITY_NAME"] === cityB || transaction.content["DEST_CITY_NAME"] === cityB);
         if (insideTime && sameAirline && sameRoute) {
+          queryResult.push(transaction.content);
           returnObj['TOTAL_NUMBER_OF_FLIGHTS'] += 1;
           const delay = Number(transaction.content["ARR_DELAY"]);
           delaySum += delay;
@@ -298,6 +303,7 @@ export default class Node {
     });
     returnObj["AVERAGE_DELAY"] =
       delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
+      returnObj["FLIGHTS"] = queryResult;
     return returnObj;
   }
 }

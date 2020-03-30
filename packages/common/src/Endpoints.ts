@@ -2,7 +2,7 @@ import Transaction from "./Transaction";
 import Peer, { IncomingPeer } from "./Peer";
 import Block from "./Block";
 import ChainInfo from "./ChainInfo";
-import { CarrierRequest, CarrierData, FlightsRequest } from "./Queries";
+import { CarrierRequest, CarrierData, FlightsRequest, RouteData, RouteRequest } from "./Queries";
 import Flight from "./Flight";
 
 export type ResponseStatus<T = null, E extends string = string> =
@@ -65,6 +65,11 @@ export default interface Endpoints {
     res: ResponseStatus<Flight[]>;
     req: FlightsRequest;
   };
+  "POST /query/route": {
+    params: {};
+    res: ResponseStatus<RouteData>;
+    req: RouteRequest;
+  }
   "GET /peers": {
     params: {};
     res: ResponseStatus<Peer[]>;
