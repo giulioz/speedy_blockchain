@@ -253,7 +253,6 @@ export default class Node {
     const cityA = query["CITY_A"];
     const cityB = query["CITY_B"];
     const returnObj: any = {
-      OP_CARRIER_AIRLINE_ID: query["OP_CARRIER_AIRLINE_ID"],
       TOTAL_NUMBER_OF_FLIGHTS: 0,
       DELAYED_FLIGHTS: 0,
       FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
@@ -271,9 +270,6 @@ export default class Node {
           (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
           (!dateTo || transaction.content["FL_DATE"] <= dateTo);
 
-        const sameAirline =
-          transaction.content["OP_CARRIER_AIRLINE_ID"] ===
-          query["OP_CARRIER_AIRLINE_ID"];
         const sameRoute =
           (!cityA ||
             transaction.content["ORIGIN_CITY_NAME"] === cityA ||
@@ -281,7 +277,7 @@ export default class Node {
           (!cityB ||
             transaction.content["ORIGIN_CITY_NAME"] === cityB ||
             transaction.content["DEST_CITY_NAME"] === cityB);
-        if (insideTime && sameAirline && sameRoute) {
+        if (insideTime && sameRoute) {
           queryResult.push(transaction.content);
           returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
           const delay = Number(transaction.content["ARR_DELAY"]);

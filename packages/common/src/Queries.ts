@@ -22,7 +22,6 @@ export interface FlightsRequest {
 }
 
 export interface RouteRequest {
-  OP_CARRIER_AIRLINE_ID: number;
   CITY_A: string;
   CITY_B: string;
   DATE_FROM: number;
@@ -30,7 +29,6 @@ export interface RouteRequest {
 }
 
 export interface RouteData {
-  OP_CARRIER_AIRLINE_ID: number;
   CITY_A: string;
   CITY_B: string;
   AVERAGE_DELAY: number;

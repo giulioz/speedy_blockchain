@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Layout from "../components/Layout";
@@ -13,6 +13,7 @@ import { useAsyncFormSearch } from "../utils";
 import SearchForm from "../components/SearchForm";
 import FlightCard from "../components/FlightCard";
 import { Spring } from "react-spring/renderprops";
+import apiCall from "../api/apiCall";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -46,114 +47,41 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const mockData: RouteData = {
-  TOTAL_NUMBER_OF_FLIGHTS: 4,
-  FLIGHTS: [
-    {
-      AIR_TIME: 90.0,
-      ARR_DELAY: -11.0,
-      ARR_TIME: 17.49,
-      CANCELLED: 0.0,
-      DAY_OF_WEEK: 5,
-      DEP_DELAY: -5.0,
-      DEP_TIME: 16.05,
-      DEST_AIRPORT_ID: 13244,
-      DEST_CITY_NAME: "Memphis, TN",
-      DEST_STATE_NM: "Tennessee",
-      DEST: "MEM",
-      FL_DATE: 11111,
-      OP_CARRIER_AIRLINE_ID: 20363,
-      OP_CARRIER_FL_NUM: 3692,
-      ORIGIN_AIRPORT_ID: 14683,
-      ORIGIN_CITY_NAME: "San Antonio, TX",
-      ORIGIN_STATE_NM: "Texas",
-      ORIGIN: "SAT",
-      YEAR: 2010,
-    },
-    {
-      AIR_TIME: 90.0,
-      ARR_DELAY: -11.0,
-      ARR_TIME: 17.49,
-      CANCELLED: 0.0,
-      DAY_OF_WEEK: 5,
-      DEP_DELAY: -5.0,
-      DEP_TIME: 16.05,
-      DEST_AIRPORT_ID: 13244,
-      DEST_CITY_NAME: "Memphis, TN",
-      DEST_STATE_NM: "Tennessee",
-      DEST: "MEM",
-      FL_DATE: 11111,
-      OP_CARRIER_AIRLINE_ID: 20363,
-      OP_CARRIER_FL_NUM: 3692,
-      ORIGIN_AIRPORT_ID: 14683,
-      ORIGIN_CITY_NAME: "San Antonio, TX",
-      ORIGIN_STATE_NM: "Texas",
-      ORIGIN: "SAT",
-      YEAR: 2010,
-    },
-    {
-      AIR_TIME: 90.0,
-      ARR_DELAY: -11.0,
-      ARR_TIME: 17.49,
-      CANCELLED: 0.0,
-      DAY_OF_WEEK: 5,
-      DEP_DELAY: -5.0,
-      DEP_TIME: 16.05,
-      DEST_AIRPORT_ID: 13244,
-      DEST_CITY_NAME: "Memphis, TN",
-      DEST_STATE_NM: "Tennessee",
-      DEST: "MEM",
-      FL_DATE: 11111,
-      OP_CARRIER_AIRLINE_ID: 20363,
-      OP_CARRIER_FL_NUM: 3692,
-      ORIGIN_AIRPORT_ID: 14683,
-      ORIGIN_CITY_NAME: "San Antonio, TX",
-      ORIGIN_STATE_NM: "Texas",
-      ORIGIN: "SAT",
-      YEAR: 2010,
-    },
-    {
-      YEAR: 2010,
-      DAY_OF_WEEK: 5,
-      FL_DATE: 1264114800.0,
-      OP_CARRIER_AIRLINE_ID: 19805,
-      OP_CARRIER_FL_NUM: 1263,
-      ORIGIN_AIRPORT_ID: 13303,
-      ORIGIN: "MIA",
-      ORIGIN_CITY_NAME: "Miami, FL",
-      ORIGIN_STATE_NM: "Florida",
-      DEST_AIRPORT_ID: 12266,
-      DEST: "IAH",
-      DEST_CITY_NAME: "Houston, TX",
-      DEST_STATE_NM: "Texas",
-      DEP_TIME: 0,
-      DEP_DELAY: 0,
-      ARR_TIME: 0,
-      ARR_DELAY: 0,
-      CANCELLED: 1.0,
-      AIR_TIME: 0,
-    },
-  ],
-};
-
 const DEFAULT_ROUTE_REQUEST_STATE: RouteRequest = {
-  CITY_A: "",
-  CITY_B: "",
+  CITY_A: "Memphis, TN",
+  CITY_B: "San Antonio, TX",
   DATE_FROM: 0,
-  DATE_TO: 0,
+  DATE_TO: Date.now(),
 };
 
 export default function RouteFinder() {
   const classes = useStyles();
 
+  const apiCallback = useCallback(async (state: any) => {
+    const result = await apiCall("POST /query/route", {
+      body: {
+        ...state,
+        OP_CARRIER_AIRLINE_ID: parseFloat(state.OP_CARRIER_AIRLINE_ID),
+        DATE_FROM: parseFloat(state.DATE_FROM),
+        DATE_TO: parseFloat(state.DATE_TO),
+      },
+      params: {},
+    });
+
+    if (result.status === "ok") {
+      return result.data;
+    }
+  }, []);
+
   const {
     data,
+    params,
     searching,
     onSearch,
     onNamedInputStateChange,
   } = useAsyncFormSearch({
     initialState: DEFAULT_ROUTE_REQUEST_STATE,
-    apiCallback: async () => mockData,
+    apiCallback,
   });
 
   const firstFlight = data?.FLIGHTS[0];
@@ -173,6 +101,7 @@ export default function RouteFinder() {
           >
             <TextField
               name="CITY_A"
+              value={params.CITY_A}
               label="City A"
               variant="outlined"
               placeholder="Example: Memphis, TN"
@@ -180,6 +109,7 @@ export default function RouteFinder() {
             />
             <TextField
               name="CITY_B"
+              value={params.CITY_B}
               label="City B"
               variant="outlined"
               placeholder="Example: San Antonio, TX"
@@ -187,17 +117,19 @@ export default function RouteFinder() {
             />
             <TextField
               name="DATE_FROM"
+              value={params.DATE_FROM}
               label="From"
               placeholder={"Example: " + new Date()}
               variant="outlined"
-              // onChange={onNamedInputStateChange}
+              onChange={onNamedInputStateChange}
             />
             <TextField
               name="DATE_TO"
+              value={params.DATE_TO}
               label="To"
               placeholder={"Example: " + new Date()}
               variant="outlined"
-              // onChange={onNamedInputStateChange}
+              onChange={onNamedInputStateChange}
             />
           </SearchForm>
           {data && (
