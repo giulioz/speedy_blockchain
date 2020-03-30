@@ -7,9 +7,13 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "@yarnpkg/pnpify": "^2.0.0-rc.20",
     "concurrently": "^5.1.0",
+    "eslint": "^6.8.0",
     "husky": "^4.2.3",
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "prettier": "^1.19.1",
+    "typescript": "^3.8.3"
   },
   "scripts": {
     "start": "concurrently --kill-others \"npm run start-frontend\" \"npm run start-backend\"",
@@ -19,9 +23,10 @@
     "dev-frontend": "lerna run dev --scope @speedy_blockchain/frontend",
     "dev-backend": "lerna run dev --scope @speedy_blockchain/backend",
     "dev-common": "lerna run dev --scope @speedy_blockchain/common",
-    "build": "lerna run build",
+    "build": "yarn build-common; concurrently \"yarn build-backend\" \"yarn build-frontend\"",
     "build-backend": "lerna run build --scope @speedy_blockchain/backend",
     "build-common": "lerna run build --scope @speedy_blockchain/common",
+    "build-frontend": "lerna run build --scope @speedy_blockchain/frontend",
     "docker-build": "docker build -t speedy_blockchain .",
     "docker-run": "npm run docker-build && docker-compose up",
     "format": "lerna run format",

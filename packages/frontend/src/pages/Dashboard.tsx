@@ -4,7 +4,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
-import Chart from "../components/Chart";
 import Deposits from "../components/Deposits";
 import RecentBlocks from "../components/RecentBlocks";
 import Layout from "../components/Layout";
@@ -42,9 +41,7 @@ export default function Dashboard() {
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                <Chart />
-              </Paper>
+              <Paper className={fixedHeightPaper}>{/* <Chart /> */}</Paper>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
               <Paper className={fixedHeightPaper}>

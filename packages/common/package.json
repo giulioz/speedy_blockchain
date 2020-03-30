@@ -11,10 +11,16 @@
     "url": "git+https://github.com/giulioz/speedy_blockchain.git"
   },
   "devDependencies": {
+    "@types/node": "^13.9.5",
     "@types/uuid": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
+    "eslint-config-prettier": "^6.8.0",
+    "eslint-import-resolver-node": "^0.3.3",
     "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-prettier": "^3.1.2",
     "lint-staged": "^10.0.8",
     "prettier": "^1.19.1",
     "ts-node": "^8.6.2",

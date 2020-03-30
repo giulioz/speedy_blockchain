@@ -1,4 +1,4 @@
-import { Endpoints, utils } from "@speedy_blockchain/common/dist";
+import { Endpoints, utils } from "@speedy_blockchain/common";
 import { ParamsType, ResType, ReqType } from "@speedy_blockchain/common/src/utils";
 import config from "../config";
 
