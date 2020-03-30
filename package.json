@@ -12,10 +12,11 @@
     "lerna": "^3.20.2"
   },
   "scripts": {
-    "start": "concurrently --kill-others \"npm run dev-frontend\" \"npm run start-backend\"",
+    "start": "concurrently --kill-others \"npm run start-frontend\" \"npm run start-backend\"",
+    "start-frontend": "lerna run start --scope @speedy_blockchain/frontend",
     "start-backend": "lerna run start --scope @speedy_blockchain/backend",
     "dev": "concurrently --kill-others \"npm run dev-frontend\" \"npm run dev-backend\" \"npm run dev-common\"",
-    "dev-frontend": "lerna run start --scope @speedy_blockchain/frontend",
+    "dev-frontend": "lerna run dev --scope @speedy_blockchain/frontend",
     "dev-backend": "lerna run dev --scope @speedy_blockchain/backend",
     "dev-common": "lerna run dev --scope @speedy_blockchain/common",
     "build": "lerna run build",

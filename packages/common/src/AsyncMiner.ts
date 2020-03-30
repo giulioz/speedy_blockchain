@@ -3,7 +3,7 @@ import Transaction from "./Transaction";
 
 export default interface AsyncMiner {
   mine(rawBlock: UnhashedBlock): Promise<Block>;
-  notifyNewTransaction(t: Transaction): boolean;
-  notifyTransactionsRemoved(t: Transaction[]): void;
+  notifyNewTransaction(t: Transaction): Promise<boolean>;
+  notifyTransactionsRemoved(t: Transaction[]): Promise<boolean>;
   abort(): Promise<void>;
 }

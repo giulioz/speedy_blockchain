@@ -74,7 +74,7 @@ export default class SimpleAsyncMiner implements AsyncMiner {
     return null;
   }
 
-  public notifyNewTransaction(t: Transaction) {
+  public async notifyNewTransaction(t: Transaction) {
     if (
       this.currentBlock &&
       this.currentBlock.transactions.length < MAX_TRANSACTIONS - 1 &&
@@ -88,7 +88,7 @@ export default class SimpleAsyncMiner implements AsyncMiner {
     return false;
   }
 
-  public notifyTransactionsRemoved(transactions: Transaction[]) {
+  public async notifyTransactionsRemoved(transactions: Transaction[]) {
     if (this.currentBlock) {
       this.currentBlock.transactions = this.currentBlock.transactions.filter(
         t => !transactions.find(t2 => t.id === t2.id)

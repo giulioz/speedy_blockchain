@@ -114,7 +114,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     });
   }
 
-  public notifyNewTransaction(t: Transaction) {
+  public async notifyNewTransaction(t: Transaction) {
     if (
       this.currentJob.block &&
       this.currentJob.block.transactions.length < MAX_TRANSACTIONS - 1 &&
@@ -131,7 +131,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
     return false;
   }
 
-  public notifyTransactionsRemoved(transactions: Transaction[]) {
+  public async notifyTransactionsRemoved(transactions: Transaction[]) {
     if (this.currentJob.block) {
       const msg: OutgoingMessage = {
         type: "removeTransactions",

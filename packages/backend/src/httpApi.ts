@@ -36,8 +36,8 @@ export default function createHttpApi(node: Node) {
   });
 
   // post a new block
-  ep(app, "POST /block", (req, res) => {
-    const success = node.addBlock(req.body);
+  ep(app, "POST /block", async (req, res) => {
+    const success = await node.addBlock(req.body);
 
     if (success) {
       res.send({
@@ -115,8 +115,8 @@ export default function createHttpApi(node: Node) {
   });
 
   // submit a new transaction (from other nodes)
-  ep(app, "POST /transaction", (req, res) => {
-    node.pushTransaction(req.body);
+  ep(app, "POST /transaction", async (req, res) => {
+    await node.pushTransaction(req.body);
 
     res.status(201).send({ status: "ok", data: null });
   });
@@ -140,8 +140,8 @@ export default function createHttpApi(node: Node) {
   });
 
   // submit a new transaction with content
-  ep(app, "POST /flight", (req, res) => {
-    node.pushTransactionContent(req.body);
+  ep(app, "POST /flight", async (req, res) => {
+    await node.pushTransactionContent(req.body);
 
     res.status(201).send({ status: "ok", data: null });
   });
