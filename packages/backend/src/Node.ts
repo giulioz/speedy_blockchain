@@ -9,7 +9,7 @@ import {
   Flight,
   CarrierData,
   RouteData,
-  RouteRequest
+  RouteRequest,
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
@@ -261,7 +261,7 @@ export default class Node {
       CITY_B: cityB,
       MAX_DELAY: -99999999,
       MIN_DELAY: 99999999,
-      FLIGHTS: []
+      FLIGHTS: [],
     };
     let delaySum = 0;
     this.currentBlockchain.chain.forEach(block => {
@@ -274,12 +274,16 @@ export default class Node {
         const sameAirline =
           transaction.content["OP_CARRIER_AIRLINE_ID"] ===
           query["OP_CARRIER_AIRLINE_ID"];
-        const sameRoute = 
-          (!cityA || transaction.content["ORIGIN_CITY_NAME"] === cityA || transaction.content["DEST_CITY_NAME"] === cityA) && 
-          (!cityB || transaction.content["ORIGIN_CITY_NAME"] === cityB || transaction.content["DEST_CITY_NAME"] === cityB);
+        const sameRoute =
+          (!cityA ||
+            transaction.content["ORIGIN_CITY_NAME"] === cityA ||
+            transaction.content["DEST_CITY_NAME"] === cityA) &&
+          (!cityB ||
+            transaction.content["ORIGIN_CITY_NAME"] === cityB ||
+            transaction.content["DEST_CITY_NAME"] === cityB);
         if (insideTime && sameAirline && sameRoute) {
           queryResult.push(transaction.content);
-          returnObj['TOTAL_NUMBER_OF_FLIGHTS'] += 1;
+          returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
           const delay = Number(transaction.content["ARR_DELAY"]);
           delaySum += delay;
           if (delay > returnObj["MAX_DELAY"]) {
@@ -294,12 +298,12 @@ export default class Node {
           } else if (delay < 0) {
             returnObj["FLIGHTS_IN_ADVANCE"] += 1;
           }
-      }
+        }
       });
     });
     returnObj["AVERAGE_DELAY"] =
       delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
-      returnObj["FLIGHTS"] = queryResult;
+    returnObj["FLIGHTS"] = queryResult;
     return returnObj;
   }
 }

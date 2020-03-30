@@ -1,5 +1,9 @@
 import { Endpoints, utils } from "@speedy_blockchain/common";
-import { ParamsType, ResType, ReqType } from "@speedy_blockchain/common/src/utils";
+import {
+  ParamsType,
+  ResType,
+  ReqType,
+} from "@speedy_blockchain/common/src/utils";
 import config from "../config";
 
 export default async function apiCall<K extends keyof Endpoints>(

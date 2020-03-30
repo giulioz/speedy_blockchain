@@ -2,7 +2,11 @@ import express from "express";
 /* eslint-disable-next-line import/no-unresolved */
 import { RequestHandler } from "express-serve-static-core";
 import { Endpoints } from "@speedy_blockchain/common";
-import { ParamsType, ResType, ReqType } from "@speedy_blockchain/common/src/utils";
+import {
+  ParamsType,
+  ResType,
+  ReqType,
+} from "@speedy_blockchain/common/src/utils";
 
 export default function safeEndpoint<K extends keyof Endpoints>(
   app: ReturnType<typeof express>,
