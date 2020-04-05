@@ -37,7 +37,7 @@ export function useLastNBlocks(maxBlocks: number) {
 
       if (lastBlock.status !== "error") {
         const lastIndex = lastBlock.data.index;
-        const from = lastIndex - maxBlocks;
+        const from = Math.max(0, lastIndex - maxBlocks);
 
         const blocks = await apiCall("GET /blocks/from/:from/to/:to", {
           params: { from: from.toString(), to: lastIndex.toString() },
