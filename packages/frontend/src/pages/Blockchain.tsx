@@ -9,7 +9,7 @@ import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
 import FullProgress from "../components/FullProgress";
 import FilterBar, { FilterFieldType } from "../components/FilterBar";
-import { useLastNBlocks } from "../api/hooks";
+import { useLastNBlocks, useRemoteData } from "../api/hooks";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -31,13 +31,44 @@ type Filters = {
   nonce: FilterFieldType;
 };
 
-function MultipleBlocks({ blocks }: { blocks: Block[] }) {
+// HACK
+const maxBlocks = 50;
+
+function MultipleBlocks() {
+  const classes = useStyles();
+
+  const blocks = useLastNBlocks(maxBlocks);
+
   const [filters, setFilters] = useState<Filters>({
     id: { label: "Block ID", value: "" },
     timestamp: { label: "Timestamp", value: "" },
     hash: { label: "Hash", value: "", grow: true },
     nonce: { label: "Nonce", value: "" },
   });
+
+  const handleFilterChange = (field: keyof Filters) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.persist();
+    setFilters(f => ({
+      ...f,
+      [field]: { ...f[field], value: e.target.value },
+    }));
+  };
+
+  if (!blocks) {
+    return (
+      <Layout title="Explore Blocks">
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Container maxWidth="lg" className={classes.container}>
+            <FilterBar onChange={handleFilterChange} filters={filters} />
+            <FullProgress />
+          </Container>
+        </main>
+      </Layout>
+    );
+  }
 
   const filteredBlocks = blocks.filter(
     b =>
@@ -51,50 +82,36 @@ function MultipleBlocks({ blocks }: { blocks: Block[] }) {
         b.nonce.toString().includes(filters.nonce.value))
   );
 
-  const handleFilterChange = (field: keyof Filters) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.persist();
-    setFilters(f => ({
-      ...f,
-      [field]: { ...f[field], value: e.target.value },
-    }));
-  };
-
   return (
-    <>
-      <FilterBar onChange={handleFilterChange} filters={filters} />
+    <Layout title="Explore Blocks">
+      <main className={classes.content}>
+        <div className={classes.appBarSpacer} />
+        <Container maxWidth="lg" className={classes.container}>
+          <FilterBar onChange={handleFilterChange} filters={filters} />
 
-      {filteredBlocks.map(block => (
-        <BlockCard key={block.index + block.hash} block={block} />
-      ))}
-    </>
+          {filteredBlocks.map(block => (
+            <BlockCard key={block.index + block.hash} block={block} />
+          ))}
+        </Container>
+      </main>
+    </Layout>
   );
 }
 
-// HACK
-const maxBlocks = 50;
-
-export default function Blockchain() {
+function SingleBlock({ id = 0 }) {
   const classes = useStyles();
 
-  const blocks = useLastNBlocks(maxBlocks);
-
-  const { id } = useParams();
-  const nId = id && parseInt(id);
-  const selectedBlock = blocks && blocks.find(b => b.index === nId);
+  const block = useRemoteData("GET /block/:blockId", {
+    blockId: id.toString(),
+  });
 
   return (
     <Layout title="Explore Blocks">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          {blocks ? (
-            selectedBlock ? (
-              <BlockCard block={selectedBlock} seeAll />
-            ) : (
-              <MultipleBlocks blocks={blocks} />
-            )
+          {block && block.status === "ok" ? (
+            <BlockCard block={block.data} seeAll />
           ) : (
             <FullProgress />
           )}
@@ -102,4 +119,17 @@ export default function Blockchain() {
       </main>
     </Layout>
   );
+}
+
+export default function Blockchain() {
+  const classes = useStyles();
+
+  const { id } = useParams();
+  const nId = id !== undefined ? parseInt(id) : null;
+
+  if (nId !== null) {
+    return <SingleBlock id={nId} />;
+  } else {
+    return <MultipleBlocks />;
+  }
 }
