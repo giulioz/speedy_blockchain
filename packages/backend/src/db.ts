@@ -8,8 +8,8 @@ export interface MetaInfo {
 }
 const META_KEY = "META";
 
+let _meta = {blockLength: 0};
 let db: any = null;
-let numberOfBlocks = 0;
 function createFolder(folder: string) {
   if (!fs.existsSync(folder)) {
     fs.mkdirSync(folder);
@@ -29,11 +29,6 @@ export async function initDB(minerName: string) {
 
 async function upgradeProcess() {
   // check if there is already a meta block
-  let savedMeta = await tryGetMeta()
-    if (savedMeta) {
-      numberOfBlocks = savedMeta.blockLength;
-      return;
-  }
   if (await tryGetMeta()) {
     return;
   }
@@ -41,15 +36,11 @@ async function upgradeProcess() {
   console.log("No meta block! Adding a new one");
   const allBlocks = await fetchAllBlocks();
   const blockLength = allBlocks.length;
-  console.log(db.numberOfBlocks);
-  db.numberOfBlocks = blockLength;
-  console.log(numberOfBlocks);
-  const meta: MetaInfo = { blockLength };
+  const meta = { blockLength };
   await saveMeta(meta);
 }
 
 export async function insert(block: Block): Promise<void> {
-  numberOfBlocks ++;
   return db.put(block.index, JSON.stringify(block));
 }
 
@@ -74,6 +65,7 @@ export async function tryGetMeta(): Promise<MetaInfo | null> {
 }
 
 export async function saveMeta(meta: MetaInfo): Promise<MetaInfo> {
+  _meta = meta;
   return db.put(META_KEY, JSON.stringify(meta));
 }
 
@@ -142,7 +134,7 @@ export class blockchainIterator {
     const iterator = {
         next() {
             blockIndex ++;
-            if (blockIndex < numberOfBlocks) {
+            if (blockIndex < _meta.blockLength) {
               let block = getBlock(blockIndex); 
               return {value: block, done: false};
             } else {
