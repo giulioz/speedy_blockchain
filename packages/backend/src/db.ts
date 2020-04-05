@@ -144,7 +144,7 @@ export class BlockchainIterator {
           let block = getBlock(blockIndex);
           return { value: block, done: false };
         } else {
-          return { value: dummyBlock, done: true };
+          return { value: new Promise<Block>(() => dummyBlock), done: true };
         }
       },
     };
