@@ -49,7 +49,12 @@ export async function getBlock(index: number): Promise<Block> {
     throw new Error("Invalid index < 0");
   }
 
-  return JSON.parse(await db.get(index));
+  try {
+    const data: string = await db.get(index);
+    return JSON.parse(data);
+  } catch (e) {
+    throw new Error(`Cannot read block #${index}, ` + e);
+  }
 }
 
 export async function getMeta(): Promise<MetaInfo> {
