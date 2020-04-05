@@ -8,8 +8,9 @@ export interface MetaInfo {
 }
 const META_KEY = "META";
 
-let _meta = {blockLength: 0};
+let _meta = { blockLength: 0 };
 let db: any = null;
+
 function createFolder(folder: string) {
   if (!fs.existsSync(folder)) {
     fs.mkdirSync(folder);
@@ -127,21 +128,21 @@ export async function rebase(blocks: Block[]) {
   await insertAll(blocks);
 }
 
-export class blockchainIterator {
-  [Symbol.iterator](){
+export class BlockchainIterator {
+  [Symbol.iterator]() {
     let blockIndex = 0;
     let dummyBlock: Block;
     const iterator = {
-        next() {
-            blockIndex ++;
-            if (blockIndex < _meta.blockLength) {
-              let block = getBlock(blockIndex); 
-              return {value: block, done: false};
-            } else {
-              return {value: dummyBlock, done: true};
-            }
+      next() {
+        blockIndex++;
+        if (blockIndex < _meta.blockLength) {
+          let block = getBlock(blockIndex);
+          return { value: block, done: false };
+        } else {
+          return { value: dummyBlock, done: true };
         }
+      },
     };
     return iterator;
   }
- }
+}

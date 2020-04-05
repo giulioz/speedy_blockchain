@@ -83,10 +83,7 @@ export default function createHttpApi(node: Node) {
   // get a transaction by id and block id
   ep(app, "GET /block/:blockId/:transactionId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
-    const found = await node.findTransactionById(
-      req.params.transactionId,
-      id
-    );
+    const found = await node.findTransactionById(req.params.transactionId, id);
 
     if (found) {
       res.send({
@@ -102,9 +99,7 @@ export default function createHttpApi(node: Node) {
 
   // get a transaction by id
   ep(app, "GET /transaction/:id", async (req, res) => {
-    const found = await node.findTransactionById(
-      req.params.id
-    );
+    const found = await node.findTransactionById(req.params.id);
 
     if (found) {
       res.send({

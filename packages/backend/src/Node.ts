@@ -161,6 +161,7 @@ export default class Node {
     this.blocksCount += 1;
     await db.saveMeta({ blockLength: this.blocksCount });
   }
+
   public async addBlock(block: Block) {
     const lastBlock = await this.getLastBlock();
     const previousHash = lastBlock.hash;
@@ -273,16 +274,16 @@ export default class Node {
     const dateTo = query.DATE_TO;
     const dateFrom = query.DATE_FROM;
     let delaySum = 0;
-    const blockchainIterator =  new db.blockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator();
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         const insideTime =
-        transaction.content.FL_DATE >= dateFrom &&
-        transaction.content.FL_DATE <= dateTo;
+          transaction.content.FL_DATE >= dateFrom &&
+          transaction.content.FL_DATE <= dateTo;
 
         const sameAirline =
-        transaction.content.OP_CARRIER_AIRLINE_ID ===
-        query.OP_CARRIER_AIRLINE_ID;
+          transaction.content.OP_CARRIER_AIRLINE_ID ===
+          query.OP_CARRIER_AIRLINE_ID;
 
         if (insideTime && sameAirline) {
           returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
@@ -306,11 +307,11 @@ export default class Node {
     }
     returnObj.AVERAGE_DELAY = delaySum / returnObj.TOTAL_NUMBER_OF_FLIGHTS;
     return returnObj;
-}
+  }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     const queryResult: Flight[] = [];
-    const blockchainIterator =  new db.blockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator();
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         if (
@@ -343,7 +344,7 @@ export default class Node {
       FLIGHTS: [],
     };
     let delaySum = 0;
-    const blockchainIterator =  new db.blockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator();
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         // check carrier name
