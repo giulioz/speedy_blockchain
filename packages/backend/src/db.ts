@@ -45,10 +45,6 @@ export async function insert(block: Block): Promise<void> {
 }
 
 export async function getBlock(index: number): Promise<Block> {
-  if (index < 0) {
-    throw new Error("Invalid index < 0");
-  }
-
   try {
     const data: string = await db.get(index);
     return JSON.parse(data);

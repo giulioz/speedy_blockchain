@@ -39,6 +39,8 @@ export default function createHttpApi(node: Node) {
 
   // post a new block
   ep(app, "POST /block", async (req, res) => {
+    console.log(`RECEIVED BLOCK ${req.body.index}`);
+
     const success = await node.addBlock(req.body);
 
     if (success) {

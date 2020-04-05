@@ -12,6 +12,7 @@ import AsyncMiner from "./AsyncMiner";
 import Endpoints from "./Endpoints";
 import ChainInfo from "./ChainInfo";
 import * as utils from "./utils";
+import * as config from "./config";
 import {
   CarrierData,
   CarrierRequest,
@@ -40,4 +41,5 @@ export {
   isValidBlock,
   sortAsExpected,
   utils,
+  config,
 };

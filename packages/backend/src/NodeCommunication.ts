@@ -80,23 +80,21 @@ async function httpCall<K extends keyof Endpoints>(
   throw new Error("Communication failure, max retry count reached.");
 }
 
-export async function initialBlockDownload(node: Node) {
-  console.log("Starting initial block download...");
-
+async function findSyncPeer(peers: Peer[]) {
   // Get the chains from the peers
-  const chains = (
-    await Promise.all(node.peers.map(peer => httpCall(peer, "GET /chainInfo")))
+  const chainsFromPeers = (
+    await Promise.all(peers.map(peer => httpCall(peer, "GET /chainInfo")))
   )
     .filter(r => r.status !== ("error" as const))
     .map(r => (r as { status: "ok"; data: ChainInfo }).data);
 
-  if (chains.length === 0) {
+  if (chainsFromPeers.length === 0) {
     console.warn("No peer to perform IBD! Skipping...");
     return false;
   }
 
   // Find the longest chain, and select a random peer with the longest chain and the same hash
-  const sortedChains = chains.sort((a, b) => b.length - a.length);
+  const sortedChains = chainsFromPeers.sort((a, b) => b.length - a.length);
   const longestChainLength = sortedChains[0].length;
   const longestChainPeers = sortedChains.filter(
     chain => chain.length === longestChainLength
@@ -113,6 +111,18 @@ export async function initialBlockDownload(node: Node) {
   const syncPeer =
     sameHashPeers[Math.floor(Math.random() * sameHashPeers.length)].peer;
 
+  return { syncPeer, longestChainLength, mostFrequentHash };
+}
+
+export async function initialBlockDownload(node: Node) {
+  console.log("Starting initial block download...");
+
+  const syncPeerInfo = await findSyncPeer(node.peers);
+  if (!syncPeerInfo) {
+    return false;
+  }
+  const { syncPeer, longestChainLength, mostFrequentHash } = syncPeerInfo;
+
   let index = (await node.getLastBlock()).index + 1;
   while (index < longestChainLength) {
     const block = await httpCall(syncPeer, "GET /block/:blockId", {
@@ -123,7 +133,7 @@ export async function initialBlockDownload(node: Node) {
       throw new Error("Invalid response in IBD");
     }
 
-    if (!node.addBlock(block.data)) {
+    if (!(await node.addBlock(block.data))) {
       throw new Error("Invalid block in longest chain in IBD");
     }
 
@@ -143,7 +153,7 @@ export async function initialBlockDownload(node: Node) {
 }
 
 export async function announcement(peers: Peer[]) {
-  await Promise.all(
+  return Promise.all(
     peers.map(p => httpCall(p, "POST /announce", null, getSelfPeer()))
   );
 }
@@ -194,7 +204,7 @@ export async function fetchRemotePeers(initialPeers: Peer[]) {
 }
 
 export async function announceBlock(peers: Peer[], block: Block) {
-  await Promise.all(
+  return Promise.all(
     peers.map(peer => httpCall(peer, "POST /block", null, block))
   );
 }
@@ -203,7 +213,7 @@ export async function announceTransaction(
   peers: Peer[],
   transaction: Transaction
 ) {
-  await Promise.all(
+  return Promise.all(
     peers.map(peer => httpCall(peer, "POST /transaction", null, transaction))
   );
 }

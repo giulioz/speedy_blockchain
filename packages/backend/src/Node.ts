@@ -14,15 +14,17 @@ import {
   UnhashedBlock,
   isValidBlock,
   createGenesisBlock,
+  config,
 } from "@speedy_blockchain/common";
 import { IncomingPeer } from "@speedy_blockchain/common/src/Peer";
 
+import Mutex from "./Mutex";
 import SimpleAsyncMiner from "./SimpleAsyncMiner";
 import WorkerAsyncMiner from "./WorkerAsyncMiner";
 import * as db from "./db";
 import * as NodeCommunication from "./NodeCommunication";
 
-const miningTimeoutTime = 1000;
+const miningTimeoutTime = 5000;
 const commTimeoutTime = 1000;
 
 async function checkChainValidity(blockLength: number) {
@@ -60,6 +62,8 @@ export default class Node {
   private commTimeout: NodeJS.Timeout | null = null;
 
   miner = new SimpleAsyncMiner();
+
+  private addMutex = new Mutex();
 
   public async initCommunication() {
     let retry = 0;
@@ -108,18 +112,29 @@ export default class Node {
       return createGenesisBlock();
     }
 
-    return db.getBlock(this.blocksCount - 1);
+    return this.findBlockById(this.blocksCount - 1);
   }
 
   async findBlockById(blockId: Block["index"]) {
+    if (blockId < 0) {
+      throw new Error("Invalid index < 0");
+    } else if (blockId > this.blocksCount) {
+      throw new Error(
+        `Invalid index ${blockId} > blocksCount (${this.blocksCount})`
+      );
+    }
+
     return db.getBlock(blockId);
   }
 
   async getBlocksRange(startId: number, endId: number) {
+    const startClamped = Math.max(0, startId);
+    const endClamped = Math.min(this.blocksCount - 1, endId);
+
     return Promise.all(
-      new Array(endId - startId + 1)
+      new Array(endClamped - startClamped + 1)
         .fill(0)
-        .map((e, i) => this.findBlockById(i + startId))
+        .map((e, i) => this.findBlockById(i + startClamped))
     );
   }
 
@@ -161,8 +176,13 @@ export default class Node {
   }
 
   public async addBlock(block: Block) {
+    let unlock = await this.addMutex.lock();
+
     if (block.index < this.blocksCount) {
-      console.warn(new Error(`Block before the end of the chain, aborting`));
+      console.warn(
+        `Block before the end of the chain (${block.index} vs ${this.blocksCount}), aborting`
+      );
+      unlock();
       return false;
     }
 
@@ -171,18 +191,16 @@ export default class Node {
     const previousHash = lastBlock.hash;
 
     if (!isGenesisBlock && previousHash !== block.previousHash) {
-      console.warn(new Error(`Invalid previousHash, aborting`));
+      console.warn(`Invalid previousHash, aborting`);
+      unlock();
       return false;
     }
 
     if (!isValidBlock(block)) {
-      console.warn(new Error(`Trying to add an invalid block, aborting`));
+      console.warn(`Trying to add an invalid block, aborting`);
+      unlock();
       return false;
     }
-
-    await db.insert(block);
-    this.blocksCount += 1;
-    await db.saveMeta({ blockLength: this.blocksCount });
 
     // remove from unconfirmedTransactions the transactions of the block
     this.unconfirmedTransactions = this.unconfirmedTransactions.filter(
@@ -190,44 +208,23 @@ export default class Node {
     );
 
     // ...and remove also from the miner
-    await this.miner.notifyTransactionsRemoved(block.transactions);
+    this.miner.notifyTransactionsRemoved(block.transactions);
 
     // update transactionCount
     this.transactionCount += block.transactions.length;
 
+    this.blocksCount = block.index + 1;
+
+    await db.insert(block);
+    await db.saveMeta({ blockLength: block.index + 1 });
+
+    unlock();
+
     return true;
   }
 
-  async tryMineNextBlock(minerName: string) {
-    if (
-      !this.unconfirmedTransactions ||
-      this.unconfirmedTransactions.length === 0
-    ) {
-      return false;
-    }
-
-    const lastBlock = await this.getLastBlock();
-
-    const transactionsToValidate: Transaction[] = [
-      ...this.unconfirmedTransactions,
-    ];
-
-    const unhashedBlock: UnhashedBlock = {
-      index: lastBlock.index + 1,
-      transactions: transactionsToValidate,
-      timestamp: utils.getTimestamp(),
-      previousHash: lastBlock.hash,
-      nonce: 0,
-      minedBy: minerName,
-    };
-
-    const block = await this.miner.mine(unhashedBlock);
-    await this.addBlock(block);
-    return block;
-  }
-
   public async pushTransaction(transaction: Transaction) {
-    const insertedInMining = await this.miner.notifyNewTransaction(transaction);
+    const insertedInMining = this.miner.notifyNewTransaction(transaction);
     if (insertedInMining) {
       // PERF: consider not awaiting
       await NodeCommunication.announceTransaction(this.peers, transaction);
@@ -439,15 +436,58 @@ export default class Node {
   }
 
   private async miningUpdate() {
-    const minedBlock = await this.tryMineNextBlock(
-      NodeCommunication.getSelfPeer().name
-    );
+    const hasTransactions =
+      this.unconfirmedTransactions && this.unconfirmedTransactions.length > 0;
 
-    if (minedBlock) {
-      await Promise.all([
-        db.insert(minedBlock),
-        NodeCommunication.announceBlock(this.peers, minedBlock),
-      ]);
+    if (hasTransactions) {
+      const lastBlock = await this.getLastBlock();
+
+      const transactionsToValidate: Transaction[] = [];
+      for (
+        let i = 0;
+        i < config.MAX_TRANSACTIONS && this.unconfirmedTransactions.length > 0;
+        i++
+      ) {
+        transactionsToValidate.push(this.unconfirmedTransactions.pop() as any);
+      }
+
+      const unhashedBlock: UnhashedBlock = {
+        index: this.blocksCount,
+        transactions: transactionsToValidate,
+        timestamp: utils.getTimestamp(),
+        previousHash: lastBlock.hash,
+        nonce: 0,
+        minedBy: NodeCommunication.getSelfPeer().name,
+      };
+
+      const block = await this.miner.mine(unhashedBlock);
+
+      if (
+        // block exists
+        block &&
+        // it has transactions
+        block.transactions.length > 0 &&
+        // it has correct id
+        block.index === this.blocksCount
+      ) {
+        // console.log(`MINED NEW BLOCK ${block.index}`);
+        // await NodeCommunication.announceBlock(this.peers, block);
+        // console.log(`ANNOUNCED MINED ${block.index}`);
+
+        // const added = await this.addBlock(block);
+        // if (added) {
+        //   console.log(`ADDED MINED ${block.index}`);
+        // }
+
+        console.log(`MINED NEW BLOCK ${block.index}`);
+        await Promise.all([
+          NodeCommunication.announceBlock(this.peers, block),
+          await this.addBlock(block),
+        ]);
+        console.log(`ANNOUNCED MINED ${block.index}`);
+      } else {
+        console.log(`MINED INVALID!`);
+      }
     }
 
     this.miningTimeout = setTimeout(

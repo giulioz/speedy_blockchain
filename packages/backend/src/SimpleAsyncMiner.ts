@@ -14,7 +14,7 @@ import {
 
 const CHUNK_SIZE = 100;
 
-export default class SimpleAsyncMiner implements AsyncMiner {
+export default class SimpleAsyncMiner {
   currentBlock: UnhashedBlock | null = null;
   onFinished: ((block: Block) => void) | null = null;
   DIF_START = "";
@@ -74,7 +74,7 @@ export default class SimpleAsyncMiner implements AsyncMiner {
     return null;
   }
 
-  public async notifyNewTransaction(t: Transaction) {
+  public notifyNewTransaction(t: Transaction) {
     if (
       this.currentBlock &&
       this.currentBlock.transactions.length < MAX_TRANSACTIONS - 1 &&
@@ -88,7 +88,7 @@ export default class SimpleAsyncMiner implements AsyncMiner {
     return false;
   }
 
-  public async notifyTransactionsRemoved(transactions: Transaction[]) {
+  public notifyTransactionsRemoved(transactions: Transaction[]) {
     if (this.currentBlock) {
       this.currentBlock.transactions = this.currentBlock.transactions.filter(
         t => !transactions.find(t2 => t.id === t2.id)
@@ -100,7 +100,7 @@ export default class SimpleAsyncMiner implements AsyncMiner {
     return false;
   }
 
-  public async abort() {
+  public abort() {
     this.currentBlock = null;
   }
 }
