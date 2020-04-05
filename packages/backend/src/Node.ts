@@ -99,11 +99,15 @@ export default class Node {
       this.transactionCount = nTransactions;
     } else {
       console.log("Empty chain, adding genesis block");
-      this.addGenesisBlock(createGenesisBlock());
+      this.addBlock(createGenesisBlock());
     }
   }
 
   public async getLastBlock() {
+    if (this.blocksCount === 0) {
+      return createGenesisBlock();
+    }
+
     return db.getBlock(this.blocksCount - 1);
   }
 
@@ -113,7 +117,7 @@ export default class Node {
 
   async getBlocksRange(startId: number, endId: number) {
     return Promise.all(
-      new Array(endId - startId)
+      new Array(endId - startId + 1)
         .fill(0)
         .map((e, i) => this.findBlockById(i + startId))
     );
@@ -156,18 +160,18 @@ export default class Node {
     return transaction || null;
   }
 
-  async addGenesisBlock(block: Block) {
-    await db.insert(block);
-    this.blocksCount += 1;
-    await db.saveMeta({ blockLength: this.blocksCount });
-  }
-
   public async addBlock(block: Block) {
+    if (block.index < this.blocksCount) {
+      console.warn(new Error(`Block before the end of the chain, aborting`));
+      return false;
+    }
+
+    const isGenesisBlock = block.index === 0;
     const lastBlock = await this.getLastBlock();
     const previousHash = lastBlock.hash;
 
-    if (previousHash !== block.previousHash) {
-      console.warn(new Error(`Invalid previousHash`));
+    if (!isGenesisBlock && previousHash !== block.previousHash) {
+      console.warn(new Error(`Invalid previousHash, aborting`));
       return false;
     }
 
@@ -274,7 +278,7 @@ export default class Node {
     const dateTo = query.DATE_TO;
     const dateFrom = query.DATE_FROM;
     let delaySum = 0;
-    const blockchainIterator = new db.BlockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         const insideTime =
@@ -311,7 +315,7 @@ export default class Node {
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     const queryResult: Flight[] = [];
-    const blockchainIterator = new db.BlockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         if (
@@ -344,7 +348,7 @@ export default class Node {
       FLIGHTS: [],
     };
     let delaySum = 0;
-    const blockchainIterator = new db.BlockchainIterator();
+    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
     for (const block of blockchainIterator) {
       (await block).transactions.forEach(transaction => {
         // check carrier name

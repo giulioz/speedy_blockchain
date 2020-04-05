@@ -8,7 +8,6 @@ export interface MetaInfo {
 }
 const META_KEY = "META";
 
-let _meta = { blockLength: 0 };
 let db: any = null;
 
 function createFolder(folder: string) {
@@ -46,6 +45,10 @@ export async function insert(block: Block): Promise<void> {
 }
 
 export async function getBlock(index: number): Promise<Block> {
+  if (index < 0) {
+    throw new Error("Invalid index < 0");
+  }
+
   return JSON.parse(await db.get(index));
 }
 
@@ -59,8 +62,6 @@ export async function getMeta(): Promise<MetaInfo> {
 
 export async function tryGetMeta(): Promise<MetaInfo | null> {
   try {
-    const meta = await getMeta();
-    _meta = meta;
     return await getMeta();
   } catch (e) {
     return null;
@@ -68,7 +69,6 @@ export async function tryGetMeta(): Promise<MetaInfo | null> {
 }
 
 export async function saveMeta(meta: MetaInfo): Promise<MetaInfo> {
-  _meta = meta;
   return db.put(META_KEY, JSON.stringify(meta));
 }
 
@@ -131,13 +131,15 @@ export async function rebase(blocks: Block[]) {
 }
 
 export class BlockchainIterator {
+  constructor(public blockLength: number) {}
+
   [Symbol.iterator]() {
     let blockIndex = 0;
     let dummyBlock: Block;
     const iterator = {
-      next() {
+      next: () => {
         blockIndex++;
-        if (blockIndex < _meta.blockLength) {
+        if (blockIndex < this.blockLength) {
           let block = getBlock(blockIndex);
           return { value: block, done: false };
         } else {
