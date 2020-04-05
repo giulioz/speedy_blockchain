@@ -83,7 +83,7 @@ function DataCard(props: DataCardProps) {
 }
 
 const DEFAULT_CARRIER_REQUEST_STATE: CarrierRequest = {
-  OP_CARRIER_AIRLINE_ID: 20378,
+  OP_CARRIER_AIRLINE_ID: 20363,
   DATE_FROM: 0,
   DATE_TO: Date.now(),
 };
