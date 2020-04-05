@@ -278,54 +278,55 @@ export default class Node {
     const dateTo = query.DATE_TO;
     const dateFrom = query.DATE_FROM;
     let delaySum = 0;
-    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
-    for (const block of blockchainIterator) {
-      (await block).transactions.forEach(transaction => {
-        const insideTime =
-          transaction.content.FL_DATE >= dateFrom &&
-          transaction.content.FL_DATE <= dateTo;
+    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+      blocks.forEach(block =>
+        block.transactions.forEach(transaction => {
+          const insideTime =
+            transaction.content.FL_DATE >= dateFrom &&
+            transaction.content.FL_DATE <= dateTo;
 
-        const sameAirline =
-          transaction.content.OP_CARRIER_AIRLINE_ID ===
-          query.OP_CARRIER_AIRLINE_ID;
+          const sameAirline =
+            transaction.content.OP_CARRIER_AIRLINE_ID ===
+            query.OP_CARRIER_AIRLINE_ID;
 
-        if (insideTime && sameAirline) {
-          returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
+          if (insideTime && sameAirline) {
+            returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
 
-          const delay = Number(transaction.content.ARR_DELAY);
-          delaySum += delay;
-          if (delay > returnObj.MAX_DELAY) {
-            returnObj.MAX_DELAY = delay;
+            const delay = Number(transaction.content.ARR_DELAY);
+            delaySum += delay;
+            if (delay > returnObj.MAX_DELAY) {
+              returnObj.MAX_DELAY = delay;
+            }
+            if (delay < returnObj.MIN_DELAY) {
+              returnObj.MIN_DELAY = delay;
+            }
+
+            if (delay > 0) {
+              returnObj.DELAYED_FLIGHTS += 1;
+            } else if (delay < 0) {
+              returnObj.FLIGHTS_IN_ADVANCE += 1;
+            }
           }
-          if (delay < returnObj.MIN_DELAY) {
-            returnObj.MIN_DELAY = delay;
-          }
-
-          if (delay > 0) {
-            returnObj.DELAYED_FLIGHTS += 1;
-          } else if (delay < 0) {
-            returnObj.FLIGHTS_IN_ADVANCE += 1;
-          }
-        }
-      });
-    }
+        })
+      )
+    );
     returnObj.AVERAGE_DELAY = delaySum / returnObj.TOTAL_NUMBER_OF_FLIGHTS;
     return returnObj;
   }
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     const queryResult: Flight[] = [];
-    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
-    for (const block of blockchainIterator) {
-      (await block).transactions.forEach(transaction => {
+    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+      blocks.forEach(block =>
+        block.transactions.forEach(transaction => {
         if (
           query.OP_CARRIER_FL_NUM === transaction.content.OP_CARRIER_FL_NUM &&
           query.FL_DATE === transaction.content.FL_DATE
         ) {
           queryResult.push(transaction.content);
         }
-      });
-    }
+      })
+    ));
     return queryResult;
   }
 
@@ -348,41 +349,41 @@ export default class Node {
       FLIGHTS: [],
     };
     let delaySum = 0;
-    const blockchainIterator = new db.BlockchainIterator(this.blocksCount);
-    for (const block of blockchainIterator) {
-      (await block).transactions.forEach(transaction => {
-        // check carrier name
-        const insideTime =
-          (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
-          (!dateTo || transaction.content["FL_DATE"] <= dateTo);
+    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+      blocks.forEach(block =>
+        block.transactions.forEach(transaction => {
+          // check carrier name
+          const insideTime =
+            (!dateFrom || transaction.content["FL_DATE"] >= dateFrom) &&
+            (!dateTo || transaction.content["FL_DATE"] <= dateTo);
 
-        const sameRoute =
-          (!cityA ||
-            transaction.content["ORIGIN_CITY_NAME"] === cityA ||
-            transaction.content["DEST_CITY_NAME"] === cityA) &&
-          (!cityB ||
-            transaction.content["ORIGIN_CITY_NAME"] === cityB ||
-            transaction.content["DEST_CITY_NAME"] === cityB);
-        if (insideTime && sameRoute) {
-          queryResult.push(transaction.content);
-          returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
-          const delay = Number(transaction.content["ARR_DELAY"]);
-          delaySum += delay;
-          if (delay > returnObj["MAX_DELAY"]) {
-            returnObj["MAX_DELAY"] = delay;
-          }
-          if (delay < returnObj["MIN_DELAY"]) {
-            returnObj["MIN_DELAY"] = delay;
-          }
+          const sameRoute =
+            (!cityA ||
+              transaction.content["ORIGIN_CITY_NAME"] === cityA ||
+              transaction.content["DEST_CITY_NAME"] === cityA) &&
+            (!cityB ||
+              transaction.content["ORIGIN_CITY_NAME"] === cityB ||
+              transaction.content["DEST_CITY_NAME"] === cityB);
+          if (insideTime && sameRoute) {
+            queryResult.push(transaction.content);
+            returnObj["TOTAL_NUMBER_OF_FLIGHTS"] += 1;
+            const delay = Number(transaction.content["ARR_DELAY"]);
+            delaySum += delay;
+            if (delay > returnObj["MAX_DELAY"]) {
+              returnObj["MAX_DELAY"] = delay;
+            }
+            if (delay < returnObj["MIN_DELAY"]) {
+              returnObj["MIN_DELAY"] = delay;
+            }
 
-          if (delay > 0) {
-            returnObj["DELAYED_FLIGHTS"] += 1;
-          } else if (delay < 0) {
-            returnObj["FLIGHTS_IN_ADVANCE"] += 1;
+            if (delay > 0) {
+              returnObj["DELAYED_FLIGHTS"] += 1;
+            } else if (delay < 0) {
+              returnObj["FLIGHTS_IN_ADVANCE"] += 1;
+            }
           }
-        }
-      });
-    }
+        })
+      ));
     returnObj["AVERAGE_DELAY"] =
       delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
     returnObj["FLIGHTS"] = queryResult;
