@@ -99,7 +99,7 @@ export default class Node {
       this.transactionCount = nTransactions;
     } else {
       console.log("Empty chain, adding genesis block");
-      this.addBlock(createGenesisBlock());
+      this.addGenesisBlock(createGenesisBlock());
     }
   }
 
@@ -156,6 +156,11 @@ export default class Node {
     return transaction || null;
   }
 
+  async addGenesisBlock(block: Block) {
+    await db.insert(block);
+    this.blocksCount += 1;
+    await db.saveMeta({ blockLength: this.blocksCount });
+  }
   public async addBlock(block: Block) {
     const lastBlock = await this.getLastBlock();
     const previousHash = lastBlock.hash;
@@ -265,47 +270,43 @@ export default class Node {
       FLIGHTS_IN_ADVANCE: 0, // TOTAL_NUMBER_OF_FLIGHTS - DELAYED_FLIGHTS - FLIGHTS THAT HAS ARRIVED RIGHT
     };
 
-    // const dateTo = query.DATE_TO;
-    // const dateFrom = query.DATE_FROM;
-    // let delaySum = 0;
+    const dateTo = query.DATE_TO;
+    const dateFrom = query.DATE_FROM;
+    let delaySum = 0;
+    const blockchainIterator =  new db.blockchainIterator();
+    for (const block of blockchainIterator) {
+      (await block).transactions.forEach(transaction => {
+        const insideTime =
+        transaction.content.FL_DATE >= dateFrom &&
+        transaction.content.FL_DATE <= dateTo;
 
-    // this.currentBlockchain.chain.forEach(block => {
-    //   block.transactions.forEach(transaction => {
-    //     {
-    //       const insideTime =
-    //         transaction.content.FL_DATE >= dateFrom &&
-    //         transaction.content.FL_DATE <= dateTo;
+        const sameAirline =
+        transaction.content.OP_CARRIER_AIRLINE_ID ===
+        query.OP_CARRIER_AIRLINE_ID;
 
-    //       const sameAirline =
-    //         transaction.content.OP_CARRIER_AIRLINE_ID ===
-    //         query.OP_CARRIER_AIRLINE_ID;
+        if (insideTime && sameAirline) {
+          returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
 
-    //       if (insideTime && sameAirline) {
-    //         returnObj.TOTAL_NUMBER_OF_FLIGHTS += 1;
+          const delay = Number(transaction.content.ARR_DELAY);
+          delaySum += delay;
+          if (delay > returnObj.MAX_DELAY) {
+            returnObj.MAX_DELAY = delay;
+          }
+          if (delay < returnObj.MIN_DELAY) {
+            returnObj.MIN_DELAY = delay;
+          }
 
-    //         const delay = Number(transaction.content.ARR_DELAY);
-    //         delaySum += delay;
-    //         if (delay > returnObj.MAX_DELAY) {
-    //           returnObj.MAX_DELAY = delay;
-    //         }
-    //         if (delay < returnObj.MIN_DELAY) {
-    //           returnObj.MIN_DELAY = delay;
-    //         }
-
-    //         if (delay > 0) {
-    //           returnObj.DELAYED_FLIGHTS += 1;
-    //         } else if (delay < 0) {
-    //           returnObj.FLIGHTS_IN_ADVANCE += 1;
-    //         }
-    //       }
-    //     }
-    //   });
-    // });
-
-    // returnObj.AVERAGE_DELAY = delaySum / returnObj.TOTAL_NUMBER_OF_FLIGHTS;
-
+          if (delay > 0) {
+            returnObj.DELAYED_FLIGHTS += 1;
+          } else if (delay < 0) {
+            returnObj.FLIGHTS_IN_ADVANCE += 1;
+          }
+        }
+      });
+    }
+    returnObj.AVERAGE_DELAY = delaySum / returnObj.TOTAL_NUMBER_OF_FLIGHTS;
     return returnObj;
-  }
+}
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     const queryResult: Flight[] = [];
