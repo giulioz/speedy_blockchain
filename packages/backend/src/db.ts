@@ -58,6 +58,8 @@ export async function getMeta(): Promise<MetaInfo> {
 
 export async function tryGetMeta(): Promise<MetaInfo | null> {
   try {
+    const meta = await getMeta();
+    _meta = meta;
     return await getMeta();
   } catch (e) {
     return null;
