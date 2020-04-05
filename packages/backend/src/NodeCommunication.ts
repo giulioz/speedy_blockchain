@@ -6,15 +6,15 @@ import {
   utils,
   Block,
   Transaction,
-  AsyncMiner,
+  Peer,
 } from "@speedy_blockchain/common";
-import Peer from "@speedy_blockchain/common/src/Peer";
-import Blockchain from "@speedy_blockchain/common/src/Blockchain";
 import {
   ParamsType,
   ReqType,
   ResType,
 } from "@speedy_blockchain/common/src/utils";
+
+import Node from "./Node";
 
 const MAX_RETRY = 3; // max number to retry for a http call
 const SLEEP_TIME = 1000; // time between retries
@@ -80,16 +80,12 @@ async function httpCall<K extends keyof Endpoints>(
   throw new Error("Communication failure, max retry count reached.");
 }
 
-export async function initialBlockDownload(
-  peers: Peer[],
-  blockchain: Blockchain,
-  miner: AsyncMiner
-) {
+export async function initialBlockDownload(node: Node) {
   console.log("Starting initial block download...");
 
   // Get the chains from the peers
   const chains = (
-    await Promise.all(peers.map(peer => httpCall(peer, "GET /chainInfo")))
+    await Promise.all(node.peers.map(peer => httpCall(peer, "GET /chainInfo")))
   )
     .filter(r => r.status !== ("error" as const))
     .map(r => (r as { status: "ok"; data: ChainInfo }).data);
@@ -117,7 +113,7 @@ export async function initialBlockDownload(
   const syncPeer =
     sameHashPeers[Math.floor(Math.random() * sameHashPeers.length)].peer;
 
-  let index = blockchain.lastBlock.index + 1;
+  let index = (await node.getLastBlock()).index + 1;
   while (index < longestChainLength) {
     const block = await httpCall(syncPeer, "GET /block/:blockId", {
       blockId: index.toString(),
@@ -127,15 +123,16 @@ export async function initialBlockDownload(
       throw new Error("Invalid response in IBD");
     }
 
-    if (!blockchain.addBlock(block.data, miner)) {
+    if (!node.addBlock(block.data)) {
       throw new Error("Invalid block in longest chain in IBD");
     }
 
     index += 1;
   }
 
-  if (blockchain.lastBlock.hash !== mostFrequentHash) {
-    console.error(blockchain.lastBlock.hash, "VS", mostFrequentHash);
+  const lastBlock = await node.getLastBlock();
+  if (lastBlock.hash !== mostFrequentHash) {
+    console.error(lastBlock.hash, "VS", mostFrequentHash);
     throw new Error("Invalid longest chain in IBD");
 
     // TODO: Come gestiamo questa situazione? Buttiamo via tutto?

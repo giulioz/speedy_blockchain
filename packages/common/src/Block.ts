@@ -1,5 +1,6 @@
 import Transaction, { sortAsExpected } from "./Transaction";
-import { sha256 } from "./utils";
+import { sha256, genZeroes } from "./utils";
+import { DIFFICULTY, MAX_TRANSACTIONS } from "./config";
 
 export type UnhashedBlock = Omit<Block, "hash">;
 
@@ -32,4 +33,49 @@ export function createBlock(blockToCreate: UnhashedBlock): Block {
 
   const block: Block = { ...blockToCreate, hash };
   return block;
+}
+
+export const createGenesisBlock = () =>
+  createBlock({
+    index: 0,
+    transactions: [],
+    // by default the genesis block come from the end of time... (to match with other peers)
+    timestamp: 0,
+    previousHash: "0",
+    nonce: 0,
+    minedBy: "god",
+  });
+
+// Check if blockHash is valid hash of block and satisfies
+// the difficulty criteria.
+export function isValidBlock(block: Block, difficulty = DIFFICULTY) {
+  const unhashedBlock: UnhashedBlock = {
+    index: block.index,
+    transactions: block.transactions,
+    timestamp: block.timestamp,
+    previousHash: block.previousHash,
+    nonce: block.nonce,
+    minedBy: block.minedBy,
+  };
+
+  const isGenesisBlock = block.index === 0;
+
+  const valid =
+    isGenesisBlock ||
+    (block.hash.startsWith(genZeroes(difficulty)) &&
+      block.hash === computeBlockHash(unhashedBlock) &&
+      block.transactions.length > 0 &&
+      block.transactions.length < MAX_TRANSACTIONS);
+
+  if (!valid) {
+    console.warn(
+      "INVALIDY REPORT:",
+      block.hash.startsWith(genZeroes(difficulty)),
+      block.hash,
+      computeBlockHash(unhashedBlock),
+      block.transactions.length
+    );
+  }
+
+  return valid;
 }

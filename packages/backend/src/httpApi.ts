@@ -11,23 +11,25 @@ export default function createHttpApi(node: Node) {
   app.use(cors());
 
   // get chain info
-  ep(app, "GET /chainInfo", (req, res) => {
+  ep(app, "GET /chainInfo", async (req, res) => {
+    const lastBlock = await node.getLastBlock();
+
     res.send({
       status: "ok",
       data: {
         peer: NodeCommunication.getSelfPeer(),
-        length: node.currentBlockchain.maxLength,
-        transactionCount: node.currentBlockchain.transactionCount,
-        lastHash: node.currentBlockchain.lastBlock.hash,
+        length: node.blocksCount,
+        transactionCount: node.transactionCount,
+        lastHash: lastBlock.hash,
       },
     });
   });
 
   // get block by id range
-  ep(app, "GET /blocks/from/:from/to/:to", (req, res) => {
+  ep(app, "GET /blocks/from/:from/to/:to", async (req, res) => {
     const from = parseInt(req.params.from, 10);
     const to = parseInt(req.params.to, 10);
-    const blocks = node.currentBlockchain.getBlocksRange(from, to);
+    const blocks = await node.getBlocksRange(from, to);
 
     res.send({
       status: "ok",
@@ -50,13 +52,13 @@ export default function createHttpApi(node: Node) {
   });
 
   // get last block
-  ep(app, "GET /block/last", (req, res) => {
-    const last = node.currentBlockchain.lastBlock;
+  ep(app, "GET /block/last", async (req, res) => {
+    const lastBlock = await node.getLastBlock();
 
-    if (last) {
+    if (lastBlock) {
       res.send({
         status: "ok",
-        data: last,
+        data: lastBlock,
       });
     } else {
       res.status(404).send({ status: "error", error: "Block not found." });
@@ -64,9 +66,9 @@ export default function createHttpApi(node: Node) {
   });
 
   // get a block by id
-  ep(app, "GET /block/:blockId", (req, res) => {
+  ep(app, "GET /block/:blockId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
-    const found = node.currentBlockchain.findBlockById(id);
+    const found = await node.findBlockById(id);
 
     if (found) {
       res.send({
@@ -79,9 +81,9 @@ export default function createHttpApi(node: Node) {
   });
 
   // get a transaction by id and block id
-  ep(app, "GET /block/:blockId/:transactionId", (req, res) => {
+  ep(app, "GET /block/:blockId/:transactionId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
-    const found = node.currentBlockchain.findTransactionById(
+    const found = await node.findTransactionById(
       req.params.transactionId,
       id
     );
@@ -99,8 +101,10 @@ export default function createHttpApi(node: Node) {
   });
 
   // get a transaction by id
-  ep(app, "GET /transaction/:id", (req, res) => {
-    const found = node.currentBlockchain.findTransactionById(req.params.id);
+  ep(app, "GET /transaction/:id", async (req, res) => {
+    const found = await node.findTransactionById(
+      req.params.id
+    );
 
     if (found) {
       res.send({

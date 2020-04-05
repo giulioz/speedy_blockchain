@@ -1,6 +1,11 @@
-import Blockchain from "./Blockchain";
-import Block, { UnhashedBlock, computeBlockHash, createBlock } from "./Block";
-import Transaction from "./Transaction";
+import Block, {
+  createBlock,
+  computeBlockHash,
+  createGenesisBlock,
+  isValidBlock,
+  UnhashedBlock,
+} from "./Block";
+import Transaction, { sortAsExpected } from "./Transaction";
 import Flight from "./Flight";
 import Peer from "./Peer";
 import AsyncMiner from "./AsyncMiner";
@@ -16,7 +21,6 @@ import {
 } from "./Queries";
 
 export {
-  Blockchain,
   Block,
   UnhashedBlock,
   Transaction,
@@ -32,5 +36,8 @@ export {
   RouteData,
   computeBlockHash,
   createBlock,
+  createGenesisBlock,
+  isValidBlock,
+  sortAsExpected,
   utils,
 };

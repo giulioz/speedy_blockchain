@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { createBlock, computeBlockHash } from "./Block";
 import { sortAsExpected } from "./Transaction";
 import Endpoints from "./Endpoints";
 
@@ -46,5 +45,3 @@ export function genZeroes(count: number) {
 export function getTimestamp() {
   return new Date().getTime();
 }
-
-export { createBlock, computeBlockHash, sortAsExpected };
