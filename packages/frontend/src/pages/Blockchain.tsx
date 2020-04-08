@@ -2,14 +2,23 @@ import React, { useState } from "react";
 import { formatISO } from "date-fns";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
+import { FixedSizeList } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 import Container from "@material-ui/core/Container";
-
 import { Block } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
+import LoadingCard from "../components/LoadingCard";
 import FullProgress from "../components/FullProgress";
 import FilterBar, { FilterFieldType } from "../components/FilterBar";
-import { useLastNBlocks, useRemoteData } from "../api/hooks";
+import {
+  useLastNBlocks,
+  useBlockLoader,
+  useRemoteData,
+  useUpdatedChainLength,
+} from "../api/hooks";
+import { useInfiniteLoader } from "../utils";
+import classes from "*.module.css";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -19,8 +28,18 @@ const useStyles = makeStyles(theme => ({
     overflow: "auto",
   },
   container: {
-    paddingTop: theme.spacing(4),
+    width: "100%",
+    height: "calc(100% - 64px)",
+    flexGrow: 1,
+    overflow: "hidden",
+    paddingLeft: 0,
+    paddingRight: 0,
+  },
+  list: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
     paddingBottom: theme.spacing(4),
+    paddingTop: theme.spacing(4),
   },
 }));
 
@@ -31,71 +50,73 @@ type Filters = {
   nonce: FilterFieldType;
 };
 
-// HACK
-const maxBlocks = 50;
+const BLOCK_SIZE = 532;
 
 function MultipleBlocks() {
   const classes = useStyles();
 
-  const blocks = useLastNBlocks(maxBlocks);
+  const { chainLength } = useUpdatedChainLength();
+  const { blocks, loadMoreBlocks } = useBlockLoader(chainLength);
 
-  const [filters, setFilters] = useState<Filters>({
-    id: { label: "Block ID", value: "" },
-    timestamp: { label: "Timestamp", value: "" },
-    hash: { label: "Hash", value: "", grow: true },
-    nonce: { label: "Nonce", value: "" },
-  });
+  React.useEffect(() => {
+    loadMoreBlocks({ startIndex: 0, endIndex: 10 });
+  }, [loadMoreBlocks]);
 
-  const handleFilterChange = (field: keyof Filters) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    e.persist();
-    setFilters(f => ({
-      ...f,
-      [field]: { ...f[field], value: e.target.value },
-    }));
-  };
-
-  if (!blocks) {
+  if (blocks == null) {
+    return <FullProgress />;
+  } else {
     return (
-      <Layout title="Explore Blocks">
-        <main className={classes.content}>
-          <div className={classes.appBarSpacer} />
-          <Container maxWidth="lg" className={classes.container}>
-            <FilterBar onChange={handleFilterChange} filters={filters} />
-            <FullProgress />
-          </Container>
-        </main>
-      </Layout>
+      <VirtualizedBlockList
+        chainLength={chainLength}
+        blocks={blocks}
+        loadMoreBlocks={loadMoreBlocks}
+      />
     );
   }
+}
 
-  const filteredBlocks = blocks.filter(
-    b =>
-      (filters.id.value.length === 0 ||
-        b.index === parseInt(filters.id.value, 10)) &&
-      (filters.timestamp.value.length === 0 ||
-        formatISO(b.timestamp).includes(filters.timestamp.value)) &&
-      (filters.hash.value.length === 0 ||
-        b.hash.includes(filters.hash.value)) &&
-      (filters.nonce.value.length === 0 ||
-        b.nonce.toString().includes(filters.nonce.value))
-  );
+function VirtualizedBlockList(props: any) {
+  const { blocks, loadMoreBlocks, chainLength } = props;
+  const listRef = React.useRef(null);
+  const classes = useStyles();
+
+  const { onItemsRendered } = useInfiniteLoader(listRef, {
+    isItemLoaded,
+    loadMoreItems: loadMoreBlocks,
+    itemCount: chainLength,
+  });
+
+  function isItemLoaded(index: any) {
+    return blocks && blocks[index] != null;
+  }
 
   return (
-    <Layout title="Explore Blocks">
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <FilterBar onChange={handleFilterChange} filters={filters} />
-
-          {filteredBlocks.map(block => (
-            <BlockCard key={block.index + block.hash} block={block} />
-          ))}
-        </Container>
-      </main>
-    </Layout>
+    <AutoSizer>
+      {({ width, height }) => (
+        <FixedSizeList
+          className={classes.list}
+          ref={listRef}
+          itemData={blocks}
+          itemCount={chainLength}
+          itemSize={BLOCK_SIZE}
+          width={width}
+          height={height}
+          onItemsRendered={onItemsRendered}
+        >
+          {Row}
+        </FixedSizeList>
+      )}
+    </AutoSizer>
   );
+}
+
+function Row({ index, data, style }: any) {
+  const block = data[index];
+  if (block) {
+    return <BlockCard style={style} block={block} />;
+  } else {
+    return <LoadingCard style={style} />;
+  }
 }
 
 function SingleBlock({ id = 0 }) {
@@ -106,18 +127,13 @@ function SingleBlock({ id = 0 }) {
   });
 
   return (
-    <Layout title="Explore Blocks">
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          {block && block.status === "ok" ? (
-            <BlockCard block={block.data} seeAll />
-          ) : (
-            <FullProgress />
-          )}
-        </Container>
-      </main>
-    </Layout>
+    <>
+      {block && block.status === "ok" ? (
+        <BlockCard block={block.data} seeAll />
+      ) : (
+        <FullProgress />
+      )}
+    </>
   );
 }
 
@@ -127,9 +143,14 @@ export default function Blockchain() {
   const { id } = useParams();
   const nId = id !== undefined ? parseInt(id) : null;
 
-  if (nId !== null) {
-    return <SingleBlock id={nId} />;
-  } else {
-    return <MultipleBlocks />;
-  }
+  return (
+    <Layout title="Explore Blocks">
+      <main className={classes.content}>
+        <div className={classes.appBarSpacer} />
+        <Container maxWidth="lg" className={classes.container}>
+          {nId !== null ? <SingleBlock id={nId} /> : <MultipleBlocks />}
+        </Container>
+      </main>
+    </Layout>
+  );
 }
