@@ -1,5 +1,9 @@
 # speedy_blockchain
 
+A toy multi-node distributed blockchain, built to study queuing performance models.
+
+![dashboard](./report/dashboard.png)
+
 This project uses Lerna. There are two packages:
 
 - `frontend`: the web interface for the blockchain, written with React and TypeScript,
