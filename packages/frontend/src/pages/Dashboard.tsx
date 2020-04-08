@@ -71,17 +71,19 @@ function InfoBox({
 export default function Dashboard() {
   const classes = useStyles();
 
-  // Auto update
-  const setForceUpdate = useState(0)[1];
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setForceUpdate(a => a + 1);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const chainInfo = useRemoteData("GET /chainInfo");
   const peersState = useRemoteData("GET /peers");
+
+  // Auto update
+  const [forceUpdate, setForceUpdate] = useState(0);
+  useEffect(() => {
+    function update() {
+      setForceUpdate(a => a + 1);
+    }
+
+    const timeout = setTimeout(update, 5000);
+    return () => clearTimeout(timeout);
+  }, [forceUpdate]);
 
   return (
     <Layout title="Dashboard">
