@@ -14,15 +14,19 @@ export default function createHttpApi(node: Node) {
   ep(app, "GET /chainInfo", async (req, res) => {
     const lastBlock = await node.getLastBlock();
 
-    res.send({
-      status: "ok",
-      data: {
-        peer: NodeCommunication.getSelfPeer(),
-        length: node.blocksCount,
-        transactionCount: node.transactionCount,
-        lastHash: lastBlock.hash,
-      },
-    });
+    if (lastBlock) {
+      res.send({
+        status: "ok",
+        data: {
+          peer: NodeCommunication.getSelfPeer(),
+          length: node.blocksCount,
+          transactionCount: node.transactionCount,
+          lastHash: lastBlock.hash,
+        },
+      });
+    } else {
+      res.status(404).send({ status: "error", error: "No lastBlock" });
+    }
   });
 
   // get block by id range
@@ -70,7 +74,7 @@ export default function createHttpApi(node: Node) {
   // get a block by id
   ep(app, "GET /block/:blockId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
-    const found = await node.findBlockById(id);
+    const found = await node.tryFindBlockById(id);
 
     if (found) {
       res.send({

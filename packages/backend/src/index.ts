@@ -16,13 +16,13 @@ async function main() {
   const node = new Node();
   await node.rehydrateBlocksFromDB();
 
+  await node.initCommunication();
+
   const httpApi = createHttpApi(node);
   await new Promise(resolve => {
     httpApi.listen(port, "0.0.0.0", resolve);
   });
   console.log(`Node listening on ${port}`);
-
-  await node.initCommunication();
 
   node.startLoop();
 }

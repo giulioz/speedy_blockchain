@@ -7,11 +7,8 @@ import {
   AsyncMiner,
   UnhashedBlock,
   Transaction,
+  config,
 } from "@speedy_blockchain/common";
-import {
-  DIFFICULTY,
-  MAX_TRANSACTIONS,
-} from "@speedy_blockchain/common/dist/Blockchain";
 import { createBlock } from "@speedy_blockchain/common/dist/Block";
 
 interface Job {
@@ -55,7 +52,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
 
   constructor(
     public onReschedule: (transactions: Transaction[]) => void,
-    difficulty: number = DIFFICULTY
+    difficulty: number = config.DIFFICULTY
   ) {
     this.worker = this.createNewWorker();
     this.setDifficulty(difficulty);
@@ -117,7 +114,7 @@ export default class WorkerAsyncMiner implements AsyncMiner {
   public async notifyNewTransaction(t: Transaction) {
     if (
       this.currentJob.block &&
-      this.currentJob.block.transactions.length < MAX_TRANSACTIONS - 1 &&
+      this.currentJob.block.transactions.length < config.MAX_TRANSACTIONS - 1 &&
       !this.currentJob.block.transactions.find(tr => tr.id === t.id)
     ) {
       const msg: OutgoingMessage = { type: "newTransaction", data: t };

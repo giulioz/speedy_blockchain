@@ -6,13 +6,10 @@ import {
   computeBlockHash,
   utils,
   createBlock,
+  config,
 } from "@speedy_blockchain/common";
-import {
-  DIFFICULTY,
-  MAX_TRANSACTIONS,
-} from "@speedy_blockchain/common/dist/Blockchain";
 
-const CHUNK_SIZE = 100;
+const CHUNK_SIZE = 50;
 
 export default class SimpleAsyncMiner {
   currentBlock: UnhashedBlock | null = null;
@@ -40,7 +37,7 @@ export default class SimpleAsyncMiner {
     }
   };
 
-  constructor(public difficulty: number = DIFFICULTY) {
+  constructor(public difficulty: number = config.DIFFICULTY) {
     this.DIF_START = utils.genZeroes(difficulty);
   }
 
@@ -77,7 +74,7 @@ export default class SimpleAsyncMiner {
   public notifyNewTransaction(t: Transaction) {
     if (
       this.currentBlock &&
-      this.currentBlock.transactions.length < MAX_TRANSACTIONS - 1 &&
+      this.currentBlock.transactions.length < config.MAX_TRANSACTIONS - 1 &&
       !this.currentBlock.transactions.find(tr => tr.id === t.id)
     ) {
       this.currentBlock.transactions.push(t);

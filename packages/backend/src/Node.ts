@@ -25,30 +25,7 @@ import * as db from "./db";
 import * as NodeCommunication from "./NodeCommunication";
 
 const miningTimeoutTime = 5000;
-const commTimeoutTime = 1000;
-
-async function checkChainValidity(blockLength: number) {
-  let result = true;
-  let previousHash = "0";
-
-  let transactionCount = 0;
-
-  for (let index = 0; index < blockLength; index++) {
-    const block = await db.getBlock(index);
-    if (!isValidBlock(block) || previousHash !== block.previousHash) {
-      // result = false;
-
-      // Early Exit
-      return false;
-    }
-
-    transactionCount += block.transactions.length;
-
-    previousHash = block.hash;
-  }
-
-  return result ? transactionCount : false;
-}
+const commTimeoutTime = 5000;
 
 // Manages the blockchain, mining and communication with peers
 export default class Node {
@@ -73,6 +50,12 @@ export default class Node {
       await this.refreshPeers();
 
       const done = await NodeCommunication.initialBlockDownload(this);
+      const nTransactions = await this.checkChainValidity(this.blocksCount);
+      if (!nTransactions) {
+        throw new Error("Downloaded chain invalid!");
+      }
+
+      this.transactionCount = nTransactions;
 
       if (!done) {
         console.warn("Retriyng...");
@@ -94,7 +77,7 @@ export default class Node {
 
     if (meta.blockLength > 0) {
       // Validate the chain
-      const nTransactions = await checkChainValidity(meta.blockLength);
+      const nTransactions = await this.checkChainValidity(meta.blockLength);
 
       if (nTransactions === false) {
         throw new Error("Invalid replacement chain!");
@@ -107,12 +90,39 @@ export default class Node {
     }
   }
 
+  async checkChainValidity(blockLength: number) {
+    let result = true;
+    let previousHash = "0";
+
+    let transactionCount = 0;
+
+    for (let index = 0; index < blockLength; index++) {
+      const block = await this.tryFindBlockById(index);
+      if (
+        !block ||
+        !isValidBlock(block) ||
+        previousHash !== block.previousHash
+      ) {
+        // result = false;
+
+        // Early Exit
+        return false;
+      }
+
+      transactionCount += block.transactions.length;
+
+      previousHash = block.hash;
+    }
+
+    return result ? transactionCount : false;
+  }
+
   public async getLastBlock() {
     if (this.blocksCount === 0) {
       return createGenesisBlock();
     }
 
-    return this.findBlockById(this.blocksCount - 1);
+    return this.tryFindBlockById(this.blocksCount - 1);
   }
 
   async findBlockById(blockId: Block["index"]) {
@@ -125,6 +135,18 @@ export default class Node {
     }
 
     return db.getBlock(blockId);
+  }
+
+  async tryFindBlockById(blockId: Block["index"]) {
+    if (blockId < 0 || blockId >= this.blocksCount) {
+      return null;
+    }
+
+    try {
+      return await db.getBlock(blockId);
+    } catch (e) {
+      return null;
+    }
   }
 
   async getBlocksRange(startId: number, endId: number) {
@@ -175,29 +197,25 @@ export default class Node {
     return transaction || null;
   }
 
-  public async addBlock(block: Block) {
+  public async addBlock(block: Block, unchecked = false) {
+    console.log(`Adding new block #${block.index}:${block.hash}`);
+
     let unlock = await this.addMutex.lock();
-
-    if (block.index < this.blocksCount) {
-      console.warn(
-        `Block before the end of the chain (${block.index} vs ${this.blocksCount}), aborting`
-      );
-      unlock();
-      return false;
-    }
-
-    const isGenesisBlock = block.index === 0;
-    const lastBlock = await this.getLastBlock();
-    const previousHash = lastBlock.hash;
-
-    if (!isGenesisBlock && previousHash !== block.previousHash) {
-      console.warn(`Invalid previousHash, aborting`);
-      unlock();
-      return false;
-    }
 
     if (!isValidBlock(block)) {
       console.warn(`Trying to add an invalid block, aborting`);
+      unlock();
+      return false;
+    }
+
+    const alreadyExistsBlock = await this.tryFindBlockById(block.index);
+
+    if (
+      !unchecked &&
+      alreadyExistsBlock &&
+      alreadyExistsBlock.timestamp >= block.timestamp
+    ) {
+      console.warn(`Adding block older than existing, aborting`);
       unlock();
       return false;
     }
@@ -211,12 +229,17 @@ export default class Node {
     this.miner.notifyTransactionsRemoved(block.transactions);
 
     // update transactionCount
+    if (alreadyExistsBlock) {
+      this.transactionCount -= alreadyExistsBlock.transactions.length;
+    }
     this.transactionCount += block.transactions.length;
 
-    this.blocksCount = block.index + 1;
-
     await db.insert(block);
-    await db.saveMeta({ blockLength: block.index + 1 });
+
+    if (!alreadyExistsBlock) {
+      this.blocksCount = block.index + 1;
+      await db.saveMeta({ blockLength: block.index + 1 });
+    }
 
     unlock();
 
@@ -275,7 +298,9 @@ export default class Node {
     const dateTo = query.DATE_TO;
     const dateFrom = query.DATE_FROM;
     let delaySum = 0;
-    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+    await Promise.all(
+      Array.from(new db.BlockchainIterator(this.blocksCount))
+    ).then(blocks =>
       blocks.forEach(block =>
         block.transactions.forEach(transaction => {
           const insideTime =
@@ -313,17 +338,20 @@ export default class Node {
 
   public async queryFlights(query: FlightsRequest): Promise<Flight[]> {
     const queryResult: Flight[] = [];
-    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+    await Promise.all(
+      Array.from(new db.BlockchainIterator(this.blocksCount))
+    ).then(blocks =>
       blocks.forEach(block =>
         block.transactions.forEach(transaction => {
-        if (
-          query.OP_CARRIER_FL_NUM === transaction.content.OP_CARRIER_FL_NUM &&
-          query.FL_DATE === transaction.content.FL_DATE
-        ) {
-          queryResult.push(transaction.content);
-        }
-      })
-    ));
+          if (
+            query.OP_CARRIER_FL_NUM === transaction.content.OP_CARRIER_FL_NUM &&
+            query.FL_DATE === transaction.content.FL_DATE
+          ) {
+            queryResult.push(transaction.content);
+          }
+        })
+      )
+    );
     return queryResult;
   }
 
@@ -346,7 +374,9 @@ export default class Node {
       FLIGHTS: [],
     };
     let delaySum = 0;
-    await Promise.all(Array.from(new db.BlockchainIterator(this.blocksCount))).then(blocks => 
+    await Promise.all(
+      Array.from(new db.BlockchainIterator(this.blocksCount))
+    ).then(blocks =>
       blocks.forEach(block =>
         block.transactions.forEach(transaction => {
           // check carrier name
@@ -380,7 +410,8 @@ export default class Node {
             }
           }
         })
-      ));
+      )
+    );
     returnObj["AVERAGE_DELAY"] =
       delaySum / returnObj["TOTAL_NUMBER_OF_FLIGHTS"];
     returnObj["FLIGHTS"] = queryResult;
@@ -437,58 +468,62 @@ export default class Node {
   }
 
   private async miningUpdate() {
-    const hasTransactions =
-      this.unconfirmedTransactions && this.unconfirmedTransactions.length > 0;
+    try {
+      const hasTransactions =
+        this.unconfirmedTransactions && this.unconfirmedTransactions.length > 0;
 
-    if (hasTransactions) {
-      const lastBlock = await this.getLastBlock();
+      if (hasTransactions) {
+        const lastBlock = await this.getLastBlock();
 
-      const transactionsToValidate: Transaction[] = [];
-      for (
-        let i = 0;
-        i < config.MAX_TRANSACTIONS && this.unconfirmedTransactions.length > 0;
-        i++
-      ) {
-        transactionsToValidate.push(this.unconfirmedTransactions.pop() as any);
+        if (!lastBlock) {
+          throw new Error("No last block in Mining Update!");
+        }
+
+        const transactionsToValidate: Transaction[] = [];
+        for (
+          let i = 0;
+          i < config.MAX_TRANSACTIONS &&
+          this.unconfirmedTransactions.length > 0;
+          i++
+        ) {
+          transactionsToValidate.push(
+            this.unconfirmedTransactions.pop() as any
+          );
+        }
+
+        const unhashedBlock: UnhashedBlock = {
+          index: this.blocksCount,
+          transactions: transactionsToValidate,
+          timestamp: utils.getTimestamp(),
+          previousHash: lastBlock.hash,
+          nonce: 0,
+          minedBy: NodeCommunication.getSelfPeer().name,
+        };
+
+        const block = await this.miner.mine(unhashedBlock);
+
+        if (
+          // block exists
+          block &&
+          // it has transactions
+          block.transactions.length > 0 &&
+          // it has correct id
+          block.index === this.blocksCount
+        ) {
+          console.log(`MINED NEW BLOCK ${block.index}`);
+          await NodeCommunication.announceBlock(this.peers, block);
+          console.log(`ANNOUNCED MINED ${block.index}`);
+
+          const added = await this.addBlock(block);
+          if (added) {
+            console.log(`ADDED MINED ${block.index}`);
+          }
+        } else {
+          console.log(`MINED INVALID!`);
+        }
       }
-
-      const unhashedBlock: UnhashedBlock = {
-        index: this.blocksCount,
-        transactions: transactionsToValidate,
-        timestamp: utils.getTimestamp(),
-        previousHash: lastBlock.hash,
-        nonce: 0,
-        minedBy: NodeCommunication.getSelfPeer().name,
-      };
-
-      const block = await this.miner.mine(unhashedBlock);
-
-      if (
-        // block exists
-        block &&
-        // it has transactions
-        block.transactions.length > 0 &&
-        // it has correct id
-        block.index === this.blocksCount
-      ) {
-        // console.log(`MINED NEW BLOCK ${block.index}`);
-        // await NodeCommunication.announceBlock(this.peers, block);
-        // console.log(`ANNOUNCED MINED ${block.index}`);
-
-        // const added = await this.addBlock(block);
-        // if (added) {
-        //   console.log(`ADDED MINED ${block.index}`);
-        // }
-
-        console.log(`MINED NEW BLOCK ${block.index}`);
-        await Promise.all([
-          NodeCommunication.announceBlock(this.peers, block),
-          await this.addBlock(block),
-        ]);
-        console.log(`ANNOUNCED MINED ${block.index}`);
-      } else {
-        console.log(`MINED INVALID!`);
-      }
+    } catch (e) {
+      console.error(`Error in miningUpdate:`, e);
     }
 
     this.miningTimeout = setTimeout(
@@ -498,8 +533,12 @@ export default class Node {
   }
 
   private async commUpdate() {
-    await this.refreshPeers();
-    await NodeCommunication.announcement(this.peers);
+    try {
+      await this.refreshPeers();
+      await NodeCommunication.announcement(this.peers);
+    } catch (e) {
+      console.error(`Error in commUpdate:`, e);
+    }
 
     this.commTimeout = setTimeout(() => this.commUpdate(), commTimeoutTime);
   }

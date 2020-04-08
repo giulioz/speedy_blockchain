@@ -111,7 +111,7 @@ async function findSyncPeer(peers: Peer[]) {
   const syncPeer =
     sameHashPeers[Math.floor(Math.random() * sameHashPeers.length)].peer;
 
-  return { syncPeer, longestChainLength, mostFrequentHash };
+  return { syncPeer, longestChainLength };
 }
 
 export async function initialBlockDownload(node: Node) {
@@ -121,31 +121,29 @@ export async function initialBlockDownload(node: Node) {
   if (!syncPeerInfo) {
     return false;
   }
-  const { syncPeer, longestChainLength, mostFrequentHash } = syncPeerInfo;
+  const { syncPeer, longestChainLength } = syncPeerInfo;
 
-  let index = (await node.getLastBlock()).index + 1;
-  while (index < longestChainLength) {
+  let endBlock = longestChainLength - 1;
+  while (endBlock > 0) {
     const block = await httpCall(syncPeer, "GET /block/:blockId", {
-      blockId: index.toString(),
+      blockId: endBlock.toString(),
     });
+
+    const readtBlock = await node.tryFindBlockById(endBlock);
 
     if (block.status === "error") {
       throw new Error("Invalid response in IBD");
     }
 
-    if (!(await node.addBlock(block.data))) {
-      throw new Error("Invalid block in longest chain in IBD");
+    if (readtBlock && readtBlock.hash === block.data.hash) {
+      break;
     }
 
-    index += 1;
-  }
+    if (!readtBlock || readtBlock.hash !== block.data.hash) {
+      await node.addBlock(block.data, false);
+    }
 
-  const lastBlock = await node.getLastBlock();
-  if (lastBlock.hash !== mostFrequentHash) {
-    console.error(lastBlock.hash, "VS", mostFrequentHash);
-    throw new Error("Invalid longest chain in IBD");
-
-    // TODO: Come gestiamo questa situazione? Buttiamo via tutto?
+    endBlock -= 1;
   }
 
   console.log("IBD Completed.");
@@ -204,16 +202,24 @@ export async function fetchRemotePeers(initialPeers: Peer[]) {
 }
 
 export async function announceBlock(peers: Peer[], block: Block) {
-  return Promise.all(
-    peers.map(peer => httpCall(peer, "POST /block", null, block))
-  );
+  try {
+    return await Promise.all(
+      peers.map(peer => httpCall(peer, "POST /block", null, block))
+    );
+  } catch (e) {
+    console.error("Unable to announce block!", e);
+  }
 }
 
 export async function announceTransaction(
   peers: Peer[],
   transaction: Transaction
 ) {
-  return Promise.all(
-    peers.map(peer => httpCall(peer, "POST /transaction", null, transaction))
-  );
+  try {
+    return await Promise.all(
+      peers.map(peer => httpCall(peer, "POST /transaction", null, transaction))
+    );
+  } catch (e) {
+    console.error("Unable to announce transaction!", e);
+  }
 }
