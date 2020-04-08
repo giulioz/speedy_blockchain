@@ -43,7 +43,7 @@
     "ts-node": "^8.6.2"
   },
   "scripts": {
-    "start": "node dist/backend/src/index.js",
+    "start": "node --async-stack-traces dist/backend/src/index.js",
     "build": "tsc",
     "test": "jest",
     "dev": "nodemon -e ts -w ./src -x ts-node src/index.ts",
