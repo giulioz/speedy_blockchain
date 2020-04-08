@@ -1,4 +1,5 @@
 import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Link from "@material-ui/core/Link";
 import { makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
@@ -35,6 +36,7 @@ export default function RecentBlocks() {
             <TableCell>Timestamp</TableCell>
             <TableCell>Hash</TableCell>
             <TableCell>Nonce</TableCell>
+            <TableCell>Mined By</TableCell>
             <TableCell>Transactions</TableCell>
           </TableRow>
         </TableHead>
@@ -46,6 +48,7 @@ export default function RecentBlocks() {
                 <TableCell>{block.timestamp}</TableCell>
                 <TableCell>{block.hash}</TableCell>
                 <TableCell>{block.nonce}</TableCell>
+                <TableCell>{block.minedBy}</TableCell>
                 <TableCell align="right">{block.transactions.length}</TableCell>
               </TableRow>
             ))
@@ -55,8 +58,8 @@ export default function RecentBlocks() {
         </TableBody>
       </Table>
       <div className={classes.seeMore}>
-        <Link color="primary" href="#" onClick={preventDefault}>
-          See more transactions
+        <Link color="primary" component={RouterLink} to="/blockchain">
+          See more blocks
         </Link>
       </div>
     </>

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 import { Link as RouterLink } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
@@ -38,9 +38,38 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default function Dashboard() {
+function InfoBox({
+  title,
+  moreLink,
+  moreText,
+  children,
+}: React.PropsWithChildren<{
+  title: string;
+  moreLink: string;
+  moreText: string;
+}>) {
   const classes = useStyles();
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+
+  return (
+    <Grid item xs={12} md={4} lg={3}>
+      <Paper className={fixedHeightPaper}>
+        <Title>{title}</Title>
+        <Typography component="p" variant="h4" className={classes.grow}>
+          {children}
+        </Typography>
+        <div>
+          <Link color="primary" component={RouterLink} to={moreLink}>
+            {moreText}
+          </Link>
+        </div>
+      </Paper>
+    </Grid>
+  );
+}
+
+export default function Dashboard() {
+  const classes = useStyles();
 
   // Auto update
   const setForceUpdate = useState(0)[1];
@@ -52,56 +81,39 @@ export default function Dashboard() {
   }, []);
 
   const chainInfo = useRemoteData("GET /chainInfo");
+  const peersState = useRemoteData("GET /peers");
 
   return (
     <Layout title="Dashboard">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          {chainInfo?.status === "ok" ? (
+          {chainInfo &&
+          peersState &&
+          chainInfo.status === "ok" &&
+          peersState.status === "ok" ? (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper className={fixedHeightPaper}>
-                  <Title>Total Number of Blocks</Title>
-                  <Typography
-                    component="p"
-                    variant="h4"
-                    className={classes.grow}
-                  >
-                    {chainInfo.data.length}
-                  </Typography>
-                  <div>
-                    <Link
-                      color="primary"
-                      component={RouterLink}
-                      to="blockchain"
-                    >
-                      View all
-                    </Link>
-                  </div>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper className={fixedHeightPaper}>
-                  <Title>Number of Transactions</Title>
-                  <Typography
-                    component="p"
-                    variant="h4"
-                    className={classes.grow}
-                  >
-                    {chainInfo.data.transactionCount}
-                  </Typography>
-                  <div>
-                    <Link
-                      color="primary"
-                      component={RouterLink}
-                      to="blockchain"
-                    >
-                      View all
-                    </Link>
-                  </div>
-                </Paper>
-              </Grid>
+              <InfoBox
+                title="Total Number of Blocks"
+                moreLink="/blockchain"
+                moreText="View all"
+              >
+                {chainInfo.data.length}
+              </InfoBox>
+              <InfoBox
+                title="Number of Transactions"
+                moreLink="/flights"
+                moreText="View all"
+              >
+                {chainInfo.data.transactionCount}
+              </InfoBox>
+              <InfoBox
+                title="Connected Peers"
+                moreLink="/peers"
+                moreText="View all"
+              >
+                {peersState.data.length}
+              </InfoBox>
               <Grid item xs={12}>
                 <Paper className={classes.paper}>
                   <RecentBlocks />
