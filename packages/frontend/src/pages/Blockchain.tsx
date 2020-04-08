@@ -1,24 +1,20 @@
-import React, { useState } from "react";
-import { formatISO } from "date-fns";
+import React from "react";
 import { useParams } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import { FixedSizeList } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import Container from "@material-ui/core/Container";
-import { Block } from "@speedy_blockchain/common";
 import Layout from "../components/Layout";
 import BlockCard from "../components/BlockCard";
 import LoadingCard from "../components/LoadingCard";
 import FullProgress from "../components/FullProgress";
 import FilterBar, { FilterFieldType } from "../components/FilterBar";
 import {
-  useLastNBlocks,
   useBlockLoader,
   useRemoteData,
   useUpdatedChainLength,
 } from "../api/hooks";
 import { useInfiniteLoader } from "../utils";
-import classes from "*.module.css";
 
 const useStyles = makeStyles(theme => ({
   appBarSpacer: theme.mixins.toolbar,
@@ -29,7 +25,6 @@ const useStyles = makeStyles(theme => ({
   },
   container: {
     width: "100%",
-    height: "calc(100% - 64px)",
     flexGrow: 1,
     overflow: "hidden",
     paddingLeft: 0,
@@ -50,11 +45,9 @@ type Filters = {
   nonce: FilterFieldType;
 };
 
-const BLOCK_SIZE = 532;
+const BLOCK_SIZE = 542;
 
 function MultipleBlocks() {
-  const classes = useStyles();
-
   const { chainLength } = useUpdatedChainLength();
   const { blocks, loadMoreBlocks } = useBlockLoader(chainLength);
 
@@ -120,8 +113,6 @@ function Row({ index, data, style }: any) {
 }
 
 function SingleBlock({ id = 0 }) {
-  const classes = useStyles();
-
   const block = useRemoteData("GET /block/:blockId", {
     blockId: id.toString(),
   });
@@ -147,7 +138,11 @@ export default function Blockchain() {
     <Layout title="Explore Blocks">
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
+        <Container
+          maxWidth="lg"
+          className={classes.container}
+          style={nId === null ? { height: "calc(100% - 64px)" } : {}}
+        >
           {nId !== null ? <SingleBlock id={nId} /> : <MultipleBlocks />}
         </Container>
       </main>

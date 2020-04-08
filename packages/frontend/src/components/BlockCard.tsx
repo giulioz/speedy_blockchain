@@ -22,7 +22,6 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     overflow: "auto",
     flexDirection: "column",
-    height: "500px",
   },
   upper: {
     textTransform: "uppercase",
@@ -76,7 +75,11 @@ export default function BlockCard({
 
   return (
     <div style={{ ...style, padding: "32px" }}>
-      <Paper className={classes.paper} elevation={4}>
+      <Paper
+        className={classes.paper}
+        elevation={4}
+        style={!seeAll ? { height: "510px" } : {}}
+      >
         <Link
           variant="h4"
           color="textPrimary"
