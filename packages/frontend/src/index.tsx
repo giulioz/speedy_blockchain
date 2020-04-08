@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
 
-import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Blockchain from "./pages/Blockchain";
 import Flights from "./pages/Flights";
@@ -16,7 +15,7 @@ const theme = (createMuiTheme as any)({
   palette: {
     type: "dark",
     primary: {
-      main: "#bf6618",
+      main: "#e07619",
     },
     secondary: {
       main: "#71bf18",

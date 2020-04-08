@@ -7,6 +7,8 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Title from "./Title";
+import { useLastNBlocks } from "../api/hooks";
+import FullProgress from "./FullProgress";
 
 function preventDefault(event: React.MouseEvent) {
   event.preventDefault();
@@ -20,28 +22,36 @@ const useStyles = makeStyles(theme => ({
 
 export default function RecentBlocks() {
   const classes = useStyles();
+
+  const recentBlocks = useLastNBlocks(5);
+
   return (
     <>
       <Title>Recent Transactions</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Hash</TableCell>
             <TableCell>Index</TableCell>
-            <TableCell>Nonce</TableCell>
-            <TableCell>Previous Hash</TableCell>
             <TableCell>Timestamp</TableCell>
+            <TableCell>Hash</TableCell>
+            <TableCell>Nonce</TableCell>
             <TableCell>Transactions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {/* <TableRow key={row.id}>
-            <TableCell>{row.date}</TableCell>
-            <TableCell>{row.name}</TableCell>
-            <TableCell>{row.shipTo}</TableCell>
-            <TableCell>{row.paymentMethod}</TableCell>
-            <TableCell align="right">{row.amount}</TableCell>
-          </TableRow> */}
+          {recentBlocks ? (
+            recentBlocks.map(block => (
+              <TableRow key={block.hash}>
+                <TableCell>{block.index}</TableCell>
+                <TableCell>{block.timestamp}</TableCell>
+                <TableCell>{block.hash}</TableCell>
+                <TableCell>{block.nonce}</TableCell>
+                <TableCell align="right">{block.transactions.length}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <FullProgress />
+          )}
         </TableBody>
       </Table>
       <div className={classes.seeMore}>
