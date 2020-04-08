@@ -29,17 +29,14 @@ const commTimeoutTime = 5000;
 
 // Manages the blockchain, mining and communication with peers
 export default class Node {
-  unconfirmedTransactions: Transaction[] = [];
-  blocksCount: number = 0;
-  transactionCount: number = 0;
-
+  public unconfirmedTransactions: Transaction[] = [];
+  public blocksCount: number = 0;
+  public transactionCount: number = 0;
   public peers: Peer[] = [];
 
   private miningTimeout: NodeJS.Timeout | null = null;
   private commTimeout: NodeJS.Timeout | null = null;
-
-  miner = new SimpleAsyncMiner();
-
+  private miner = new SimpleAsyncMiner();
   private addMutex = new Mutex();
 
   public async initCommunication() {
@@ -71,7 +68,7 @@ export default class Node {
     );
   }
 
-  public async rehydrateBlocksFromDB() {
+  public async checkBlocksFromDB() {
     const meta = await db.getMeta();
     this.blocksCount = meta.blockLength;
 
@@ -103,9 +100,6 @@ export default class Node {
         !isValidBlock(block) ||
         previousHash !== block.previousHash
       ) {
-        // result = false;
-
-        // Early Exit
         return false;
       }
 

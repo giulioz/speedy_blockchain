@@ -14,7 +14,7 @@ async function main() {
   await initDB(minerName);
 
   const node = new Node();
-  await node.rehydrateBlocksFromDB();
+  await node.checkBlocksFromDB();
 
   await node.initCommunication();
 
