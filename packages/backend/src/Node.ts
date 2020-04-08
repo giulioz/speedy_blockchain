@@ -51,7 +51,7 @@ export default class Node {
 
       const done = await NodeCommunication.initialBlockDownload(this);
       const nTransactions = await this.checkChainValidity(this.blocksCount);
-      if (!nTransactions) {
+      if (nTransactions === false) {
         throw new Error("Downloaded chain invalid!");
       }
 
