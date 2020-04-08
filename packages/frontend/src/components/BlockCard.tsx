@@ -18,11 +18,11 @@ import { Block } from "@speedy_blockchain/common";
 
 const useStyles = makeStyles(theme => ({
   paper: {
-    marginBottom: theme.spacing(4),
     padding: theme.spacing(3),
     display: "flex",
     overflow: "auto",
     flexDirection: "column",
+    height: "500px",
   },
   upper: {
     textTransform: "uppercase",
@@ -61,10 +61,12 @@ const useStyles = makeStyles(theme => ({
 
 export default function BlockCard({
   block,
+  style = {},
   seeAll = false,
 }: {
   block: Block;
   seeAll?: boolean;
+  style?: any;
 }) {
   const classes = useStyles();
 
@@ -73,86 +75,88 @@ export default function BlockCard({
     : block.transactions.slice(0, 4);
 
   return (
-    <Paper className={classes.paper} elevation={4}>
-      <Link
-        variant="h4"
-        color="textPrimary"
-        gutterBottom
-        component={RouterLink}
-        to={`/blockchain/${block.index}`}
-      >
-        Block #{block.index}
-      </Link>
-      <Divider />
-
-      <div className={classes.infoBox}>
-        <div className={classes.baseline}>
-          <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="secondary" gutterBottom>
-              Trans. Count
-            </Typography>
-            <Typography gutterBottom>{block.transactions.length}</Typography>
-          </div>
-          <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="secondary" gutterBottom>
-              Timestamp
-            </Typography>
-            <Typography gutterBottom>{formatISO(block.timestamp)}</Typography>
-          </div>
-          <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="secondary" gutterBottom>
-              Hash
-            </Typography>
-            <Typography gutterBottom>{block.hash}</Typography>
-          </div>
-          <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="secondary" gutterBottom>
-              Nonce
-            </Typography>
-            <Typography gutterBottom>{block.nonce}</Typography>
-          </div>
-          <div className={clsx(classes.upper, classes.inline)}>
-            <Typography color="secondary" gutterBottom>
-              Mined By
-            </Typography>
-            <Typography gutterBottom>{block.minedBy}</Typography>
-          </div>
-        </div>
-
-        <Typography
-          color="secondary"
+    <div style={{ ...style, padding: "32px" }}>
+      <Paper className={classes.paper} elevation={4}>
+        <Link
+          variant="h4"
+          color="textPrimary"
           gutterBottom
-          className={clsx(classes.upper, classes.transactionsTitle)}
+          component={RouterLink}
+          to={`/blockchain/${block.index}`}
         >
-          Transactions
-        </Typography>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Timestamp</TableCell>
-              <TableCell>OP_CARRIER_FL_NUM</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {transactions.map(t => (
-              <TableRow key={t.id}>
-                <TableCell>{t.id}</TableCell>
-                <TableCell>{formatISO(t.timestamp)}</TableCell>
-                <TableCell>{t.content.OP_CARRIER_FL_NUM}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+          Block #{block.index}
+        </Link>
+        <Divider />
 
-        {!seeAll && block.transactions.length > 4 && (
-          <div className={classes.seeMore}>
-            <Button component={RouterLink} to={`/blockchain/${block.index}`}>
-              See {block.transactions.length - 4} more
-            </Button>
+        <div className={classes.infoBox}>
+          <div className={classes.baseline}>
+            <div className={clsx(classes.upper, classes.inline)}>
+              <Typography color="secondary" gutterBottom>
+                Trans. Count
+              </Typography>
+              <Typography gutterBottom>{block.transactions.length}</Typography>
+            </div>
+            <div className={clsx(classes.upper, classes.inline)}>
+              <Typography color="secondary" gutterBottom>
+                Timestamp
+              </Typography>
+              <Typography gutterBottom>{formatISO(block.timestamp)}</Typography>
+            </div>
+            <div className={clsx(classes.upper, classes.inline)}>
+              <Typography color="secondary" gutterBottom>
+                Hash
+              </Typography>
+              <Typography gutterBottom>{block.hash}</Typography>
+            </div>
+            <div className={clsx(classes.upper, classes.inline)}>
+              <Typography color="secondary" gutterBottom>
+                Nonce
+              </Typography>
+              <Typography gutterBottom>{block.nonce}</Typography>
+            </div>
+            <div className={clsx(classes.upper, classes.inline)}>
+              <Typography color="secondary" gutterBottom>
+                Mined By
+              </Typography>
+              <Typography gutterBottom>{block.minedBy}</Typography>
+            </div>
           </div>
-        )}
-      </div>
-    </Paper>
+
+          <Typography
+            color="secondary"
+            gutterBottom
+            className={clsx(classes.upper, classes.transactionsTitle)}
+          >
+            Transactions
+          </Typography>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Timestamp</TableCell>
+                <TableCell>OP_CARRIER_FL_NUM</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {transactions.map(t => (
+                <TableRow key={t.id}>
+                  <TableCell>{t.id}</TableCell>
+                  <TableCell>{formatISO(t.timestamp)}</TableCell>
+                  <TableCell>{t.content.OP_CARRIER_FL_NUM}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {!seeAll && block.transactions.length > 4 && (
+            <div className={classes.seeMore}>
+              <Button component={RouterLink} to={`/blockchain/${block.index}`}>
+                See {block.transactions.length - 4} more
+              </Button>
+            </div>
+          )}
+        </div>
+      </Paper>
+    </div>
   );
 }

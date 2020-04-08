@@ -2801,6 +2801,8 @@ __metadata:
     "@types/react": ^16.9.23
     "@types/react-dom": ^16.9.5
     "@types/react-router-dom": ^5.1.3
+    "@types/react-virtualized-auto-sizer": ^1.0.0
+    "@types/react-window": ^1.8.1
     "@typescript-eslint/eslint-plugin": ^2.25.0
     "@typescript-eslint/parser": ^2.25.0
     clsx: ^1.1.0
@@ -2817,6 +2819,8 @@ __metadata:
     react-router-dom: ^5.1.2
     react-scripts: ^3.4.1
     react-spring: ^8.0.27
+    react-virtualized-auto-sizer: ^1.0.2
+    react-window: ^1.8.5
     serve: ^11.3.0
     typescript: ^3.8.3
   languageName: unknown
@@ -3253,6 +3257,24 @@ __metadata:
   dependencies:
     "@types/react": "*"
   checksum: 2/6aedc6e16ad0eba99e76b9a93420fa0059d65f17433693cadcb10958262e1c7a524d270b180ecbbcc46b73a4eac62fc212abaf547b293ca7ba58be4ef9cb3e65
+  languageName: node
+  linkType: hard
+
+"@types/react-virtualized-auto-sizer@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@types/react-virtualized-auto-sizer@npm:1.0.0"
+  dependencies:
+    "@types/react": "*"
+  checksum: 2/854d67840a30788423f388d72f7f126b14776762d80752a8af208584300862f1acab8ddbd1602e37603c52b913e53df01decba488f246de4b280537bcd63682a
+  languageName: node
+  linkType: hard
+
+"@types/react-window@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "@types/react-window@npm:1.8.1"
+  dependencies:
+    "@types/react": "*"
+  checksum: 2/e51a393368bcf3442d9637a9e28323999af7aac69c245636e953b82a735ba7bbb884eff9d3c976804114abcf718cd3c1dbc102706d9c0010f4b4bacb905daa49
   languageName: node
   linkType: hard
 
@@ -11946,6 +11968,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"memoize-one@npm:>=3.1.1 <6":
+  version: 5.1.1
+  resolution: "memoize-one@npm:5.1.1"
+  checksum: 2/e7c4a9cceca71334bf09c38818c375a280dc6e8ec03a92701c16199763269ce756b7b0b370f4b464c071045349fb7b3e4a3cc7460a3f46a277f394d8634a6eb5
+  languageName: node
+  linkType: hard
+
 "memory-fs@npm:^0.4.1":
   version: 0.4.1
   resolution: "memory-fs@npm:0.4.1"
@@ -15343,6 +15372,29 @@ fsevents@^1.2.7:
     react: ">=16.6.0"
     react-dom: ">=16.6.0"
   checksum: 2/6d87fce48b825439175f8889ed0ecb0eca915e84933033f88d33e20fc0a5c1673cc482fb6a96e86a6f4120b56fdd80a276d424aff7e8384fbb240ff6f7206850
+  languageName: node
+  linkType: hard
+
+"react-virtualized-auto-sizer@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "react-virtualized-auto-sizer@npm:1.0.2"
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0-alpha
+    react-dom: ^15.3.0 || ^16.0.0-alpha
+  checksum: 2/7038b823539e5d950647a8ed9bc67b41368328f85ed22233a36e950d0359e609887cfb56916481fcc09659f9133b94c960ce734548c6f402be8c0cff052d0b81
+  languageName: node
+  linkType: hard
+
+"react-window@npm:^1.8.5":
+  version: 1.8.5
+  resolution: "react-window@npm:1.8.5"
+  dependencies:
+    "@babel/runtime": ^7.0.0
+    memoize-one: ">=3.1.1 <6"
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0
+    react-dom: ^15.0.0 || ^16.0.0
+  checksum: 2/b0bee0c769109337557dc4c1488d20e4e957f27082418b22d6dd28b62946623e31ad34936c8d836eb8c61734f2d2b0ff5c71ab2dbc40e71060c1124607e2a986
   languageName: node
   linkType: hard
 

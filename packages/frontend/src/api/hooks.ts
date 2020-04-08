@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { Endpoints, Block } from "@speedy_blockchain/common";
 import { ResType, ParamsType } from "@speedy_blockchain/common/src/utils";
@@ -54,4 +54,57 @@ export function useLastNBlocks(maxBlocks: number) {
   }, [maxBlocks]);
 
   return data;
+}
+
+export function useBlockLoader(chainLength: number) {
+  const [data, setData] = useState<Block[] | null>(null);
+
+  const loadMoreBlocks = useCallback(
+    async ({
+      startIndex,
+      endIndex,
+    }: {
+      startIndex: number;
+      endIndex: number;
+    }) => {
+      const to = Math.max(endIndex, chainLength);
+      const from = startIndex || 0;
+      const newBlocks = await apiCall("GET /blocks/from/:from/to/:to", {
+        params: { from: from.toString(), to: to.toString() },
+        body: null,
+      });
+      console.log("Blocks:", newBlocks);
+      if (newBlocks.status !== "error") {
+        setData(newBlocks.data.reverse());
+      }
+    },
+    [setData, chainLength]
+  );
+
+  return { blocks: data, loadMoreBlocks };
+}
+
+export function useUpdatedChainLength() {
+  const [chainLength, setChainLength] = useState<number>(0);
+  const [isUpdating, setUpdating] = useState<number>(0);
+  const update = useCallback(() => setUpdating(u => u + 1), [setUpdating]);
+
+  const findChainLength = useCallback(async () => {
+    const response = await apiCall("GET /chainInfo", {
+      params: {},
+      body: null,
+    });
+
+    if (response.status !== "error" && response.data.length > chainLength) {
+      setChainLength(response.data.length);
+    }
+  }, [setChainLength, chainLength]);
+
+  useEffect(() => {
+    findChainLength();
+    const timer = setTimeout(() => update(), 5000);
+    return () => clearTimeout(timer);
+  }, [findChainLength, isUpdating]);
+
+  return { chainLength };
 }
