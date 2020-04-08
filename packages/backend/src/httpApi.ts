@@ -33,6 +33,11 @@ export default function createHttpApi(node: Node) {
   ep(app, "GET /blocks/from/:from/to/:to", async (req, res) => {
     const from = parseInt(req.params.from, 10);
     const to = parseInt(req.params.to, 10);
+    if (isNaN(from) || isNaN(to)) {
+      res.status(404).send({ status: "error", error: "Block not found." });
+      return;
+    }
+
     const blocks = await node.getBlocksRange(from, to);
 
     res.send({
@@ -74,6 +79,11 @@ export default function createHttpApi(node: Node) {
   // get a block by id
   ep(app, "GET /block/:blockId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
+    if (isNaN(id)) {
+      res.status(404).send({ status: "error", error: "Block not found." });
+      return;
+    }
+
     const found = await node.tryFindBlockById(id);
 
     if (found) {
@@ -89,6 +99,11 @@ export default function createHttpApi(node: Node) {
   // get a transaction by id and block id
   ep(app, "GET /block/:blockId/:transactionId", async (req, res) => {
     const id = parseInt(req.params.blockId, 10);
+    if (isNaN(id)) {
+      res.status(404).send({ status: "error", error: "Block not found." });
+      return;
+    }
+
     const found = await node.findTransactionById(req.params.transactionId, id);
 
     if (found) {
