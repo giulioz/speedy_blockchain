@@ -1,0 +1,162 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wenneker Assignment
+% LaTeX Template
+% Version 2.0 (12/1/2019)
+%
+% This template originates from:
+% http://www.LaTeXTemplates.com
+%
+% Authors:
+% Vel (vel@LaTeXTemplates.com)
+% Frits Wenneker
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt]{scrartcl} % Font size
+
+\input{structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{	
+	\normalfont\normalsize
+	\textsc{Ca' Foscari University of Venice}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge A Blockchain Application - Report}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\author{\hspace{-0.8cm} \parbox{4cm}{\centering
+  Sandro Baccega\\ 855957} \parbox{4cm}{\centering
+  Diletta Olliaro\\ 855957} \parbox{4cm}{\centering
+  Giacomo Zanatta\\ 855957} \parbox{4cm}{\centering Giulio Zausa\\ 855957} } % Your name
+
+
+
+\date{\vspace{20pt}\today} % Today's date (\today) or a custom date
+
+\begin{document}
+
+\maketitle % Print the title
+
+\section{Introduction}
+
+In this report we are going to present the created blockchain application and to study its performance through the analysis of the results of different benchmarks carried on with the Tsung stress testing tool.
+
+\subsection{Hardware}
+?
+\subsection{Software}
+?
+
+\section{First Task}
+
+Develop a web application based on the blockchain technology, meaning that in practice we are going to create a non-modifiable database of flying statistics. In the blockchain we must be able to:
+\begin{itemize}
+\item[\adforn{43}] add a new transaction
+\item[\adforn{43}] retrieve a transaction based on the transaction ID
+\item[\adforn{43}] retrieve all the transactions of a block
+\end{itemize}
+
+Moreover the mining operation should be invoked automatically every minute. 
+
+Then the web application should allow the following operations:
+\begin{itemize}
+\item[\adforn{43}] add a new record to the chain
+\item[\adforn{43}] query the status of a flight given the flight number and the date
+\item[\adforn{43}] query the average delay of a flight carrier in a certain interval of time
+\item[\adforn{43}] Given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B
+\end{itemize}
+
+\paragraph*{\textbf{Implementation}} For implementing the \textit{blockchain} system  we used NodeJS with TypeScript. NodeJS is an open source environment; it uses JavaScript or one of its superset (such as TypeScript) on the server side.\\
+
+The blockchain is actually stored in a LevelDB database. LevelDB is a simple  key-value storage engine that provides an ordered mapping from string keys to string values. Moreover, it provides basic operations, for example:
+\begin{itemize}
+\item[\adforn{43}] \texttt{put(key,value)} that insert value with the given key inside the DB (if the value is already defined, it will override its value with the new one)
+\item[\adforn{43}] \texttt{get(key)} that given a key, it will return the associated value (or null if the value is not in the DB)
+\item[\adforn{43}] \texttt{delete(key)} that removes the given key (if present) from  the DB.
+\end{itemize}
+
+The blockchain is replicated in every node  of the system. When a node is added, it will be registered in the system from a node that is already part of the system, and then the new node will fetch the updated blockchain. Once it has downloaded the whole blockchain, the node is said to be  active and it  can perform query or also adding new transactions. When a node mines a block, this block need to be sent to all others nodes in the system.\\
+
+Each node consists of two services: front-end and back-end. The  front-end handles the user input and it calls the back-end server in order to fetch the data it needs. In our particular case, when a user wants to add a flight inside the system, it can access the front-end, which provides a form, and insert the data. Once the form is correctly filled, the flight is inserted in a queue and it waits until the back-end mines the block containing all the transactions in the queue. Using the front-end application a user can also make queries to fetch routes and flights. These operations (insertion and searching) can also be performed by calling directly the back-end, using the pre-defined POST and GET endpoints, passing the information in a JSON format.
+
+\section{Second Task}
+
+After the implementation of our web application we want to analyse its performances and scalability properties. In order to do so, we used \textit{Tsung}\footnote{Tsung is an high-performance benchmark framework.} to benchmark our blockchain application. We used some given guidelines that we will follow step by step and that are presented below.
+
+\paragraph*{1. Imagine the system as a monolithic queue and measure its expected service time and its second moment.} \mbox{}\\\\ To this aim we set the customer to make a query, waiting for the answer and then leave the system. This kind of set up ensures that every request is independent from the previous ones. First we ran one test, like the one described above, for  each type of query, in order to decide which one was the heavier; in this way we could use just that one for our benchmarks since it would represent a good index. As a matter of fact to take the fastest query would mean to produce biased results. The heaviest query is the one \textit{"given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B"}.\\
+
+Secondly, we ran 30 separate tests as the one before, changing randomly the parameters of the query (always to avoid biased results) and accordingly we were able to obtain the expected service time and its variance. Which resulted to be, respectively 2330.0 ms and 5389.028 ms.
+Notice that we were able to retrieve the expected service time from the response time, since having just one customer at the time in the system, in practice is the same of setting to zero the waiting time consequently the response time must correspond only to the service time. 
+
+\paragraph*{Perform the test as open system with different workload intensities: 0.3L, 0.5L, 0.8L, 0.85L, where L is the maximum arrival rate determined from the expected service time estimated at point 1. Compare the measures with the lines predicted by the M/G/1 and M/G/1/PS queueing systems and discuss the results.} \mbox{}\\\\ The maximum arrival rate si given by the maximum  throughput (of the bottleneck, but we are considering to have just 1 station) and the maximum throughput at the bottleneck is given by its service rate.
+
+At this point we want to compute the theoretical values of expected response time and expected number of jobs supposing we have an M/G/1 and an M/G/1/PS queue, so that then we can compare these measures with the one obtained from the benchmarks.
+
+We know in general  response time  is given by the expected waiting time plus the service time, in particular: 
+\begin{itemize}
+\item[\adforn{43}] In the M/G/1 setting the expected waiting  time is given by $$E[W]=\dfrac{\rho+\lambda\mu\sigma^2}{2(\mu-\lambda)}$$ and assuming stability  the expected service time is given by $\dfrac{1}{\mu}$, accordingly:
+$$\bar{R}=E[W]+\dfrac{1}{\mu} .$$
+
+Then in this setting the expected number of jobs is given by the expected number of jobs in the waiting room plus the ratio of users being served, i.e.
+\begin{align*}
+E[N_W] &= \lambda E[W]\\
+E[N] &= E[N_W]+\dfrac{\lambda}{\mu}
+\end{align*}
+
+\item[\adforn{43}] Whereas in the M/G/1/PS setting we know expected response time and number of jobs do not depend on the variance and correspond to the measures we use for M/M/1 systems; i.e.:
+
+\begin{align*}
+\bar{R} &= \dfrac{1}{\mu-\lambda}\\
+\bar{N} &= \dfrac{\rho}{1-\rho}
+\end{align*}
+\end{itemize}
+
+Using the knowledge above we found the following theoretical data, where RespTime and NumJobs stand for the expected response time and the expected number of jobs, respectively:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|c|c|cc}
+\multicolumn{1}{l|}{}         & \multicolumn{2}{c|}{M/G/1}                                                        & \multicolumn{2}{c}{M/G/1/PS}                                                     \\ \hline
+\multicolumn{1}{l|}{Workload} & \multicolumn{1}{l|}{RespTime (ms)} & \multicolumn{1}{l|}{NumJobs} & \multicolumn{1}{l|}{RespTime (ms)} & \multicolumn{1}{l}{NumJobs} \\ \hline
+0.3                           & 2829.78                            & 0.36                                         & \multicolumn{1}{c|}{3328.57}       & 0.43                                        \\
+0.5                           & 3496.16                            & 0.75                                         & \multicolumn{1}{c|}{4660.0}        & 1.0                                         \\
+0.8                           & 6994.63                            & 2.40                                         & \multicolumn{1}{c|}{11650.0}       & 4.0                                         \\
+0.85                          & 8938.22                            & 3.26                                         & \multicolumn{1}{c|}{15533.33}      & 5.67                                       
+\end{tabular}
+\end{table}
+
+Below, instead, we show the table containing the data found benchmarking our application:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c|c|c|}
+\multicolumn{1}{l|}{Workload} & \multicolumn{1}{l|}{RespTime (ms)} & \multicolumn{1}{l|}{NumJobs} \\ \hline
+0.3                           & 3036.72                            & 0.39                         \\
+0.5                           & 3716.63                            & 0.83                         \\
+0.8                           & 6981.09                            & 2.13                         \\
+0.85                          & 9562.70                            & 3.62                        
+\end{tabular}
+\end{table}
+
+Comparing the two tables we can notice that our empirical measurements are closer to the M/G/1 theoretical values. MORE CONSIDERATIONS!
+
+
+
+
+
+
+\end{document}
