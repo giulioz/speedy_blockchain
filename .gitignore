@@ -16,6 +16,7 @@ pids
 *.pid.lock
 
 *.aux
+*.pdf
 *.lof
 *.log
 *.lot
