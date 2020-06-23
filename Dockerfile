@@ -14,5 +14,6 @@ RUN yarn
 
 RUN yarn build-common
 RUN yarn build-backend
+RUN yarn build-frontend
 
 CMD [ "yarn", "start" ]

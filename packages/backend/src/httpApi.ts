@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import path from "path";
 import Node from "./Node";
 import ep from "./safeEndpoints";
 import * as NodeCommunication from "./NodeCommunication";
@@ -9,6 +10,7 @@ export default function createHttpApi(node: Node) {
   const app = express();
   app.use(bodyParser.json({ limit: "50mb" }));
   app.use(cors());
+  app.use(express.static(path.join(__dirname, "../../../../frontend/build/")));
 
   // get chain info
   ep(app, "GET /chainInfo", async (req, res) => {
