@@ -17,8 +17,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.tag	}}-${{ github.run_id	}}
-          release_name: Release ${{ github.tag	}}-${{ github.run_id	}}
+          tag_name: ${{ github.ref	}}-${{ github.sha	}}
+          release_name: Release ${{ github.ref	}}-${{ github.sha	}}
           draft: false
           prerelease: true
       - name: Upload Release PDF
