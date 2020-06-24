@@ -22,25 +22,31 @@
   </monitoring>
 
   <load>
-    <arrivalphase phase="1" duration="30" unit="minute" wait_all_sessions_end="true">
-      <users interarrival="3" unit="second"/>
-    </arrivalphase>
     <!-- <arrivalphase phase="1" duration="30" unit="minute" wait_all_sessions_end="true">
       <users interarrival="2.741" unit="second"/>
     </arrivalphase> -->
-    <!-- <arrivalphase phase="2" duration="30" unit="minute" wait_all_sessions_end="true">
-      <users interarrival="4.984" unit="second"/>
+    <arrivalphase phase="1" duration="30" unit="minute">
+      <users maxnumber="1" interarrival="0.001" unit="second"/>
     </arrivalphase>
-    <arrivalphase phase="3" duration="30" unit="minute" wait_all_sessions_end="true">
-      <users interarrival="3.115" unit="second"/>
-    </arrivalphase>
-    <arrivalphase phase="4" duration="30" unit="minute" wait_all_sessions_end="true">
-      <users interarrival="2.931" unit="second"/>
-    </arrivalphase> -->
   </load>
 
   <sessions>
-    <session name='sess1' probability='16' type='ts_http'>
+    <session name='closed_all' probability='100' type='ts_http'>
+      <for from="1" to="1000" incr="1" var="counter">
+        <!-- <thinktime random='true' value='5'/> -->
+        <request>
+          <http url='/query/route' version='1.1' contents='{&quot;CITY_A&quot;:&quot;Memphis, TN&quot;,&quot;CITY_B&quot;:&quot;San Antonio, TX&quot;,&quot;DATE_FROM&quot;:0,&quot;DATE_TO&quot;:1589479617088,&quot;OP_CARRIER_AIRLINE_ID&quot;:null}' content_type='application/json' method='POST'>
+            <http_header name='Accept' value='application/json' />
+            <http_header name='Accept-Encoding' value='gzip, deflate' />
+            <http_header name='Accept-Language' value='it-IT,it;q=0.8,en-US;q=0.5,en;q=0.3' />
+            <http_header name='Cache-Control' value='no-cache' />
+            <http_header name='Pragma' value='no-cache' />
+          </http>
+        </request>
+      </for>
+    </session>
+
+    <!-- <session name='sess1' probability='16' type='ts_http'>
       <request>
         <http url='/query/route' version='1.1' contents='{&quot;CITY_A&quot;:&quot;Memphis, TN&quot;,&quot;CITY_B&quot;:&quot;San Antonio, TX&quot;,&quot;DATE_FROM&quot;:0,&quot;DATE_TO&quot;:1589479617088,&quot;OP_CARRIER_AIRLINE_ID&quot;:null}' content_type='application/json' method='POST'>
           <http_header name='Accept' value='application/json' />
@@ -105,6 +111,6 @@
           <http_header name='Pragma' value='no-cache' />
         </http>
       </request>
-    </session>
+    </session> -->
   </sessions>
 </tsung>
