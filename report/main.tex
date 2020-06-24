@@ -40,9 +40,9 @@
 }
 
 \author{\hspace{-0.8cm} \parbox{4cm}{\centering
-  Sandro Baccega\\ 855957} \parbox{4cm}{\centering
+  Sandro Baccega\\ 865024} \parbox{4cm}{\centering
   Diletta Olliaro\\ 855957} \parbox{4cm}{\centering
-  Giacomo Zanatta\\ 855957} \parbox{4cm}{\centering Giulio Zausa\\ 855957} } % Your name
+  Giacomo Zanatta\\ 859156} \parbox{4cm}{\centering Giulio Zausa\\ 870040} } % Your name
 
 
 
@@ -95,7 +95,7 @@ Then the web application should allow the following operations:
 
 \subsection{Implementation}
 
-For implementing the \textit{blockchain} system we used \textbf{NodeJS} with TypeScript. NodeJS is a server runtime that runs JavaScript code. The main feature of NodeJS is its \textbf{Event Queue} \textit{(libuv)}: every IO operation is enqueued in a FCFS queue and processed by multiple threads (figure \ref{fig:eventloop}). The application logic, though, remains single-threaded. In this way the requests are processed with a FCFS policy, as we have seen also from the benchmark data. Using Javascript for this type of applications certainly is not the best choise performance wise, but it's a much simpler alternative compared to other programming languages.
+For implementing the \textit{blockchain} system we used \textbf{NodeJS} with TypeScript. NodeJS is a server runtime that runs JavaScript code. The main feature of NodeJS is its \textbf{Event Queue} \textit{(libuv)}: every IO operation is enqueued in a FCFS queue and processed by multiple threads (figure \ref{fig:eventloop}). The application logic, though, remains single-threaded. In this way the requests are processed with a FCFS policy, as we have seen also from the benchmark data. Using Javascript for this type of applications certainly is not the best choise performance wise, but it is a much simpler alternative compared to other programming languages.
 
 \begin{figure}[h]
 \includegraphics[width=8cm]{Images/eventloop.png}
@@ -151,7 +151,7 @@ At this point we want to compute the theoretical values of expected response tim
 We know in general that response time is given by the expected waiting time plus the service time, in particular: 
 \begin{itemize}
 \item[\adforn{43}] In the M/G/1 setting the expected waiting time is given by $$E[W]=\dfrac{\rho+\lambda\mu\sigma^2}{2(\mu-\lambda)}$$ and assuming stability the expected service time is given by $\dfrac{1}{\mu}$, therefore:
-$$\bar{R}=E[W]+\dfrac{1}{\mu} .$$
+$$\overline{R}=E[W]+\dfrac{1}{\mu} .$$
 
 This means that in this setting the expected number of jobs is given by the expected number of jobs in the waiting room plus the ratio of users being served, i.e.
 \begin{align*}
@@ -162,8 +162,8 @@ E[N] &= E[N_W]+\dfrac{\lambda}{\mu}
 \item[\adforn{43}] In the M/G/1/PS setting we know expected response time and number of jobs do not depend on the variance and correspond to the measures we use for M/M/1 systems; i.e.:
 
 \begin{align*}
-\bar{R} &= \dfrac{1}{\mu-\lambda}\\
-\bar{N} &= \dfrac{\rho}{1-\rho}
+\overline{R} &= \dfrac{1}{\mu-\lambda}\\
+\overline{N} &= \dfrac{\rho}{1-\rho}
 \end{align*}
 \end{itemize}
 
@@ -193,6 +193,24 @@ Below this, we show the table containing the data found with the benchmark of ou
 0.85                          & 9562.70                            & 3.62                        
 \end{tabular}
 \end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{Images/respTimes.png}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{Images/user35side.png}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=15cm]{Images/user858side.png}
+\end{figure}
+
+
+
 
 Comparing the two tables we can notice that our empirical measurements are closer to the M/G/1 theoretical values. 
 
