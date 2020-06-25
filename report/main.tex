@@ -71,33 +71,34 @@ The server runs inside a native Linux Docker Container. The underlying host is a
 \subsection{Software}
 
 The host is running Ubuntu 20.04 as Operating System, while the application is deployed using Docker. 
-This allows us to easily manage deployments and eventual horizontal scaling, by spawning multiple nodes in a cluster. 
-Even if our application runs in a Docker container, this will not compromise the performance since we will run it on a native Linux host. 
-We choosed Docker to future-proof our application, since it will make the deploy a node in the application's network easy, since it will not require to install any dependencies in the hosting system and it will not have any problem with the versions of those dependencies, saving us a lot of time in the long run.
+This allows us to easily manage deployments and eventual horizontal scaling by spawning multiple nodes. 
+Even if our application runs in a Docker container, this will not compromise the performance since it will run on a native Linux host. 
+We choosed Docker to future-proof our application, since it will make the deploy of a node in the application's network easy, because it will not require to install any dependencies in the hosting system and it will not have any problem with the versions of those dependencies, saving us a lot of time in the long run.
 
 \section{First Task}
 
-Develop a web application based on the blockchain technology, meaning that in practice we are going to create a non-modifiable database of flying statistics. In the blockchain we must be able to:
+Develop a web application based on the blockchain technology, meaning that in practice we are going to create a non-modifiable database of flying statistics. In the blockchain we must be able to: 
+% LOL
 \begin{itemize}
-\item[\adforn{43}] add a new transaction
-\item[\adforn{43}] retrieve a transaction based on the transaction ID
-\item[\adforn{43}] retrieve all the transactions of a block
+\item[\adforn{43}] Add a new transaction
+\item[\adforn{43}] Retrieve a transaction based on the transaction ID
+\item[\adforn{43}] Retrieve all the transactions of a block
 \end{itemize}
 
 Moreover the mining operation should be invoked automatically every minute. 
 
-Then the web application should allow the following operations:
+The web application should also allow the following operations:
 \begin{itemize}
-\item[\adforn{43}] add a new record to the chain
-\item[\adforn{43}] query the status of a flight given the flight number and the date
-\item[\adforn{43}] query the average delay of a flight carrier in a certain interval of time
+\item[\adforn{43}] Add a new record to the chain
+\item[\adforn{43}] Query the status of a flight given the flight number and the date
+\item[\adforn{43}] Query the average delay of a flight carrier in a certain interval of time
 \item[\adforn{43}] Given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B
 \end{itemize}
 
 \subsection{Implementation}
 
 \begin{figure}[h]
-\includegraphics[width=8cm]{Images/frontend.png}
+\includegraphics[width=9cm]{Images/frontend.png}
 \centering
 \caption{The Blockchain React App UI}
 \label{fig:frontend}
@@ -113,21 +114,20 @@ For implementing the \textit{blockchain} system we used \textbf{NodeJS} with Typ
 \end{figure}
 
 
-
-The blockchain is actually stored in a LevelDB database. LevelDB is a simple embedded key-value storage engine that provides an ordered mapping from string keys to string values. Moreover, it provides basic operations, for example:
+The blockchain is actually stored in a LevelDB database. LevelDB is a simple embedded key-value storage engine that provides an ordered mapping from string keys to string values. Moreover, it provides basic operations like:
 \begin{itemize}
 \item[\adforn{43}] \texttt{put(key,value)} that insert value with the given key inside the DB (if the value is already defined, it will override its value with the new one)
 \item[\adforn{43}] \texttt{get(key)} that given a key, it will return the associated value (or null if the value is not in the DB)
-\item[\adforn{43}] \texttt{delete(key)} that removes the given key (if present) from  the DB.
+\item[\adforn{43}] \texttt{delete(key)} that removes the given key (if present) from the DB.
 \end{itemize}
 
-The blockchain data is replicated in every node of the system. When a new node is started, it will reach out to a known node to be registered in the network. Every node keeps the list of registered peers and they exchange their peers list to keep track of new or lost peers.
+The blockchain data is replicated in every node of the system. When a new node starts, it will reach out to a known node to be registered in the network. Every node keeps the list of peers and they exchange their list with each others to keep track of new or lost peers.
 
 Once a node has entered the network it starts a procedure called \textit{Initial Block Download}: it asks for the longest chain and it downloads the missing blocks from a random peer.
 
 Once it has downloaded the whole blockchain, the node is said to be active and it can perform queries or add new transactions. Every node tries to mine a new block in an asynchronous way. When a node mines a block it announces it to all the others nodes in the system.
 
-Each node consists of two services: front-end and back-end. The front-end is a static React web app (figure \ref{fig:frontend}) that handles the user input and communicate with an API to the back-end in order to fetch the data it needs. In our particular case, when a user wants to add a flight into the system, it can access the front-end interface, which provides a form, and insert the data. Once the form is correctly filled, the flight is inserted in a queue and it waits until a node in the network mines a block containing all the transactions that are currently contained in the queue. Using the front-end application a user can also make queries to fetch routes and flights. These operations (insertion and searching) can also be performed by calling directly the back-end, using the pre-defined POST and GET endpoints, passing the information in a JSON format.
+Each node consists of two services: front-end and back-end. The front-end is a static React web app (figure \ref{fig:frontend}) that handles the user input and communicate with an API to the back-end in order to fetch the data it needs. In our particular case, when a user wants to add a flight into the system, it can access the front-end interface, which provides a form, and insert the data. Once the form is correctly filled, the flight is inserted in a queue and it waits until a node in the network mines a block containing all the transactions that are currently in the queue. Using the front-end application a user can also make queries to fetch routes and flights. 
 
 \section{Second Task}
 
@@ -136,13 +136,12 @@ After we implemented our application we wanted to analyse its performance and sc
 To perform the benchmarks we used two different machines: the server (described previously) and another identical Linux machine, directly connected via wired network and a Gigabit Ethernet switch. We have done this to avoid performance drops due to the benchmark software.
 
 
-
-
 \paragraph*{1. Imagine the system as a monolithic queue and measure its expected service time and its second moment.} \mbox{}\\\\ 
 
-To find the queue's expected service time and its second moment we performed a benchmark test using Tsung, employing a single customer in the system. The customer is supposed to make a query, wait for the answer and then leave the system, performing a closed test. This kind of setup ensures that every request is independent from the previous ones. 
-The first step was to run a single test with this setup, calling every endpoint of the server, to decide which query was the slowest. In this way we could use just that one for our benchmarks since it would represent a good indicator for a heavy load.
-We did this because if we used the fastest query for the benchmark we would produce a underestimated result. We found that the heaviest query was the one that states: \textit{"given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B"}.\\
+To find the queue's expected service time and its second moment we performed a benchmark test using Tsung with a single customer in the system. The customer is supposed to make a query, wait for the answer and then leave the system, performing a closed test. This kind of setup ensures that every request is independent from the previous ones. 
+The first step was to run a single test with this setup, requesting every endpoint of the server, to decide which query was the slowest. In this way we could use just that one for our benchmarks since it would represent a good indicator for a heavy load.
+We did this because if we used the fastest query for the benchmark we would produce a underestimated result. 
+The queries had the following response times:
 
 \begin{table}[H]
 \centering
@@ -157,6 +156,8 @@ tr\_peers & 1.60 msec \\
 tr\_route & 2.48 sec \\
 \end{tabular}
 \end{table}
+
+We can see that the heaviest query is the one that states: \textit{"given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B"}.\\
 
 The second step we did was to run 30 separate tests like the one before, choosing randomly the parameters for the query (to avoid biased results like before). In this way we were able to obtain the expected service time and its variance, which resulted to be, respectively 2330.0 ms and 5389.028 ms.
 Notice that we were able to retrieve the expected service time from the response time, since having just one customer at the time in a system is in practice the same as setting to zero the waiting time, consequently the response time must correspond only to the service time.
@@ -236,7 +237,6 @@ Below, we show the table containing the data found doing benchmarks of our appli
 Comparing the two tables we can notice that our empirical measurements are closer to the M/G/1 theoretical values than the M/G/1/PS ones. This can be also explained technically by the architecture of the server: since we are using Node.JS, every incoming request is added to the JavaScript event queue by \textit{libuv}, waiting to be processed by our event handlers. Since the event queue is processed with a FCFS policy, our requests queue is following that policy too.
 
 
-
 \paragraph*{3. Propose a queueing network model of your application where you distinguish at least three stations: disk, processor and a station modeling the thinking time of the requests. Parametrize the queueing network based on the measurements you can do on your application.} \mbox{}\\\\
 
 We modelled our queuing network based on considerations from our implementation:
@@ -249,14 +249,14 @@ We modelled our queuing network based on considerations from our implementation:
 
 Therefore, the system can be modelled as a three-stations closed-loop queuing network (figure \ref{fig:img1}).
 
-\begin{figure}[h]
+\begin{figure}[H]
 \includegraphics[width=10cm]{Images/img1.png}
 \centering
 \caption{Model with three stations}
 \label{fig:img1}
 \end{figure}
 
-This approach, however, it's problematic due to the nature of Node.JS, since it becomes difficult to benchmark the utilization of the two CPUs stations. For this reason we choose a simpler model (figure \ref{fig:img2}), with a single CPU station, since the time required to read the request and start the disk read is much lower than the time required to wait for the read and perform the filtering and aggregation.
+This approach, however, it's problematic due to the nature of Node.JS, since it becomes difficult to benchmark the utilization of the two CPUs stations. For this reason we choose a simpler model (figure \ref{fig:img2}), with only the second CPU station, since the time required to read the request and start the disk read (the first station's task) is much lower than the time required to wait for the read and perform the filtering and aggregation (the second station's task).
 
 \begin{figure}[h]
 \includegraphics[width=10cm]{Images/img2.png}
@@ -265,41 +265,39 @@ This approach, however, it's problematic due to the nature of Node.JS, since it 
 \label{fig:img2}
 \end{figure}
 
-As \textbf{thinking time} we have choosen a resonable value of $10$ seconds: once an user receieves the results from the server, we expect him to spend some time to read them before making another request.
+As \textbf{thinking time} we have choosen a resonable value of $10$ seconds: once an user receieves the results from the server, we expect him to spend this time to read them before making another request.\\
 
-To perform further analysis on this model, we needed to find the service times of the two stations. To do so we performed another closed-loop benchmark with Tsung, using a single user and no thinking time.
+To perform further analysis on this model, we needed to find the service times of the two stations. To do so we performed another closed-loop benchmark with Tsung, using a single user and no thinking time. While performing the benchmark we used Node.JS Performance Timings to monitor how much time was spent in every part of the code. To check the disk response time we measured for each request the time spent in Unix file access primitive calls. After performing 200 requests with Tsung ($\approx 10$ minutes) we aggregated our results and we computed the average time spent for disk requests and for CPU usage, in percentage:
 
 % While performing the benchmark we used the \textbf{iostat} tool to monitor the usage of the disk and the CPU. Using the command \texttt{iostat -x 30} we sampled the utilization of the system every 30 seconds. To find the utilization of the disk we used the \texttt{\%iowait} field, since it represents the percentage of time waiting for an IO device. To find the utilization of the CPU we used the \texttt{\%user} field. After reading 50 samples (25 minutes) we calculated an average of the two utilizations, performing a normalization to $100\%$:
-
-While performing the benchmark we used Node.JS Performance Timings to monitor how much time was spent in every part of the code. To check the disk response time we measured for each request the time spent in Unix file access primitive calls. After performing 200 requests with Tsung (~10 minutes) we aggregated our results and we computed the average time spent for disk requests and for CPU usage, in percentage:
 
 \begin{table}[H]
 \centering
 \begin{tabular}{c|c}
 \multicolumn{1}{l|}{\%Disk} & \multicolumn{1}{l}{\%CPU} \\ \hline
-98.21	& 1.79\\
+$98.21\%$ & $1.79\%$\\
 \end{tabular}
 \end{table}
 
-Since we know from the previous benchmarks the average value of the total service time (2445ms) we can multiply this with the previously found utilizations, finding the service time for the disk and the CPU:
+Since we know from the previous benchmarks the average value of the total service time (2445ms) we can multiply this with the previously found utilizations, finding the average service time for the disk and for the CPU data aggregation:
 
 \begin{table}[H]
 \centering
 \begin{tabular}{c|c|c}
-\multicolumn{1}{l|}{Service Time (ms)} & \multicolumn{1}{l|}{Disk Time (ms)} & \multicolumn{1}{l}{CPU Time (ms)} \\ \hline
-2445.93	&  2402.19	& 43.74\\
+\multicolumn{1}{l|}{Thinking Time ($Q_0$)} & \multicolumn{1}{l|}{Disk Time ($Q_1$)} & \multicolumn{1}{l}{CPU Time ($Q_2$)} \\ \hline
+$10,000$ ms	&  $2401.19$ ms	& $43.75$ ms \\
 \end{tabular}
 \end{table}
 
 
 \paragraph*{4. Determine the bottleneck of the system and use the operational analysis to determine the maximum level of multiprogramming. (Choose a reasonable expected thinking time)} \mbox{}\\\\
 
-A good practice at this point is  to find what can be improved in the system to make performances better. To do so it is necessary to find where critical issues start i.e. to find the bottleneck of the system. To discover which station represent the bottleneck of the system we need to consider both the speed and the relative  visit ration at each station i.e. we need to compute the service demands at each station. In the previous paragraph we were able to retrieve the service times which lead us  to the following service rates:
+A good practice at this point is to find what can be improved in the system to make performances better. To do so it is necessary to find where critical issues start i.e. to find the bottleneck of the system. To discover which station represent the bottleneck of the system we need to consider both the speed and the relative  visit ration at each station i.e. we need to compute the service demands at each station. In the previous paragraph we were able to retrieve the service times which lead us  to the following service rates:
 
-\begin{itemize}
-\item[] $\mu_{DISK}=\dfrac{1}{2401.19}\ ms=0.00042\ ms$
-\item[] $\mu_{CPU=\dfrac{1}{43.75}}\ ms=0.0229\ ms$
-\end{itemize}
+\begin{align*}
+\mu_{DISK} &= \dfrac{1}{2401.19}\ ms=0.00042\ ms\\
+\mu_{CPU} &= \dfrac{1}{43.75}\ ms=0.0229\ ms
+\end{align*}
 
 At this point to find the relative visit ratios, considering that we are in a closed system, we had to model the system of traffic equations that we show below:
 
@@ -313,29 +311,86 @@ Now, we do the following  computations to retrieve the service demands:
 
 $$D_{DISK}=\dfrac{1}{0.00042}=2402.19\qquad D_{CPU}=\dfrac{1}{0.0229}=43.75$$
 
-The station with the highest service demand is the bottleneck, so we recognize the bottleneck in the CPU. This makes sense because of how we implemented our application.
+The station with the highest service demand is the bottleneck, so we can recognize that is the \textbf{disk}. This makes sense because of how the query is implemented: every time a query is performed the whole blockchain is read, and this is an expensive operation.
 
-%TO DO write better because....
+Now, we are interested in discovering what could be our maximum level of multiprogramming, to do so we can use some theoretical result deriving from an operational analysis on the upper bounds of the throughput.
 
-Now, we are interested in discovering what could be our maximum level of multiprogramming, to do so we can use some theoretical result deriving from an operational  analysis on the upper bounds of the throughput.
-
-% MAYBE add something on why these are the bounds (un po' di teoria buttata lì non fa mai male)
 
 We know these bounds are given by $$X\leq \mathrm{min}\bigg(\dfrac{1}{D_b}, \dfrac{N}{D+Z}\bigg)$$
 
-where $D$ is the sum of all the service demands and $D_b$ is the service demand at the bottleneck. According to this reasoning we find: $$\widetilde{N}_{\mathrm{opt}}=\dfrac{D+Z}{D_b}=\dfrac{2445.94+10000}{2402.19}=5.18\approx 5\ \mathrm{interactive\ users}$$
+where $D$ is the sum of all the service demands and $D_b$ is the service demand at the bottleneck. This holds because:
+
+\begin{itemize}
+\item[\adforn{43}] we know the bottleneck establishes the maximum throughput of the system so the throughput of  the system is going to be lower than or equal to this, i.e. $$X\leq \dfrac{1}{D_B}$$ 
+\item[\adforn{43}] moreover supposing we have a system with no waiting time then the response time would be equal to the sum of the service demands plus the thinking time; because of the lack of waiting time the response time above ($\widetilde{R}$) will be lower than the actual expected one ($\overline{R}$), accordingly thanks to Litlle's law we can state the following: $$X=\dfrac{N}{\overline{R}}\leq \dfrac{N}{\widetilde{R}}=\dfrac{N}{D+Z}$$
+\end{itemize}
+
+consequently as we stated above $X\leq\bigg(\dfrac{1}{D_b}, \dfrac{N}{D+Z}\bigg)$.\\
+
+According to this reasoning we find: $$\widetilde{N}_{\mathrm{opt}}=\dfrac{D+Z}{D_b}=\dfrac{2445.94+10000}{2402.19}=5.18\approx 5\ \mathrm{interactive\ users}$$
 
 In fact, we tried to perform a benchmark with 7 interactive users and we noticed a big degradation in the performances, especially in the response times that resulted to be even three times bigger.
 
 
 \paragraph*{5. Use JMT to study the queueing network and evaluate with MVA an action to increase the maximum level of multiprogramming of the system.} \mbox{}\\\\
 
-We already used the technique of finding the two asyntotes crossing point to estimate the maximum level of multiprogramming, but while performing a mean value analysis we can do even better. To perform the MVA  we used the Java Modeling Tool\footnote{An open source suite for queueing network modelling and workload analysis}. We set up the parameters so that they represent our model well, then we used the values found in the previous paragraphs. The set up resulted to be as follows:
+We already used the technique of finding the two asyntotes crossing point to estimate the maximum level of multiprogramming, but performing a mean value analysis we can do even better. To perform the MVA we used the Java Modeling Tool\footnote{An open source suite for queueing network modelling and workload analysis}. We set up the parameters so that they represent our model well, then we used the values found in the previous paragraphs. The set up resulted to be as follows:
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=8cm]{Images/JMVAsynopsis.png}
 \end{figure}
 
-The results of 
+The results of the analysis were the following graphs. Notice that the red line represents the delay station ($Q_0$), the blue line represents the disk ($Q_1$) and the green line represents the CPU ($Q_3$).\\
+
+From figure \ref{fig:img3} we can see that the throughput of the different stations becomes to be saturated around 8 interactive users, meaning that this will be the actual number of optimal users we can afford to have in our system; without having any deterioration in performances. 
+
+In the graph represented in figure \ref{fig:img5} we have the confirmation that station 2, i.e. the disk, is our bottleneck as a matter of fact when increasing the number of users in the system it is visible they start to accumulate in the station 2 queue.
+
+This can also be noticed looking at figure \ref{fig:img4} where we can see the response time  of the disk increasing quickly and non-linearly while the number of users grows. Whereas the CPU station responds fairly well to the growth of the number of users, and as expected the delay station remains constant.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=12cm]{Images/JMVAthroughputside.png}
+\caption{Throughput for each station}
+\label{fig:img3}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=10cm]{Images/JMVAresTimes.png}
+\centering
+\caption{Response times as the  number  of users increases}
+\label{fig:img4}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[width=10cm]{Images/JMVAnumUsers.png}
+\centering
+\caption{Number of customers}
+\label{fig:img5}
+\end{figure}
+
+This analysis helped us in confirming some of our hypothesis and in being more precise about the maximum number of users we can have in the system. To improve performances and the bottleneck situation we could:
+
+\begin{itemize}
+\item[\adforn{43}] Use a Solid State Disk in the server, which would dramatically improve the disk read performance, lowering the disk read service time;
+\item[\adforn{43}] Use a better algorithm for database read in the query, employing a cache and/or streaming aggregation on the fly while reading data, without waiting all data to be read;
+\item[\adforn{43}] Spawn multiple instances of the server distributing the query workload in different machines.
+\end{itemize}
+
+Since our blockchain node application is already designed to be distributed and since the query are read only and we could easily, as we said, use a \textit{Load Balancer} to route every request to a different machine. In this way, assuming zero service time in the load balancer, we could scale linealy the maximum level of multiprogramming of our system, simply increasing the number of active servers. We could deploy this very easily with an container-orchestration system like \textit{Kubernetes} since we are using Docker containers for our application.
+
+\section{Conclusion}
+
+Doing this assignment we learnt many notions about systems modeling and performance analysis that are very important when deploying large system that have to scale well:
+
+\begin{itemize}
+\item[\adforn{43}] Always benchmark your application in a proper way when you want to ensure its scalability, planning how many users you expect to have;
+\item[\adforn{43}] A solid analytical model is crucial to understand performance patterns and how to read benchmark results properly;
+\item[\adforn{43}] Sometimes the bottleneck of your system is not where you expect it to be, and many times it's useful to perform a benchmark \textbf{before} doing any type of premature optimization to the code.
+\end{itemize}
+
+We understood that many different considerations and assumptions have to be made even when modeling a simple system. This required us to thoroughly go through the theory we studied and to try many different configurations before actually getting the desired result. Nevertheless, trial and error has been useful to achieve a final model which is reasonable and resembles the theoretical results fairly well.
+
 \end{document}
