@@ -3,7 +3,7 @@ services:
   node_1:
     image: "speedy_blockchain:latest"
     ports:
-      - "4001:3000"
+      - "4001:8080"
     networks:
       - blockchain_network
     volumes:
@@ -20,7 +20,7 @@ services:
   # node_2:
   #   image: "speedy_blockchain:latest"
   #   ports:
-  #     - "4002:3000"
+  #     - "4002:8080"
   #   networks:
   #     - blockchain_network
   #   volumes:
@@ -37,7 +37,7 @@ services:
   # node_3:
   #   image: "speedy_blockchain:latest"
   #   ports:
-  #     - "4003:3000"
+  #     - "4003:8080"
   #   networks:
   #     - blockchain_network
   #   volumes:
