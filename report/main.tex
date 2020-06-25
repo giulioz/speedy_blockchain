@@ -56,7 +56,7 @@
 
 \section{Introduction}
 
-In this report we are going to present the created blockchain application and to study its performance through the analysis of the results of different benchmarks carried on with the Tsung stress testing tool.
+In this report we are going to present our blockchain application design and  study its performance through the analysis of different benchmarks carried on with the Tsung stress testing tool.
 
 \subsection{Hardware}
 The server runs inside a native Linux Docker Container. The underlying host is a Linux machine with the following hardware:
@@ -234,7 +234,7 @@ Below, we show the table containing the data found doing benchmarks of our appli
 \end{figure}
 
 
-Comparing the two tables we can notice that our empirical measurements are closer to the M/G/1 theoretical values than the M/G/1/PS ones. This can be also explained technically by the architecture of the server: since we are using Node.JS, every incoming request is added to the JavaScript event queue by \textit{libuv}, waiting to be processed by our event handlers. Since the event queue is processed with a FCFS policy, our requests queue is following that policy too.
+Comparing the two tables we can notice that our empirical measurements are closer to the M/G/1 theoretical values than the M/G/1/PS ones. This can be explained technically by the architecture of the server: since we are using Node.JS, every incoming request is added to the JavaScript event queue by \textit{libuv}, waiting to be processed by our event handlers. Since the event queue is processed with a FCFS policy, our requests queue is following that policy too.
 
 
 \paragraph*{3. Propose a queueing network model of your application where you distinguish at least three stations: disk, processor and a station modeling the thinking time of the requests. Parametrize the queueing network based on the measurements you can do on your application.} \mbox{}\\\\
@@ -307,7 +307,7 @@ Since the system is under-determined we need to fix a reference station and comp
 
 $$\begin{cases} e_0=1\\ e_1=1\\ e_2=1\end{cases}$$
 
-Now, we do the following  computations to retrieve the service demands:
+Now, we do the following computations to retrieve the service demands:
 
 $$D_{DISK}=\dfrac{1}{0.00042}=2402.19\qquad D_{CPU}=\dfrac{1}{0.0229}=43.75$$
 
@@ -322,7 +322,7 @@ where $D$ is the sum of all the service demands and $D_b$ is the service demand 
 
 \begin{itemize}
 \item[\adforn{43}] we know the bottleneck establishes the maximum throughput of the system so the throughput of  the system is going to be lower than or equal to this, i.e. $$X\leq \dfrac{1}{D_B}$$ 
-\item[\adforn{43}] moreover supposing we have a system with no waiting time then the response time would be equal to the sum of the service demands plus the thinking time; because of the lack of waiting time the response time above ($\widetilde{R}$) will be lower than the actual expected one ($\overline{R}$), accordingly thanks to Litlle's law we can state the following: $$X=\dfrac{N}{\overline{R}}\leq \dfrac{N}{\widetilde{R}}=\dfrac{N}{D+Z}$$
+\item[\adforn{43}] moreover supposing we have a system with no waiting time then the response time would be equal to the sum of the service demands plus the thinking time; because of the lack of waiting time the response time above ($\widetilde{R}$) will be lower than the actual expected one ($\overline{R}$), accordingly thanks to Little's law we can state the following: $$X=\dfrac{N}{\overline{R}}\leq \dfrac{N}{\widetilde{R}}=\dfrac{N}{D+Z}$$
 \end{itemize}
 
 consequently as we stated above $X\leq\bigg(\dfrac{1}{D_b}, \dfrac{N}{D+Z}\bigg)$.\\
@@ -391,6 +391,6 @@ Doing this assignment we learnt many notions about systems modeling and performa
 \item[\adforn{43}] Sometimes the bottleneck of your system is not where you expect it to be, and many times it's useful to perform a benchmark \textbf{before} doing any type of premature optimization to the code.
 \end{itemize}
 
-We understood that many different considerations and assumptions have to be made even when modeling a simple system. This required us to thoroughly go through the theory we studied and to try many different configurations before actually getting the desired result. Nevertheless, trial and error has been useful to achieve a final model which is reasonable and resembles the theoretical results fairly well.
+We understood that many different considerations and assumptions have to be made even when modeling a simple system. This required us to thoroughly go through the theory we studied and to try many different configurations before actually getting the desired result. Nevertheless, trial and error has been useful to achieve a final model that is reasonable and resembles the theoretical results fairly well.
 
 \end{document}
