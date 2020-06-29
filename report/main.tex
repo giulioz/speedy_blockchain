@@ -148,18 +148,18 @@ The queries had the following response times:
 \begin{tabular}{c|c}
 \multicolumn{1}{l|}{Request} & \multicolumn{1}{l}{Mean Service Time} \\ \hline
 tr\_blockLast & 4.94 msec \\
-tr\_blocks20 & 0.45 sec \\
-tr\_carriers & 2.45 sec \\
+tr\_blocks20 & 450.0 msec \\
+tr\_carriers & 2450.0 msec \\
 tr\_chainInfo & 3.96 msec \\
-tr\_flights & 2.45 sec \\
+tr\_flights & 2450.0 msec \\
 tr\_peers & 1.60 msec \\
-tr\_route & 2.48 sec \\
+tr\_route & 2480.0 msec \\
 \end{tabular}
 \end{table}
 
 We can see that the heaviest query is the one that states: \textit{"given a pair of cities A and B, and a time interval, count the number of flights connecting city A to city B"}.\\
 
-The second step we did was to run 30 separate tests like the one before, choosing randomly the parameters for the query (to avoid biased results like before). In this way we were able to obtain the expected service time and its variance, which resulted to be, respectively 2330.0 ms and 5389.028 ms.
+The second step we did was to run 30 separate tests like the one before, choosing randomly the parameters for the query (to avoid biased results like before). In this way we were able to obtain the expected service time and its variance, which resulted to be, respectively 2445.0 ms and 5389.028 ms.
 Notice that we were able to retrieve the expected service time from the response time, since having just one customer at the time in a system is in practice the same as setting to zero the waiting time, consequently the response time must correspond only to the service time.
 
 \paragraph*{2. Perform the test as open system with different workload intensities: 0.3L, 0.5L, 0.8L, 0.85L, where L is the maximum arrival rate determined from the expected service time estimated at point 1. Compare the measures with the lines predicted by the M/G/1 and M/G/1/PS queueing systems and discuss the results.} \mbox{}\\\\
@@ -197,10 +197,10 @@ Using this we found the following theoretical data (RespTime and NumJobs stand f
 \begin{tabular}{c|c|c|cc}
 \multicolumn{1}{l|}{}         & \multicolumn{2}{c|}{M/G/1}                                                        & \multicolumn{2}{c}{M/G/1/PS}                                                     \\ \hline
 \multicolumn{1}{l|}{Workload} & \multicolumn{1}{l|}{RespTime (ms)} & \multicolumn{1}{l|}{NumJobs} & \multicolumn{1}{l|}{RespTime (ms)} & \multicolumn{1}{l}{NumJobs} \\ \hline
-0.3                           & 2829.78                            & 0.36                                         & \multicolumn{1}{c|}{3328.57}       & 0.43                                        \\
-0.5                           & 3496.16                            & 0.75                                         & \multicolumn{1}{c|}{4660.0}        & 1.0                                         \\
-0.8                           & 6994.63                            & 2.40                                         & \multicolumn{1}{c|}{11650.0}       & 4.0                                         \\
-0.85                          & 8938.22                            & 3.26                                         & \multicolumn{1}{c|}{15533.33}      & 5.67                                       
+0.3                           & 2969.40                           & 0.36                                         & \multicolumn{1}{c|}{3492.86}       & 0.43                                        \\
+0.5                           & 3668.60                        & 0.75                                         & \multicolumn{1}{c|}{4890.0}        & 1.0                                         \\
+0.8                           & 7339.41                         & 2.40                                         & \multicolumn{1}{c|}{12225.0}       & 4.0                                         \\
+0.85                          & 9378.74                           & 3.26                                         & \multicolumn{1}{c|}{16300.0}      & 5.67                                       
 \end{tabular}
 \end{table}
 
@@ -343,7 +343,7 @@ We already used the technique of finding the two asyntotes crossing point to est
 
 The results of the analysis were the following graphs. Notice that the red line represents the delay station ($Q_0$), the blue line represents the disk ($Q_1$) and the green line represents the CPU ($Q_3$).\\
 
-From figure \ref{fig:img3} we can see that the throughput of the different stations becomes to be saturated around 8 interactive users, meaning that this will be the actual number of optimal users we can afford to have in our system; without having any deterioration in performances. 
+From figure \ref{fig:img3} we can see that the throughput of the different stations becomes to be saturated around 8 interactive users, meaning that this will be the actual number of users we can afford to have in our system.
 
 In the graph represented in figure \ref{fig:img5} we have the confirmation that station 2, i.e. the disk, is our bottleneck as a matter of fact when increasing the number of users in the system it is visible they start to accumulate in the station 2 queue.
 
@@ -391,6 +391,6 @@ Doing this assignment we learnt many notions about systems modeling and performa
 \item[\adforn{43}] Sometimes the bottleneck of your system is not where you expect it to be, and many times it's useful to perform a benchmark \textbf{before} doing any type of premature optimization to the code.
 \end{itemize}
 
-We understood that many different considerations and assumptions have to be made even when modeling a simple system. This required us to thoroughly go through the theory we studied and to try many different configurations before actually getting the desired result. Nevertheless, trial and error has been useful to achieve a final model that is reasonable and resembles the theoretical results fairly well.
+We understood that many different considerations and assumptions have to be made even when modeling a simple system. This required us to rigorously go through the theory we studied and to try many different configurations before actually getting the desired result. Nevertheless, trial and error has been useful to achieve a final model that is reasonable and resembles the theoretical results fairly well.
 
 \end{document}
